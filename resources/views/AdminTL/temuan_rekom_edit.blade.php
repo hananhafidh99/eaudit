@@ -429,8 +429,23 @@ $(document).ready(function() {
         var level = $(this).data('level');
         var parentPath = $(this).data('parent-path') || '';
 
-        // Create unique key for sub counter
-        var subKey = temuanIndex + '_' + parentRekomIndex + (parentPath ? '_' + parentPath : '');
+        // Find the correct parent row to get the actual structure
+        var parentRow = $(this).closest('tr');
+        var currentNamePrefix = '';
+
+        // Extract the name pattern from parent row to build correct nested structure
+        var parentTextarea = parentRow.find('textarea[name*="[rekomendasi]"]').first();
+        if (parentTextarea.length > 0) {
+            var parentName = parentTextarea.attr('name');
+            // Extract the base path: temuan[0][rekomendasi][0] or temuan[0][rekomendasi][0][sub][1]
+            var matches = parentName.match(/^(temuan\[\d+\]\[rekomendasi\]\[\d+\](?:\[sub\](?:\[\d+\])+)*)/);
+            if (matches) {
+                currentNamePrefix = matches[1];
+            }
+        }
+
+        // Create unique key for sub counter based on parent structure
+        var subKey = temuanIndex + '_' + parentRekomIndex + '_level' + level + (parentPath ? '_' + parentPath : '');
 
         // Initialize counter if not exists
         if (!subCounter[subKey]) {
@@ -440,18 +455,22 @@ $(document).ready(function() {
         subCounter[subKey]++;
         var subIndex = subCounter[subKey];
 
-        // Build the name path for nested structure
-        var namePath = 'temuan[' + temuanIndex + '][rekomendasi][' + parentRekomIndex + ']';
-        if (parentPath) {
-            namePath += '[sub]' + parentPath;
-        }
-        namePath += '[sub][' + subIndex + ']';
+        // Build the correct name path for nested structure
+        var namePath = currentNamePrefix + '[sub][' + subIndex + ']';
+
+        // Debug logging
+        console.log('=== SUB-RECOMMENDATION DEBUG ===');
+        console.log('Parent Name:', parentTextarea.length > 0 ? parentTextarea.attr('name') : 'No parent textarea found');
+        console.log('Current Name Prefix:', currentNamePrefix);
+        console.log('Final Name Path:', namePath);
+        console.log('Level:', level);
+        console.log('Sub Index:', subIndex);
+        console.log('=== END DEBUG ===');
 
         // Build unique path for further nesting
         var newParentPath = parentPath ? parentPath + '_' + subIndex : subIndex;
 
         var levelClass = 'sub-level-' + Math.min(level, 3);
-        var indent = level * 20;
 
         var html = '';
         html += '<tr class="' + levelClass + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + parentRekomIndex + '" data-level="' + level + '" data-parent-path="' + newParentPath + '">';
@@ -548,6 +567,16 @@ $(document).ready(function() {
     $('form').on('submit', function(e) {
         var hasError = false;
         var errorMessages = [];
+
+        // Debug: Log form data before submission
+        var formData = new FormData(this);
+        console.log('=== FORM DATA DEBUG ===');
+        for (var pair of formData.entries()) {
+            if (pair[0].includes('rekomendasi') || pair[0].includes('sub')) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+        }
+        console.log('=== END DEBUG ===');
 
         // Check if at least one temuan exists
         var temuanExists = false;
