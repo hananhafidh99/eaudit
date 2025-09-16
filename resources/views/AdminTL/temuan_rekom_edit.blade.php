@@ -499,8 +499,13 @@ $(document).ready(function() {
 
     // Add new temuan card
     $('#add_card').on('click', function () {
-        var temuanIndex = temuanCounter;
+        var temuanIndex = temuanCounter; // Will be 1, 2, 3, etc.
         rekomCounter[temuanIndex] = 0; // Initialize recommendation counter for new temuan
+
+        console.log('=== ADD TEMUAN DEBUG ===');
+        console.log('Creating temuan with index:', temuanIndex);
+        console.log('Total counter will be:', temuanCounter + 1);
+        console.log('=== END DEBUG ===');
 
         var cardHtml = '';
         cardHtml += '<div class="card mb-3 temuan-card" data-temuan-index="' + temuanIndex + '">';
@@ -555,7 +560,7 @@ $(document).ready(function() {
         cardHtml += '</div>';
 
         $("#temuanBaru").append(cardHtml);
-        temuanCounter++;
+        temuanCounter++; // Increment after creating the card
     });
 
     // Remove temuan card
@@ -571,11 +576,30 @@ $(document).ready(function() {
         // Debug: Log form data before submission
         var formData = new FormData(this);
         console.log('=== FORM DATA DEBUG ===');
+        console.log('Total form entries:', Array.from(formData.entries()).length);
+
+        // Group by temuan index
+        var temuanData = {};
         for (var pair of formData.entries()) {
-            if (pair[0].includes('rekomendasi') || pair[0].includes('sub')) {
-                console.log(pair[0] + ': ' + pair[1]);
+            if (pair[0].includes('temuan[')) {
+                var temuanMatch = pair[0].match(/temuan\[(\d+)\]/);
+                if (temuanMatch) {
+                    var temuanIndex = temuanMatch[1];
+                    if (!temuanData[temuanIndex]) {
+                        temuanData[temuanIndex] = [];
+                    }
+                    temuanData[temuanIndex].push(pair[0] + ': ' + pair[1]);
+                }
             }
         }
+
+        // Display grouped data
+        Object.keys(temuanData).sort().forEach(function(temuanIndex) {
+            console.log('--- TEMUAN[' + temuanIndex + '] ---');
+            temuanData[temuanIndex].forEach(function(entry) {
+                console.log(entry);
+            });
+        });
         console.log('=== END DEBUG ===');
 
         // Check if at least one temuan exists
