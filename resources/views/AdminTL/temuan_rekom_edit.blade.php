@@ -272,13 +272,16 @@
               </tr>
             </tbody>
           </table>
-        </div>
-        <div id="temuanBaru" class="mt-2"></div>
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="{{ url('adminTL/temuanrekom') }}" class="btn btn-secondary">Batal</a>
-        </div>
-    </form>
+
+          <!-- Temuan tambahan akan ditambahkan di sini -->
+          <div id="temuanBaru" class="mt-4"></div>
+
+          <div class="mt-3">
+              <button type="submit" class="btn btn-primary">Simpan</button>
+              <a href="{{ url('adminTL/temuanrekom') }}" class="btn btn-secondary">Batal</a>
+          </div>
+        </form>
+    </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 
@@ -573,6 +576,23 @@ $(document).ready(function() {
         var hasError = false;
         var errorMessages = [];
 
+        // Debug: Check all form inputs
+        console.log('=== FORM STRUCTURE DEBUG ===');
+        var allInputs = $(this).find('input, textarea, select');
+        console.log('Total form inputs found:', allInputs.length);
+
+        var temuanInputs = $(this).find('input[name*="temuan"], textarea[name*="temuan"]');
+        console.log('Total temuan-related inputs:', temuanInputs.length);
+
+        // Check what's inside vs outside form
+        var outsideInputs = $('input[name*="temuan"], textarea[name*="temuan"]').not($(this).find('input, textarea'));
+        if (outsideInputs.length > 0) {
+            console.log('⚠️ WARNING: Found inputs OUTSIDE form:', outsideInputs.length);
+            outsideInputs.each(function() {
+                console.log('Outside form input:', $(this).attr('name'));
+            });
+        }
+
         // Debug: Log form data before submission
         var formData = new FormData(this);
         console.log('=== FORM DATA DEBUG ===');
@@ -600,9 +620,7 @@ $(document).ready(function() {
                 console.log(entry);
             });
         });
-        console.log('=== END DEBUG ===');
-
-        // Check if at least one temuan exists
+        console.log('=== END DEBUG ===');        // Check if at least one temuan exists
         var temuanExists = false;
         $('input[name*="nama_temuan"]').each(function() {
             if ($(this).val().trim() !== '') {
