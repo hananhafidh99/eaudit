@@ -52,6 +52,39 @@
     table #baris2 .kolom2{
         margin-left: 30px;
     }
+
+    /* Styling untuk nested sub-rekomendasi */
+    .sub-level-1 {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+    }
+
+    .sub-level-1 .rekomendasi-text {
+        margin-left: 20px;
+        font-style: italic;
+    }
+
+    .sub-level-2 {
+        background-color: #e9ecef;
+        border-left: 3px solid #28a745;
+    }
+
+    .sub-level-2 .rekomendasi-text {
+        margin-left: 40px;
+        font-style: italic;
+        font-size: 0.9em;
+    }
+
+    .sub-level-3 {
+        background-color: #dee2e6;
+        border-left: 3px solid #ffc107;
+    }
+
+    .sub-level-3 .rekomendasi-text {
+        margin-left: 60px;
+        font-style: italic;
+        font-size: 0.85em;
+    }
     </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -232,8 +265,9 @@
                 <td><textarea class="form-control" name="temuan[0][rekomendasi][0][keterangan]"></textarea></td>
                 <td><input type="text" class="form-control tanparupiah" name="temuan[0][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>
                 <td>
-                    <button type="button" data-temuan-index="0" class="btn btn-success btn-sm add_rekom_btn"><i class="fa-solid fa-plus"></i></button>
-                    <button type="button" class="btn btn-danger btn-sm remove_rekom_btn"><i class="fa-solid fa-minus"></i></button>
+                    <button type="button" data-temuan-index="0" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button>
+                    <button type="button" data-temuan-index="0" data-rekom-index="0" data-level="1" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button>
+                    <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -252,9 +286,11 @@
 // Global variables
 let temuanCounter = 1; // Start from 1 since we already have temuan[0]
 let rekomCounter = {}; // Track recommendation counter for each temuan
+let subCounter = {}; // Track sub-recommendation counter
 
 // Initialize recommendation counter for existing temuan
 rekomCounter[0] = 1; // temuan[0] already has rekomendasi[0]
+subCounter['0_0'] = 0; // temuan[0][rekomendasi][0] has no sub yet
 
 // Format Rupiah function
 function formatRupiah(angka) {
@@ -301,8 +337,9 @@ $(document).ready(function() {
         html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][keterangan]"></textarea></td>';
         html += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][pengembalian]" placeholder="Rp. 0"></td>';
         html += '<td>';
-        html += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn"><i class="fa-solid fa-plus"></i></button> ';
-        html += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn"><i class="fa-solid fa-minus"></i></button>';
+        html += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button> ';
+        html += '<button type="button" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + rekomIndex + '" data-level="1" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button> ';
+        html += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>';
         html += '</td>';
         html += '</tr>';
 
@@ -318,6 +355,58 @@ $(document).ready(function() {
         tbody.find('tr').each(function(index) {
             $(this).find('td:first').text(index + 1);
         });
+    });
+
+    // Add sub-recommendation (nested)
+    $(document).on('click', '.add_sub_btn', function () {
+        var temuanIndex = $(this).data('temuan-index');
+        var parentRekomIndex = $(this).data('rekom-index');
+        var level = $(this).data('level');
+        var parentPath = $(this).data('parent-path') || '';
+
+        // Create unique key for sub counter
+        var subKey = temuanIndex + '_' + parentRekomIndex + (parentPath ? '_' + parentPath : '');
+
+        // Initialize counter if not exists
+        if (!subCounter[subKey]) {
+            subCounter[subKey] = 0;
+        }
+
+        subCounter[subKey]++;
+        var subIndex = subCounter[subKey];
+
+        // Build the name path for nested structure
+        var namePath = 'temuan[' + temuanIndex + '][rekomendasi][' + parentRekomIndex + ']';
+        if (parentPath) {
+            namePath += '[sub]' + parentPath;
+        }
+        namePath += '[sub][' + subIndex + ']';
+
+        // Build unique path for further nesting
+        var newParentPath = parentPath ? parentPath + '_' + subIndex : subIndex;
+
+        var levelClass = 'sub-level-' + Math.min(level, 3);
+        var indent = level * 20;
+
+        var html = '';
+        html += '<tr class="' + levelClass + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + parentRekomIndex + '" data-level="' + level + '" data-parent-path="' + newParentPath + '">';
+        html += '<td style="padding-left: ' + indent + 'px;">↳ ' + level + '.' + subIndex + '</td>';
+        html += '<td><div class="rekomendasi-text"><textarea class="form-control" name="' + namePath + '[rekomendasi]" required placeholder="Sub-rekomendasi level ' + level + '"></textarea></div></td>';
+        html += '<td><textarea class="form-control" name="' + namePath + '[keterangan]" placeholder="Keterangan sub-rekomendasi"></textarea></td>';
+        html += '<td><input type="text" class="form-control tanparupiah" name="' + namePath + '[pengembalian]" placeholder="Rp. 0"></td>';
+        html += '<td>';
+
+        // Add buttons based on level (limit to 3 levels)
+        if (level < 3) {
+            html += '<button type="button" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + parentRekomIndex + '" data-level="' + (level + 1) + '" data-parent-path="' + newParentPath + '" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Level ' + (level + 1) + '"><i class="fa-solid fa-indent"></i></button> ';
+        }
+
+        html += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>';
+        html += '</td>';
+        html += '</tr>';
+
+        // Insert after current row
+        $(this).closest('tr').after(html);
     });
 
     // Add new temuan card
@@ -367,8 +456,9 @@ $(document).ready(function() {
         cardHtml += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][keterangan]"></textarea></td>';
         cardHtml += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>';
         cardHtml += '<td>';
-        cardHtml += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn"><i class="fa-solid fa-plus"></i></button> ';
-        cardHtml += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn"><i class="fa-solid fa-minus"></i></button>';
+        cardHtml += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button> ';
+        cardHtml += '<button type="button" data-temuan-index="' + temuanIndex + '" data-rekom-index="0" data-level="1" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button> ';
+        cardHtml += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>';
         cardHtml += '</td>';
         cardHtml += '</tr>';
         cardHtml += '</tbody>';
