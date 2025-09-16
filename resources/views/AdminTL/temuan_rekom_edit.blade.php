@@ -169,6 +169,33 @@
 <div class="card-header"> Jenis Temuan dan Rekomendasi</div>
 <div class="d-flex justify-content-end" style="background-color:bisque"><button type="button" class="btn btn-primary btn-sm" id="add_card"><i class="fa-solid fa-plus"></i></button></div>
     <div class="card-body">
+        
+        {{-- Display Success/Error Messages --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        
         <form action="{{ url('adminTL/temuan/') }}" method="post" enctype="multipart/form-data">
            @method('POST')
            @csrf
@@ -177,14 +204,14 @@
     <table class="table">
                <thead>
                    <tr>
-                       <th scope="col">KODE TEMUAN</th>
-                       <th scope="col">NAMA TEMUAN</th>
+                       <th scope="col">KODE TEMUAN <span class="text-danger">*</span></th>
+                       <th scope="col">NAMA TEMUAN <span class="text-danger">*</span></th>
                    </tr>
                </thead>
                <tbody>
                    <tr>
-                    <td><input type="text" name="temuan[0][kode_temuan]" class="form-control"></td>
-                    <td><input type="text" name="temuan[0][nama_temuan]" class="form-control"></td>
+                    <td><input type="text" name="temuan[0][kode_temuan]" class="form-control" required></td>
+                    <td><input type="text" name="temuan[0][nama_temuan]" class="form-control" required></td>
                    </tr>
                </tbody>
            </table>
@@ -192,177 +219,215 @@
             <thead>
               <tr>
                 <th scope="col">Nomor</th>
-                <th scope="col">KODE REKOMENDASI</th>
-                <th scope="col">NAMA REKOMENDASI</th>
+                <th scope="col">NAMA REKOMENDASI <span class="text-danger">*</span></th>
                 <th scope="col">KETERANGAN REKOMENDASI</th>
                 <th scope="col">PENGEMBALIAN KEUANGAN</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody class="body" id="parenttemuan_0">
-              <tr class="sub0">
+              <tr class="sub0" data-temuan-index="0" data-rekom-index="0">
                 <td>1</td>
-                <td><textarea type="text" class="form-control" name="temuan[0][rekomendasi][0][rekomendasi]"></textarea></td>
-                <td><textarea type="text" class="form-control" name="temuan[0][rekomendasi][0][keterangan]"></textarea></td>
-                <td><textarea type="text" class="form-control" name="temuan[0][rekomendasi][0][pengembalian]"></textarea></td>
-                <td><textarea type="text" class="form-control tanparupiah " name="temuan[0][rekomendasi][0][pengembalian]"></textarea></td>
-                <td><button type="button" data-level1="0" data-indextemuan=0 class="btn btn-success" id="add_btn1"><i class="fa-solid fa-plus"></i></button></td>
-                <td><button type="button" data-nomorterakhir=1 data-indextemuan=0 class="btn btn-primary" id="add_btn"><i class="fa-solid fa-plus"></i></button></td>
+                <td><textarea class="form-control" name="temuan[0][rekomendasi][0][rekomendasi]" required></textarea></td>
+                <td><textarea class="form-control" name="temuan[0][rekomendasi][0][keterangan]"></textarea></td>
+                <td><input type="text" class="form-control tanparupiah" name="temuan[0][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>
+                <td>
+                    <button type="button" data-temuan-index="0" class="btn btn-success btn-sm add_rekom_btn"><i class="fa-solid fa-plus"></i></button>
+                    <button type="button" class="btn btn-danger btn-sm remove_rekom_btn"><i class="fa-solid fa-minus"></i></button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
         <div id="temuanBaru" class="mt-2"></div>
-        <button class="btn btn-primary">Simpan</button>
-        <button class="btn btn-success">Batal</button>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="{{ url('adminTL/temuanrekom') }}" class="btn btn-secondary">Batal</a>
+        </div>
     </form>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 
 <script>
+// Global variables
+let temuanCounter = 1; // Start from 1 since we already have temuan[0]
+let rekomCounter = {}; // Track recommendation counter for each temuan
 
-    let tanparupiah = document.querySelector('.tanparupiah');
+// Initialize recommendation counter for existing temuan
+rekomCounter[0] = 1; // temuan[0] already has rekomendasi[0]
 
-$(document).on('keyup','.tanparupiah',function (e) {
-    let rupiah = formatRupiah($(this).val());
-    console.log(rupiah);
-    $(this).val(rupiah);
-})
-        $('#add_btn').on('click',function () {
-            var html='';
-            html+='<tr>';
-            html+='<td></td>';
-            html+='<td><textarea class="form-control" name="tipeA[rekomendasi]"></textarea></td>';
-            html+='<td><textarea class="form-control" name="tipeA[rekomendasi]"></textarea></td>';
-            html+='<td><textarea class="form-control" name="tipeA[keterangan]"></textarea></td>';
-            html+='<td><input type="text" class="form-control tanparupiah" name="tipeA[pengembalian]"></td>';
-            html+='<td><button  type="button" class="btn btn-success" id="add_btn1"><i class="fa-solid fa-plus"></i></button></td>';
-            html+='<td><button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button></td>';
-            html+='</tr>';
-            $('tbody.body').append(html);
-            // $(this).closest('tr').after(html);
-        })
+// Format Rupiah function
+function formatRupiah(angka) {
+    var number_string = angka.replace(/[^,\d]/g, '').toString(),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
+    if (ribuan) {
+        separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
 
-    // $(document).on('click','#add_btnEdit1',function () {
-    //             indexEdit1++;
-    //             var html='';
-    //             var level1=$(this).data('level1');
-    //             var level2=$(this).data('level2');
-    //             var parentId = $(this).data('parentid');
-    //             html+='<tr id="baris2">';
-    //             html+='<input type="hidden" name="tipeA['+level1+'][sub]['+level2+'][sub]['+indexEdit1+'][parentid]" value="'+parentId+'">';
-    //             html+='<td></td>';
-    //             html+='<td><input type="text" class="form-control kolom2"  name="tipeA['+level1+'][sub]['+level2+'][sub]['+indexEdit1+'][rekomendasi]"></td>';
-    //             html+='<td><input type="text" class="form-control kolom2" name="tipeA['+level1+'][sub]['+level2+'][sub]['+indexEdit1+'][keterangan]"></td>';
-    //             html+='<td><input type="text" class="form-control kolom2 tanparupiah"  name="tipeA['+level1+'][sub]['+level2+'][sub]['+indexEdit1+'][pengembalian]"></td>';
-    //             html+='<td><button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button></td>';
-    //         //sesuaikan idnya button
-    //             html+='</tr>';
-    //             $(this).closest('tr').after(html);
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return 'Rp. ' + rupiah;
+}
 
-    //         })
+$(document).ready(function() {
 
+    // Format rupiah on input
+    $(document).on('keyup', '.tanparupiah', function (e) {
+        let rupiah = formatRupiah($(this).val());
+        $(this).val(rupiah);
+    });
 
+    // Add new recommendation row
+    $(document).on('click', '.add_rekom_btn', function () {
+        var temuanIndex = $(this).data('temuan-index');
 
-    //         $(document).on('click','#add_btnEdit',function () {
-    //             alert('tes');
-    //             var html='';
-    //             indexEdit++;
-    //             var level1=$(this).data('level1');
-    //             var parentId = $(this).data('parentid');
-    //             html+='<tr id="baris1">';
-    //             html+='<td></td>';
-    //             html+='<input type="hidden" name="tipeA['+level1+'][sub]['+indexEdit+'][parentid]" value="'+parentId+'">';
-    //             html+='<td><input type="text" class="form-control kolom1" name="tipeA['+level1+'][sub]['+indexEdit+'][rekomendasi]"></td>';
-    //             html+='<td><input type="text" class="form-control kolom1" name="tipeA['+level1+'][sub]['+indexEdit+'][keterangan]"></td>';
-    //             html+='<td><input type="text" class="form-control kolom1 tanparupiah" name="tipeA['+level1+'][sub]['+indexEdit+'][pengembalian]"></td>';
-    //             html+='<td><button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button></td>';
-    //             //sesuaikan idnya button
-    //             html+='<td><button data-level2="'+index1+'" data-level1="'+level1+'" type="button" class="btn btn-success" id="add_btn2"><i class="fa-solid fa-plus"></i></button></td>';
-    //             html+='</tr>';
-    //             $(this).closest('tr').after(html);
-    //         })
+        // Initialize counter if not exists
+        if (!rekomCounter[temuanIndex]) {
+            rekomCounter[temuanIndex] = 0;
+        }
 
-        // $('#add_btn').on('click',function () {
-        //     index++;
-        //     var html='';
-        //     html+='<tr class="sub'+index+'">';
-        //     html+='<td>'+rowCount.toString()+'</td>';
-        //     html+='<td><textarea class="form-control" name="tipeA['+index+'][rekomendasi]"></textarea></td>';
-        //     html+='<td><textarea class="form-control" name="tipeA['+index+'][keterangan]"></textarea></td>';
-        //     html+='<td><input type="text" class="form-control tanparupiah" name="tipeA['+index+'][pengembalian]"></td>';
-        //     html+='<td><button data-level1="'+index+'"  type="button" class="btn btn-success" id="add_btn1"><i class="fa-solid fa-plus"></i></button></td>';
-        //     html+='<td><button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button></td>';
-        //     html+='</tr>';
-        //     $('tbody.body').append(html);
-        //     // $(this).closest('tr').after(html);
-        //     rowCount++;
-        // })
+        rekomCounter[temuanIndex]++;
+        var rekomIndex = rekomCounter[temuanIndex];
+        var rowNumber = $(this).closest('tbody').find('tr').length + 1;
 
-        // $(document).on('click','#add_btn1',function () {
-        //     console.log('click');
-        //     var html='';
-        //     index1++;
-        //     var level1=$(this).data('level1');
-        //     html+='<tr id="baris1">';
-        //     html+='<td></td>';
-        //     html+='<td><textarea class="form-control kolom1" name="tipeA['+level1+'][sub]['+index1+'][rekomendasi]"></textarea></td>';
-        //     html+='<td><textarea class="form-control kolom1" name="tipeA['+level1+'][sub]['+index1+'][keterangan]"></textarea></td>';
-        //     html+='<td><input type="text" class="form-control kolom1 tanparupiah" name="tipeA['+level1+'][sub]['+index1+'][pengembalian]"></td>';
-        //     html+='<td><button data-level2="'+index1+'" data-level1="'+level1+'" type="button" class="btn btn-success" id="add_btn2"><i class="fa-solid fa-plus"></i></button></td>';
-        //     html+='<td><button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button></td>';
-        //     html+='</tr>';
-        //     $(this).closest('tr.sub'+level1).after(html);
-        // })
+        var html = '';
+        html += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + rekomIndex + '">';
+        html += '<td>' + rowNumber + '</td>';
+        html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][rekomendasi]" required></textarea></td>';
+        html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][keterangan]"></textarea></td>';
+        html += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][pengembalian]" placeholder="Rp. 0"></td>';
+        html += '<td>';
+        html += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn"><i class="fa-solid fa-plus"></i></button> ';
+        html += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn"><i class="fa-solid fa-minus"></i></button>';
+        html += '</td>';
+        html += '</tr>';
 
-        $('#add_card').on('click',function () {
-            $("#temuanBaru").append("<div class='card-header' id='tambahtemuan'>Tambah Jenis Temuan <button type='button' id='hapus_card' class='btn btn-danger btn-sm' style='margin-left: 650px'><i class='fa-solid fa-trash' ></i></button>  </div> <div class='card-body'><table class='table'><thead><tr><th scope='col'>KODE TEMUAN</th><th scope='col'>NAMA TEMUAN</th></tr></thead> <tbody><tr><td><textarea name='temuan[kode_temuan]'  class='form-control'></textarea></td><td><textarea name='temuan[nama_temuan]'  class='form-control' ></textarea></td></tr></tbody></table> <table class='table'><thead><tr><th scope='col'>NOMOR</th><th scope='col'>NAMA REKOMENDASI</th><th scope='col'>KETERANGAN REKOMENDASI</th><th scope='col'>PENGEMBALIAN KEUANGAN</th><th>Aksi</th></tr></thead>  <tbody class='body'><tr><td>1</td><td><textarea name='temuan[rekomendasi][rekomendasi]' id='' class='form-control'></textarea></td><td><textarea name='temuan[rekomendasi][keterangan]' id='' class='form-control'></textarea></td><td><textarea name='temuan[rekomendasi][pengembalian]' id='' class='form-control tanparupiah'></textarea></td><td><button type='button'   class='btn btn-success' id='add_btn1'><i class='fa-solid fa-plus'></i></button><td><button type='button' class='btn btn-primary' id='add_btn'><i class='fa-solid fa-plus'></i></button></td></tr></tbody></table></div>");
-        })
+        $(this).closest('tbody').append(html);
+    });
 
+    // Remove recommendation row
+    $(document).on('click', '.remove_rekom_btn', function () {
+        var tbody = $(this).closest('tbody');
+        $(this).closest('tr').remove();
 
-        // $('#add_card').on('click',function () {
-        //     countertemuan++;
-        //     indexrekomendasi++;
-        //     $("#temuanBaru").append("<div class='card-header' id='tambahtemuan'>Tambah Jenis Temuan "+countertemuan+" <button type='button' id='hapus_card' class='btn btn-danger btn-sm' style='margin-left: 650px'><i class='fa-solid fa-trash' ></i></button>  </div> <div class='card-body'><table class='table'><thead><tr><th scope='col'>KODE TEMUAN</th><th scope='col'>NAMA TEMUAN</th></tr></thead> <tbody><tr><td><textarea name='temuan["+countertemuan+"][kode_temuan]'  class='form-control'></textarea></td><td><textarea name='temuan["+countertemuan+"][nama_temuan]'  class='form-control' ></textarea></td></tr></tbody></table> <table class='table'><thead><tr><th scope='col'>NOMOR</th><th scope='col'>NAMA REKOMENDASI</th><th scope='col'>KETERANGAN REKOMENDASI</th><th scope='col'>PENGEMBALIAN KEUANGAN</th><th>Aksi</th></tr></thead>  <tbody class='body'><tr><td>1</td><td><textarea name='temuan["+countertemuan+"][rekomendasi]["+indexrekomendasi+"][rekomendasi]' id='' class='form-control'></textarea></td><td><textarea name='temuan["+countertemuan+"][rekomendasi]["+indexrekomendasi+"][keterangan]' id='' class='form-control'></textarea></td><td><textarea name='temuan["+countertemuan+"][rekomendasi]["+indexrekomendasi+"][pengembalian]' id='' class='form-control tanparupiah'></textarea></td><td><button type='button' data-level1="+indexrekomendasi+" data-indextemuan="+countertemuan+" class='btn btn-success' id='add_btn1'><i class='fa-solid fa-plus'></i></button><td><button type='button' data-nomorterakhir="+indexrekomendasi+" data-indextemuan="+countertemuan+" class='btn btn-primary' id='add_btn'><i class='fa-solid fa-plus'></i></button></td></tr></tbody></table></div>");
-        // })
+        // Renumber rows
+        tbody.find('tr').each(function(index) {
+            $(this).find('td:first').text(index + 1);
+        });
+    });
 
-        $(document).on('click','#remove',function () {
-            $(this).closest('tr').remove();
-        })
+    // Add new temuan card
+    $('#add_card').on('click', function () {
+        var temuanIndex = temuanCounter;
+        rekomCounter[temuanIndex] = 0; // Initialize recommendation counter for new temuan
 
-        $(document).on('click','#hapus_card',function () {
-            $(this).closest('#tambahtemuan').remove();
-        })
+        var cardHtml = '';
+        cardHtml += '<div class="card mb-3 temuan-card" data-temuan-index="' + temuanIndex + '">';
+        cardHtml += '<div class="card-header d-flex justify-content-between align-items-center">';
+        cardHtml += 'Tambah Jenis Temuan ' + (temuanIndex + 1);
+        cardHtml += '<button type="button" class="btn btn-danger btn-sm hapus_card"><i class="fa-solid fa-trash"></i></button>';
+        cardHtml += '</div>';
+        cardHtml += '<div class="card-body">';
 
-        // $(document).on('click','#hapus_btn1',function () {
-        //     $(this).closest('tr').remove();
-        // })
+        // Temuan table
+        cardHtml += '<table class="table">';
+        cardHtml += '<thead>';
+        cardHtml += '<tr>';
+        cardHtml += '<th scope="col">KODE TEMUAN <span class="text-danger">*</span></th>';
+        cardHtml += '<th scope="col">NAMA TEMUAN <span class="text-danger">*</span></th>';
+        cardHtml += '</tr>';
+        cardHtml += '</thead>';
+        cardHtml += '<tbody>';
+        cardHtml += '<tr>';
+        cardHtml += '<td><input type="text" name="temuan[' + temuanIndex + '][kode_temuan]" class="form-control" required></td>';
+        cardHtml += '<td><input type="text" name="temuan[' + temuanIndex + '][nama_temuan]" class="form-control" required></td>';
+        cardHtml += '</tr>';
+        cardHtml += '</tbody>';
+        cardHtml += '</table>';
+        
+        // Recommendation table
+        cardHtml += '<table class="table">';
+        cardHtml += '<thead>';
+        cardHtml += '<tr>';
+        cardHtml += '<th scope="col">Nomor</th>';
+        cardHtml += '<th scope="col">NAMA REKOMENDASI <span class="text-danger">*</span></th>';
+        cardHtml += '<th scope="col">KETERANGAN REKOMENDASI</th>';
+        cardHtml += '<th scope="col">PENGEMBALIAN KEUANGAN</th>';
+        cardHtml += '<th>Aksi</th>';
+        cardHtml += '</tr>';
+        cardHtml += '</thead>';
+        cardHtml += '<tbody class="body" id="parenttemuan_' + temuanIndex + '">';
+        cardHtml += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="0">';
+        cardHtml += '<td>1</td>';
+        cardHtml += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][rekomendasi]" required></textarea></td>';
+        cardHtml += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][keterangan]"></textarea></td>';
+        cardHtml += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>';
+        cardHtml += '<td>';
+        cardHtml += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn"><i class="fa-solid fa-plus"></i></button> ';
+        cardHtml += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn"><i class="fa-solid fa-minus"></i></button>';
+        cardHtml += '</td>';
+        cardHtml += '</tr>';
+        cardHtml += '</tbody>';
+        cardHtml += '</table>';        cardHtml += '</div>';
+        cardHtml += '</div>';
 
-        // $(document).on('click','#hapus_btn2',function () {
-        //     $(this).closest('tr').remove();
-        // })
+        $("#temuanBaru").append(cardHtml);
+        temuanCounter++;
+    });
 
-        // $(document).on('click','#hapus_btn',function () {
-        //     $(this).closest('tr').remove();
-        // })
+    // Remove temuan card
+    $(document).on('click', '.hapus_card', function () {
+        $(this).closest('.temuan-card').remove();
+    });
 
-        // $(document).on('click','#add_btn2',function () {
-        //     index2++;
-        //     var html='';
-        //     var level1=$(this).data('level1');
-        //     var level2=$(this).data('level2');
-        //     html+='<tr id="baris2">';
-        //     html+='<td></td>';
-        //     html+='<td><textarea class="form-control kolom2" name="tipeA['+level1+'][sub]['+level2+'][sub]['+index2+'][rekomendasi]"></textarea></td>';
-        //     html+='<td><textarea class="form-control kolom2" name="tipeA['+level1+'][sub]['+level2+'][sub]['+index2+'][keterangan]"></textarea></td>';
-        //     html+='<td><input type="text" class="form-control kolom2 tanparupiah" name="tipeA['+level1+'][sub]['+level2+'][sub]['+index2+'][pengembalian]"></td>';
-        //     html+='<td><button type="button" class="btn btn-primary kolom2" id="remove"><i class="fa-solid fa-minus"></i></button></td>';
-        //     html+='</tr>';
-        //     $(this).closest('tr').after(html);
-        // })
+    // Form validation before submit
+    $('form').on('submit', function(e) {
+        var hasError = false;
+        var errorMessages = [];
 
+        // Check if at least one temuan exists
+        var temuanExists = false;
+        $('input[name*="nama_temuan"]').each(function() {
+            if ($(this).val().trim() !== '') {
+                temuanExists = true;
+                return false;
+            }
+        });
 
+        if (!temuanExists) {
+            errorMessages.push('Minimal harus ada satu temuan yang diisi');
+            hasError = true;
+        }
 
+        // Check if each temuan has at least one recommendation
+        $('input[name*="nama_temuan"]').each(function() {
+            if ($(this).val().trim() !== '') {
+                var temuanIndex = $(this).attr('name').match(/temuan\[(\d+)\]/)[1];
+                var hasRekom = false;
 
+                $('textarea[name*="temuan[' + temuanIndex + '][rekomendasi]"][name*="[rekomendasi]"]').each(function() {
+                    if ($(this).val().trim() !== '') {
+                        hasRekom = true;
+                        return false;
+                    }
+                });
+
+                if (!hasRekom) {
+                    errorMessages.push('Temuan ' + (parseInt(temuanIndex) + 1) + ' harus memiliki minimal satu rekomendasi');
+                    hasError = true;
+                }
+            }
+        });
+
+        if (hasError) {
+            e.preventDefault();
+            alert('Error:\n' + errorMessages.join('\n'));
+        }
+    });
+});
 </script>
 @endsection
