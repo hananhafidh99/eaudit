@@ -531,7 +531,8 @@ $(document).ready(function() {
         cardHtml += '</td>';
         cardHtml += '</tr>';
         cardHtml += '</tbody>';
-        cardHtml += '</table>';        cardHtml += '</div>';
+        cardHtml += '</table>';
+        cardHtml += '</div>';
         cardHtml += '</div>';
 
         $("#temuanBaru").append(cardHtml);
@@ -555,41 +556,6 @@ $(document).ready(function() {
                 temuanExists = true;
                 return false;
             }
-        });
-
-        if (!temuanExists) {
-            errorMessages.push('Minimal harus ada satu temuan yang diisi');
-            hasError = true;
-        }
-
-        // Check if each temuan has at least one recommendation
-        $('input[name*="nama_temuan"]').each(function() {
-            if ($(this).val().trim() !== '') {
-                var temuanIndex = $(this).attr('name').match(/temuan\[(\d+)\]/)[1];
-                var hasRekom = false;
-
-                $('textarea[name*="temuan[' + temuanIndex + '][rekomendasi]"][name*="[rekomendasi]"]').each(function() {
-                    if ($(this).val().trim() !== '') {
-                        hasRekom = true;
-                        return false;
-                    }
-                });
-
-                if (!hasRekom) {
-                    errorMessages.push('Temuan ' + (parseInt(temuanIndex) + 1) + ' harus memiliki minimal satu rekomendasi');
-                    hasError = true;
-                }
-            }
-        });
-
-        if (hasError) {
-            e.preventDefault();
-            alert('Error:\n' + errorMessages.join('\n'));
-        }
-    });
-});
-</script>
-@endsection
         });
 
         if (!temuanExists) {
