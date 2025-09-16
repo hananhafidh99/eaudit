@@ -259,8 +259,8 @@
               </tr>
             </thead>
             <tbody class="body" id="parenttemuan_0">
-              <tr class="sub0" data-temuan-index="0" data-rekom-index="0">
-                <td>1</td>
+              <tr class="sub0" data-temuan-index="0" data-rekom-index="0" data-level="0">
+                <td class="nomor-cell">1</td>
                 <td><textarea class="form-control" name="temuan[0][rekomendasi][0][rekomendasi]" required></textarea></td>
                 <td><textarea class="form-control" name="temuan[0][rekomendasi][0][keterangan]"></textarea></td>
                 <td><input type="text" class="form-control tanparupiah" name="temuan[0][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>
@@ -309,6 +309,58 @@ function formatRupiah(angka) {
     return 'Rp. ' + rupiah;
 }
 
+// Function to renumber table with hierarchical numbering
+function renumberTable(tbody) {
+    var mainCounter = 1;
+    var subCounters = {}; // Track sub-counters for each parent
+
+    tbody.find('tr').each(function() {
+        var row = $(this);
+        var level = row.data('level') || 0;
+        var indent = level * 20;
+        var numberCell = row.find('.nomor-cell, td:first');
+
+        if (level === 0) {
+            // Main recommendation (level 0)
+            numberCell.text(mainCounter);
+            numberCell.css('padding-left', '8px');
+            mainCounter++;
+
+            // Reset sub-counters for this main item
+            subCounters[mainCounter - 1] = [0, 0, 0]; // [level1, level2, level3]
+
+        } else {
+            // Sub-recommendation (level 1, 2, 3...)
+            var parentMainIndex = mainCounter - 1;
+
+            if (!subCounters[parentMainIndex]) {
+                subCounters[parentMainIndex] = [0, 0, 0];
+            }
+
+            // Increment counter for current level
+            subCounters[parentMainIndex][level - 1]++;
+
+            // Reset counters for deeper levels
+            for (var i = level; i < 3; i++) {
+                subCounters[parentMainIndex][i] = 0;
+            }
+
+            // Build hierarchical number
+            var hierarchicalNumber = parentMainIndex;
+            for (var i = 0; i < level; i++) {
+                if (subCounters[parentMainIndex][i] > 0) {
+                    hierarchicalNumber += '.' + subCounters[parentMainIndex][i];
+                }
+            }
+
+            // Add visual indicator for sub-items
+            var prefix = '↳ ';
+            numberCell.html(prefix + hierarchicalNumber);
+            numberCell.css('padding-left', (8 + indent) + 'px');
+        }
+    });
+}
+
 $(document).ready(function() {
 
     // Format rupiah on input
@@ -331,8 +383,8 @@ $(document).ready(function() {
         var rowNumber = $(this).closest('tbody').find('tr').length + 1;
 
         var html = '';
-        html += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + rekomIndex + '">';
-        html += '<td>' + rowNumber + '</td>';
+        html += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + rekomIndex + '" data-level="0">';
+        html += '<td class="nomor-cell">' + rowNumber + '</td>';
         html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][rekomendasi]" required></textarea></td>';
         html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][keterangan]"></textarea></td>';
         html += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][' + rekomIndex + '][pengembalian]" placeholder="Rp. 0"></td>';
@@ -344,17 +396,30 @@ $(document).ready(function() {
         html += '</tr>';
 
         $(this).closest('tbody').append(html);
+
+        // Renumber the entire table after adding
+        renumberTable($(this).closest('tbody'));
     });
 
     // Remove recommendation row
     $(document).on('click', '.remove_rekom_btn', function () {
         var tbody = $(this).closest('tbody');
-        $(this).closest('tr').remove();
+        var rowToRemove = $(this).closest('tr');
+        var parentLevel = rowToRemove.data('level') || 0;
 
-        // Renumber rows
-        tbody.find('tr').each(function(index) {
-            $(this).find('td:first').text(index + 1);
-        });
+        // Remove the row and all its nested sub-rows
+        var nextRow = rowToRemove.next();
+        rowToRemove.remove();
+
+        // Remove all nested sub-rows that belong to this row
+        while (nextRow.length > 0 && nextRow.data('level') > parentLevel) {
+            var currentRow = nextRow;
+            nextRow = nextRow.next();
+            currentRow.remove();
+        }
+
+        // Renumber all rows in the table
+        renumberTable(tbody);
     });
 
     // Add sub-recommendation (nested)
@@ -390,7 +455,7 @@ $(document).ready(function() {
 
         var html = '';
         html += '<tr class="' + levelClass + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="' + parentRekomIndex + '" data-level="' + level + '" data-parent-path="' + newParentPath + '">';
-        html += '<td style="padding-left: ' + indent + 'px;">↳ ' + level + '.' + subIndex + '</td>';
+        html += '<td class="nomor-cell"></td>'; // Will be filled by renumberTable
         html += '<td><div class="rekomendasi-text"><textarea class="form-control" name="' + namePath + '[rekomendasi]" required placeholder="Sub-rekomendasi level ' + level + '"></textarea></div></td>';
         html += '<td><textarea class="form-control" name="' + namePath + '[keterangan]" placeholder="Keterangan sub-rekomendasi"></textarea></td>';
         html += '<td><input type="text" class="form-control tanparupiah" name="' + namePath + '[pengembalian]" placeholder="Rp. 0"></td>';
@@ -406,7 +471,11 @@ $(document).ready(function() {
         html += '</tr>';
 
         // Insert after current row
-        $(this).closest('tr').after(html);
+        var insertedRow = $(html);
+        $(this).closest('tr').after(insertedRow);
+
+        // Renumber the entire table
+        renumberTable($(this).closest('tbody'));
     });
 
     // Add new temuan card
@@ -450,8 +519,8 @@ $(document).ready(function() {
         cardHtml += '</tr>';
         cardHtml += '</thead>';
         cardHtml += '<tbody class="body" id="parenttemuan_' + temuanIndex + '">';
-        cardHtml += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="0">';
-        cardHtml += '<td>1</td>';
+        cardHtml += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="0" data-level="0">';
+        cardHtml += '<td class="nomor-cell">1</td>';
         cardHtml += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][rekomendasi]" required></textarea></td>';
         cardHtml += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][keterangan]"></textarea></td>';
         cardHtml += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>';

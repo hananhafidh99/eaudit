@@ -377,9 +377,9 @@ class DashboardAminTLController extends Controller
                 $pengembalian = floatval($cleanNumber);
             }
 
-            // Insert main recommendation
+            // Insert main recommendation first
             $rekomId = DB::table('jenis_temuans')->insertGetId([
-                'id_parent' => $parent_id,
+                'id_parent' => $parent_id, // Will be updated for top-level items
                 'id_penugasan' => $id_penugasan,
                 'id_pengawasan' => $id_pengawasan,
                 'nama_temuan' => $nama_temuan,
@@ -393,6 +393,14 @@ class DashboardAminTLController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // If this is a top-level recommendation (parent_id is null),
+            // update id_parent to point to itself
+            if ($parent_id === null) {
+                DB::table('jenis_temuans')
+                    ->where('id', $rekomId)
+                    ->update(['id_parent' => $rekomId]);
+            }
 
             $count++;
 
