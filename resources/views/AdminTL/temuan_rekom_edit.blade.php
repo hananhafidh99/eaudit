@@ -169,7 +169,7 @@
 <div class="card-header"> Jenis Temuan dan Rekomendasi</div>
 <div class="d-flex justify-content-end" style="background-color:bisque"><button type="button" class="btn btn-primary btn-sm" id="add_card"><i class="fa-solid fa-plus"></i></button></div>
     <div class="card-body">
-        
+
         {{-- Display Success/Error Messages --}}
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -195,7 +195,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-        
+
         <form action="{{ url('adminTL/temuan/') }}" method="post" enctype="multipart/form-data">
            @method('POST')
            @csrf
@@ -348,7 +348,7 @@ $(document).ready(function() {
         cardHtml += '</tr>';
         cardHtml += '</tbody>';
         cardHtml += '</table>';
-        
+
         // Recommendation table
         cardHtml += '<table class="table">';
         cardHtml += '<thead>';

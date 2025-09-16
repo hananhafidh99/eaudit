@@ -315,7 +315,7 @@ class DashboardAminTLController extends Controller
 
         try {
             $savedCount = 0;
-            
+
             foreach ($data['temuan'] as $temuanIndex => $temuan) {
                 // Skip completely empty temuan entries
                 if (empty(trim($temuan['nama_temuan'] ?? '')) && empty(trim($temuan['kode_temuan'] ?? ''))) {
@@ -328,13 +328,13 @@ class DashboardAminTLController extends Controller
                 }
 
                 $hasValidRekomendasi = false;
-                
+
                 foreach ($temuan['rekomendasi'] as $rekomIndex => $rekom) {
                     // Skip empty recommendations
                     if (empty(trim($rekom['rekomendasi'] ?? ''))) {
                         continue;
                     }
-                    
+
                     $hasValidRekomendasi = true;
 
                     // Clean and validate pengembalian value
@@ -362,10 +362,10 @@ class DashboardAminTLController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                    
+
                     $savedCount++;
                 }
-                
+
                 // Validate that temuan has at least one valid rekomendasi
                 if (!$hasValidRekomendasi) {
                     return redirect()->back()->with('error', "Temuan ke-" . ($temuanIndex + 1) . ": Harus memiliki minimal satu rekomendasi yang diisi!");
@@ -380,7 +380,7 @@ class DashboardAminTLController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Temuan Store Error:', [
-                'error' => $e->getMessage(), 
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $data ?? null
             ]);
