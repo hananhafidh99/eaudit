@@ -52,6 +52,11 @@ Route::delete('adminTL/rekomendasi/{id}', [DashboardAminTLController::class, 'de
 Route::delete('adminTL/temuan/{kode_temuan}/delete-all', [DashboardAminTLController::class, 'deleteTemuanWithAllRekomendasi']);
 
 Route::post('adminTL/rekom/datadukung', [DashboardAminTLController::class, 'datadukungrekomStore']);
+
+// File upload routes
+Route::post('adminTL/rekom/upload-file', [DashboardAminTLController::class, 'uploadFile']);
+Route::post('adminTL/rekom/delete-file', [DashboardAminTLController::class, 'deleteFile']);
+
 // Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::class, 'datadukungrekomEdit']);
 
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);

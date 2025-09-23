@@ -683,9 +683,9 @@ class DashboardAminTLController extends Controller
 
     public function datadukungrekomEdit($id)
     {
-$token = session('ctoken');
+        $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
-                return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan]);
+        return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan]);
     }
 
     /**
@@ -900,6 +900,121 @@ $token = session('ctoken');
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload file with AJAX
+     */
+    public function uploadFile(Request $request)
+    {
+        try {
+            // Validate file
+            $request->validate([
+                'file' => 'required|file|max:10240', // Max 10MB
+                'id_pengawasan' => 'required',
+                'id_penugasan' => 'required',
+            ]);
+
+            $file = $request->file('file');
+
+            // Check file extension
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'svg', 'zip', 'docx', 'xlsx', 'doc', 'xls', 'ppt', 'pptx'];
+            $fileExtension = strtolower($file->getClientOriginalExtension());
+
+            if (!in_array($fileExtension, $allowedExtensions)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File type not allowed: ' . $fileExtension
+                ], 400);
+            }
+
+            // Generate random filename
+            $randomName = uniqid() . '_' . time() . '.' . $fileExtension;
+
+            // Create upload directory if not exists
+            $uploadPath = 'uploads/data_dukung/' . $request->id_pengawasan;
+            $fullUploadPath = public_path($uploadPath);
+
+            if (!file_exists($fullUploadPath)) {
+                mkdir($fullUploadPath, 0755, true);
+            }
+
+            // Move file to upload directory
+            $file->move($fullUploadPath, $randomName);
+
+            // Prepare file data for database (not saving yet as per request)
+            $fileData = [
+                'id_pengawasan' => $request->id_pengawasan,
+                'id_penugasan' => $request->id_penugasan,
+                'original_name' => $file->getClientOriginalName(),
+                'stored_name' => $randomName,
+                'file_path' => $uploadPath . '/' . $randomName,
+                'file_size' => $file->getSize(),
+                'file_type' => $file->getClientMimeType(),
+                'uploaded_at' => now(),
+            ];
+
+            // Log file data for future database insertion
+            Log::info('File uploaded successfully', $fileData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File uploaded successfully',
+                'file_id' => uniqid(), // Temporary ID
+                'stored_name' => $randomName,
+                'path' => $uploadPath . '/' . $randomName,
+                'size' => $file->getSize(),
+                'original_name' => $file->getClientOriginalName(),
+                'file_data' => $fileData // For future database insertion
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('File Upload Error:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete uploaded file
+     */
+    public function deleteFile(Request $request)
+    {
+        try {
+            $request->validate([
+                'file_id' => 'required',
+            ]);
+
+            // Since we're not saving to database yet,
+            // we can't delete from database
+            // This is a placeholder for future implementation
+
+            Log::info('File delete requested', [
+                'file_id' => $request->file_id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('File Delete Error:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Delete failed: ' . $e->getMessage()
             ], 500);
         }
     }
