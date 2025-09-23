@@ -286,13 +286,20 @@
                             <strong>Kode Temuan:</strong><br>
                             <span class="badge bg-primary">{{ $parent->kode_temuan ?? '-' }}</span>
                         </div>
-                        <div class="col-md-7">
+                        <div class="col-md-6">
                             <strong>Nama Temuan:</strong><br>
                             <span class="text-primary fw-bold">{{ $parent->nama_temuan ?? '-' }}</span>
                         </div>
-                        <div class="col-md-2 text-end">
+                        <div class="col-md-3 text-end">
                             <strong>Aksi Temuan:</strong><br>
-                            <button type="button" class="btn btn-danger btn-sm delete-temuan-btn"
+                            <button type="button" class="btn btn-success btn-sm add-new-record-btn"
+                                    data-kode-temuan="{{ $parent->kode_temuan ?? '' }}"
+                                    data-nama-temuan="{{ $parent->nama_temuan ?? '' }}"
+                                    data-temuan-id="{{ $parent->id ?? '' }}"
+                                    title="Tambah Record Baru ke Temuan Ini">
+                                <i class="fas fa-plus"></i> Add New Record
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm delete-temuan-btn ms-1"
                                     data-kode-temuan="{{ $parent->kode_temuan ?? '' }}"
                                     data-nama-temuan="{{ $parent->nama_temuan ?? '' }}"
                                     data-temuan-id="{{ $parent->id ?? '' }}"
@@ -1154,6 +1161,213 @@ $(document).ready(function() {
             });
         }
     });
+
+    // Add New Record Modal Handler
+    let recordCounter = 1;
+    let subRecordCounters = {};
+
+    $(document).on('click', '.add-new-record-btn', function() {
+        var kodeTemuan = $(this).data('kode-temuan');
+        var namaTemuan = $(this).data('nama-temuan');
+        var temuanId = $(this).data('temuan-id');
+
+        // Set modal data
+        $('#add-temuan-kode').val(kodeTemuan);
+        $('#add-display-kode').text(kodeTemuan);
+        $('#add-display-nama').text(namaTemuan);
+
+        // Reset form
+        $('#addRecordForm')[0].reset();
+        $('#add-temuan-kode').val(kodeTemuan); // Reset this after form reset
+
+        // Reset containers
+        $('#recordsContainer').html('');
+        recordCounter = 1;
+        subRecordCounters = {};
+
+        // Add first record
+        addNewRecord();
+
+        // Show modal
+        $('#addRecordModal').modal('show');
+    });
+
+    // Add More Record Button
+    $('#addMoreRecordBtn').on('click', function() {
+        addNewRecord();
+    });
+
+    // Function to add new record
+    function addNewRecord() {
+        var recordIndex = recordCounter - 1;
+        subRecordCounters[recordIndex] = 0;
+
+        var html = '';
+        html += '<div class="record-group" data-record-index="' + recordIndex + '">';
+        html += '<div class="card mb-3 border-success">';
+        html += '<div class="card-header bg-light d-flex justify-content-between align-items-center">';
+        html += '<h6 class="mb-0 text-success">';
+        html += '<i class="fas fa-file-alt"></i> Record #<span class="record-number">' + recordCounter + '</span>';
+        html += '</h6>';
+
+        if (recordCounter > 1) {
+            html += '<button type="button" class="btn btn-sm btn-outline-danger remove-record-btn" data-record-index="' + recordIndex + '">';
+            html += '<i class="fas fa-times"></i> Hapus Record';
+            html += '</button>';
+        }
+
+        html += '</div>';
+        html += '<div class="card-body">';
+        html += '<div class="row mb-3">';
+        html += '<div class="col-md-12">';
+        html += '<label class="form-label">Rekomendasi <span class="text-danger">*</span></label>';
+        html += '<textarea class="form-control" name="records[' + recordIndex + '][rekomendasi]" rows="3" placeholder="Masukkan rekomendasi..." required></textarea>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="row mb-3">';
+        html += '<div class="col-md-6">';
+        html += '<label class="form-label">Keterangan</label>';
+        html += '<textarea class="form-control" name="records[' + recordIndex + '][keterangan]" rows="2" placeholder="Keterangan rekomendasi..."></textarea>';
+        html += '</div>';
+        html += '<div class="col-md-6">';
+        html += '<label class="form-label">Pengembalian Keuangan</label>';
+        html += '<input type="text" class="form-control tanparupiah" name="records[' + recordIndex + '][pengembalian]" placeholder="Rp. 0">';
+        html += '</div>';
+        html += '</div>';
+
+        // Sub Records Container
+        html += '<div class="sub-records-container" data-parent-record="' + recordIndex + '">';
+        html += '<h6 class="text-muted mb-2">';
+        html += '<i class="fas fa-indent"></i> Sub-Rekomendasi';
+        html += '<button type="button" class="btn btn-sm btn-outline-info add-sub-record-btn ms-2" data-parent="' + recordIndex + '">';
+        html += '<i class="fas fa-plus"></i> Tambah Sub';
+        html += '</button>';
+        html += '</h6>';
+        html += '<div class="sub-records-list"></div>';
+        html += '</div>';
+
+        html += '</div>'; // card-body
+        html += '</div>'; // card
+        html += '</div>'; // record-group
+
+        $('#recordsContainer').append(html);
+        recordCounter++;
+
+        // Renumber records
+        renumberRecords();
+    }
+
+    // Remove Record
+    $(document).on('click', '.remove-record-btn', function() {
+        var recordIndex = $(this).data('record-index');
+        if (confirm('Hapus record ini beserta semua sub-rekomendasinya?')) {
+            $('.record-group[data-record-index="' + recordIndex + '"]').remove();
+            delete subRecordCounters[recordIndex];
+            renumberRecords();
+        }
+    });
+
+    // Add Sub Record
+    $(document).on('click', '.add-sub-record-btn', function() {
+        var parentIndex = $(this).data('parent');
+        var subIndex = ++subRecordCounters[parentIndex];
+
+        var html = '';
+        html += '<div class="sub-record-item mb-2 p-3 border rounded" data-sub-index="' + subIndex + '">';
+        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+        html += '<h6 class="mb-0 text-info">';
+        html += '<i class="fas fa-arrow-right"></i> Sub-Rekomendasi ' + subIndex;
+        html += '</h6>';
+        html += '<button type="button" class="btn btn-sm btn-outline-danger remove-sub-btn">';
+        html += '<i class="fas fa-times"></i>';
+        html += '</button>';
+        html += '</div>';
+
+        html += '<div class="row mb-2">';
+        html += '<div class="col-md-12">';
+        html += '<label class="form-label">Sub-Rekomendasi <span class="text-danger">*</span></label>';
+        html += '<textarea class="form-control form-control-sm" name="records[' + parentIndex + '][sub][' + subIndex + '][rekomendasi]" rows="2" placeholder="Masukkan sub-rekomendasi..." required></textarea>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div class="row">';
+        html += '<div class="col-md-6">';
+        html += '<label class="form-label">Keterangan</label>';
+        html += '<textarea class="form-control form-control-sm" name="records[' + parentIndex + '][sub][' + subIndex + '][keterangan]" rows="1" placeholder="Keterangan..."></textarea>';
+        html += '</div>';
+        html += '<div class="col-md-6">';
+        html += '<label class="form-label">Pengembalian</label>';
+        html += '<input type="text" class="form-control form-control-sm tanparupiah" name="records[' + parentIndex + '][sub][' + subIndex + '][pengembalian]" placeholder="Rp. 0">';
+        html += '</div>';
+        html += '</div>';
+
+        // Nested sub-sub option
+        html += '<div class="mt-2">';
+        html += '<button type="button" class="btn btn-sm btn-outline-secondary add-subsub-btn" data-parent="' + parentIndex + '" data-sub="' + subIndex + '">';
+        html += '<i class="fas fa-plus"></i> Tambah Sub-Sub';
+        html += '</button>';
+        html += '<div class="subsub-container mt-2"></div>';
+        html += '</div>';
+
+        html += '</div>';
+
+        $('.sub-records-container[data-parent-record="' + parentIndex + '"] .sub-records-list').append(html);
+    });
+
+    // Remove Sub Record
+    $(document).on('click', '.remove-sub-btn', function() {
+        if (confirm('Hapus sub-rekomendasi ini?')) {
+            $(this).closest('.sub-record-item').remove();
+        }
+    });
+
+    // Add Sub-Sub Record
+    $(document).on('click', '.add-subsub-btn', function() {
+        var parentIndex = $(this).data('parent');
+        var subIndex = $(this).data('sub');
+        var subsubContainer = $(this).siblings('.subsub-container');
+        var subsubCount = subsubContainer.find('.subsub-item').length + 1;
+
+        var html = '';
+        html += '<div class="subsub-item mt-2 p-2 bg-light border rounded" data-subsub-index="' + subsubCount + '">';
+        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+        html += '<small class="text-muted fw-bold">';
+        html += '<i class="fas fa-arrow-right"></i><i class="fas fa-arrow-right"></i> Sub-Sub ' + subsubCount;
+        html += '</small>';
+        html += '<button type="button" class="btn btn-sm btn-outline-danger remove-subsub-btn">';
+        html += '<i class="fas fa-times"></i>';
+        html += '</button>';
+        html += '</div>';
+
+        html += '<div class="row">';
+        html += '<div class="col-md-12 mb-2">';
+        html += '<textarea class="form-control form-control-sm" name="records[' + parentIndex + '][sub][' + subIndex + '][subsub][' + subsubCount + '][rekomendasi]" rows="1" placeholder="Sub-sub rekomendasi..." required></textarea>';
+        html += '</div>';
+        html += '<div class="col-md-6">';
+        html += '<input type="text" class="form-control form-control-sm" name="records[' + parentIndex + '][sub][' + subIndex + '][subsub][' + subsubCount + '][keterangan]" placeholder="Keterangan...">';
+        html += '</div>';
+        html += '<div class="col-md-6">';
+        html += '<input type="text" class="form-control form-control-sm tanparupiah" name="records[' + parentIndex + '][sub][' + subIndex + '][subsub][' + subsubCount + '][pengembalian]" placeholder="Rp. 0">';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        subsubContainer.append(html);
+    });
+
+    // Remove Sub-Sub Record
+    $(document).on('click', '.remove-subsub-btn', function() {
+        if (confirm('Hapus sub-sub rekomendasi ini?')) {
+            $(this).closest('.subsub-item').remove();
+        }
+    });
+
+    // Renumber Records Function
+    function renumberRecords() {
+        $('#recordsContainer .record-group').each(function(index) {
+            $(this).find('.record-number').text(index + 1);
+        });
+    }
 });
 </script>
 
@@ -1202,6 +1416,103 @@ $(document).ready(function() {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Record Modal -->
+<div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addRecordModalLabel">
+                    <i class="fas fa-plus-circle"></i> Tambah Record Baru
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addRecordForm" action="{{ url('adminTL/temuan/') }}" method="post">
+                @csrf
+                <input type="hidden" name="add_new_records" value="1">
+                <div class="modal-body">
+                    <input type="hidden" id="add-temuan-kode" name="kode_temuan">
+                    <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
+                    <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
+
+                    <!-- Info Temuan -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Kode Temuan:</strong></label>
+                            <div class="form-control-plaintext bg-light p-2 rounded">
+                                <span class="badge bg-primary" id="add-display-kode"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Nama Temuan:</strong></label>
+                            <div class="form-control-plaintext bg-light p-2 rounded">
+                                <span id="add-display-nama" class="fw-bold text-primary"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Records Container -->
+                    <div id="recordsContainer">
+                        <div class="record-group" data-record-index="0">
+                            <div class="card mb-3 border-success">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 text-success">
+                                        <i class="fas fa-file-alt"></i> Record #<span class="record-number">1</span>
+                                    </h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-record-btn" style="display: none;">
+                                        <i class="fas fa-times"></i> Hapus Record
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Rekomendasi <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" name="records[0][rekomendasi]" rows="3" placeholder="Masukkan rekomendasi..." required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Keterangan</label>
+                                            <textarea class="form-control" name="records[0][keterangan]" rows="2" placeholder="Keterangan rekomendasi..."></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Pengembalian Keuangan</label>
+                                            <input type="text" class="form-control tanparupiah" name="records[0][pengembalian]" placeholder="Rp. 0">
+                                        </div>
+                                    </div>
+
+                                    <!-- Sub Records Container -->
+                                    <div class="sub-records-container" data-parent-record="0">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-indent"></i> Sub-Rekomendasi
+                                            <button type="button" class="btn btn-sm btn-outline-info add-sub-record-btn ms-2" data-parent="0">
+                                                <i class="fas fa-plus"></i> Tambah Sub
+                                            </button>
+                                        </h6>
+                                        <div class="sub-records-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add More Records Button -->
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-outline-success" id="addMoreRecordBtn">
+                            <i class="fas fa-plus-circle"></i> Tambah Record Lagi
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Simpan Semua Record
+                    </button>
                 </div>
             </form>
         </div>
