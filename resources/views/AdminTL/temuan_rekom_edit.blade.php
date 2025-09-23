@@ -256,10 +256,12 @@
                         <table class="table table-bordered table-sm">
                             <thead class="table-dark">
                                 <tr>
-                                    <th width="10%">No</th>
-                                    <th width="35%">Rekomendasi</th>
-                                    <th width="25%">Keterangan</th>
-                                    <th width="20%">Pengembalian</th>
+                                    <th width="5%">No</th>
+                                    <th width="8%">Kode Temuan</th>
+                                    <th width="12%">Nama Temuan</th>
+                                    <th width="30%">Rekomendasi</th>
+                                    <th width="20%">Keterangan</th>
+                                    <th width="15%">Pengembalian</th>
                                     <th width="10%">Aksi</th>
                                 </tr>
                             </thead>
@@ -268,7 +270,7 @@
                                 @if($parent->recommendations && count($parent->recommendations) > 0)
                                     @php
                                         $rekomCounter = 1;
-                                        $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0) use (&$renderRecommendations, &$rekomCounter) {
+                                        $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0, $parent = null) use (&$renderRecommendations, &$rekomCounter) {
                                             foreach ($recommendations as $rekom) {
                                                 $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
                                                 $number = $baseNumber ? $baseNumber . '.' . $rekomCounter : $rekomCounter;
@@ -280,6 +282,20 @@
                                                     echo '<td>' . $indent . '↳ ' . $number . '</td>';
                                                 } else {
                                                     echo '<td><strong>' . $number . '</strong></td>';
+                                                }
+
+                                                // Kode Temuan
+                                                if ($level == 0) {
+                                                    echo '<td><span class="badge bg-primary">' . ($parent->kode_temuan ?? '-') . '</span></td>';
+                                                } else {
+                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($parent->kode_temuan ?? '-') . '</small></td>';
+                                                }
+
+                                                // Nama Temuan
+                                                if ($level == 0) {
+                                                    echo '<td><strong>' . ($parent->nama_temuan ?? '-') . '</strong></td>';
+                                                } else {
+                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($parent->nama_temuan ?? '-') . '</small></td>';
                                                 }
 
                                                 $rekomStyle = $level > 0 ? '' : 'font-weight: bold;';
@@ -307,6 +323,9 @@
                                                 echo '</button> ';
                                                 echo '<button type="button" class="btn btn-danger btn-sm delete-rekom-btn" ';
                                                 echo 'data-id="' . $rekom->id . '" ';
+                                                echo 'data-kode-temuan="' . htmlspecialchars($parent->kode_temuan ?? '') . '" ';
+                                                echo 'data-nama-temuan="' . htmlspecialchars($parent->nama_temuan ?? '') . '" ';
+                                                echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
                                                 echo 'title="Hapus Rekomendasi">';
                                                 echo '<i class="fas fa-trash"></i>';
                                                 echo '</button>';
@@ -320,16 +339,16 @@
 
                                                 // Recursive call for nested children
                                                 if (isset($rekom->children) && count($rekom->children) > 0) {
-                                                    $renderRecommendations($rekom->children, $number, $level + 1);
+                                                    $renderRecommendations($rekom->children, $number, $level + 1, $parent);
                                                 }
                                             }
                                         };
 
-                                        $renderRecommendations($parent->recommendations);
+                                        $renderRecommendations($parent->recommendations, '', 0, $parent);
                                     @endphp
                                 @else
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">Tidak ada rekomendasi</td>
+                                        <td colspan="7" class="text-center text-muted">Tidak ada rekomendasi</td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -804,8 +823,21 @@ $(document).ready(function() {
     // Delete recommendation functionality
     $(document).on('click', '.delete-rekom-btn', function() {
         var id = $(this).data('id');
-        
-        if (confirm('Apakah Anda yakin ingin menghapus rekomendasi ini?')) {
+        var kodeTemuan = $(this).data('kode-temuan');
+        var namaTemuan = $(this).data('nama-temuan');
+        var rekomendasi = $(this).data('rekomendasi');
+
+        console.log('Delete button clicked for ID:', id);
+
+        // Create detailed confirmation message
+        var confirmMessage = 'Apakah Anda yakin ingin menghapus rekomendasi ini?\n\n';
+        confirmMessage += 'Kode Temuan: ' + kodeTemuan + '\n';
+        confirmMessage += 'Nama Temuan: ' + namaTemuan + '\n';
+        confirmMessage += 'Rekomendasi: ' + (rekomendasi.length > 100 ? rekomendasi.substring(0, 100) + '...' : rekomendasi);
+
+        if (confirm(confirmMessage)) {
+            console.log('Delete confirmed, sending AJAX request...');
+
             // Send delete request
             $.ajax({
                 url: '/adminTL/rekomendasi/' + id,
@@ -813,12 +845,40 @@ $(document).ready(function() {
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
+                beforeSend: function() {
+                    console.log('Sending DELETE request to:', '/adminTL/rekomendasi/' + id);
+                },
                 success: function(response) {
-                    alert('Rekomendasi berhasil dihapus!');
-                    location.reload();
+                    console.log('Delete response:', response);
+
+                    if (response.success) {
+                        alert(response.message || 'Rekomendasi berhasil dihapus!');
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Terjadi kesalahan saat menghapus data!');
+                    }
                 },
                 error: function(xhr) {
-                    alert('Terjadi kesalahan saat menghapus data!');
+                    console.error('Delete error:', xhr);
+                    console.error('Status:', xhr.status);
+                    console.error('Response Text:', xhr.responseText);
+
+                    var errorMessage = 'Terjadi kesalahan saat menghapus data!';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    alert(errorMessage);
                 }
             });
         }
@@ -827,7 +887,7 @@ $(document).ready(function() {
     // Submit edit form
     $('#editForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         var formData = {
             id: $('#edit-id').val(),
             rekomendasi: $('#edit-rekomendasi').val(),
@@ -841,12 +901,33 @@ $(document).ready(function() {
             type: 'POST',
             data: formData,
             success: function(response) {
-                alert('Rekomendasi berhasil diperbarui!');
-                $('#editModal').modal('hide');
-                location.reload();
+                if (response.success) {
+                    alert(response.message || 'Rekomendasi berhasil diperbarui!');
+                    $('#editModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(response.message || 'Terjadi kesalahan saat memperbarui data!');
+                }
             },
             error: function(xhr) {
-                alert('Terjadi kesalahan saat memperbarui data!');
+                console.error('Update error:', xhr);
+
+                var errorMessage = 'Terjadi kesalahan saat memperbarui data!';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
+                }
+
+                alert(errorMessage);
             }
         });
     });
@@ -864,7 +945,7 @@ $(document).ready(function() {
             <form id="editForm">
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label"><strong>Kode Temuan:</strong></label>

@@ -584,6 +584,27 @@ class DashboardAminTLController extends Controller
     public function deleteRekomendasi($id)
     {
         try {
+            Log::info('Delete request received for ID: ' . $id);
+
+            // Validate ID
+            if (!is_numeric($id) || $id <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ID tidak valid'
+                ], 400);
+            }
+
+            // Check if record exists
+            $record = DB::table('jenis_temuans')->where('id', $id)->first();
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+            Log::info('Record found for deletion:', ['record' => $record]);
+
             // Check if this recommendation has children
             $hasChildren = DB::table('jenis_temuans')
                 ->where('id_parent', $id)
@@ -591,37 +612,48 @@ class DashboardAminTLController extends Controller
                 ->exists();
 
             if ($hasChildren) {
+                $childrenCount = DB::table('jenis_temuans')
+                    ->where('id_parent', $id)
+                    ->where('id', '!=', $id)
+                    ->count();
+
+                Log::warning('Cannot delete record with children:', ['id' => $id, 'children_count' => $childrenCount]);
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak dapat menghapus rekomendasi yang memiliki sub-rekomendasi. Hapus sub-rekomendasi terlebih dahulu.'
+                    'message' => 'Tidak dapat menghapus rekomendasi yang memiliki ' . $childrenCount . ' sub-rekomendasi. Hapus sub-rekomendasi terlebih dahulu.'
                 ], 400);
             }
 
+            // Perform deletion
             $deleted = DB::table('jenis_temuans')
                 ->where('id', $id)
                 ->delete();
 
             if ($deleted) {
+                Log::info('Record deleted successfully:', ['id' => $id]);
                 return response()->json([
                     'success' => true,
                     'message' => 'Rekomendasi berhasil dihapus'
                 ]);
             } else {
+                Log::error('Delete operation failed for ID: ' . $id);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data tidak ditemukan'
-                ], 404);
+                    'message' => 'Gagal menghapus data'
+                ], 500);
             }
 
         } catch (\Exception $e) {
             Log::error('Error deleting rekomendasi:', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'id' => $id
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
             ], 500);
         }
     }
