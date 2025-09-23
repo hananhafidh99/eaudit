@@ -245,9 +245,19 @@
                             <strong>Kode Temuan:</strong><br>
                             <span class="badge bg-primary">{{ $parent->kode_temuan ?? '-' }}</span>
                         </div>
-                        <div class="col-md-9">
+                        <div class="col-md-7">
                             <strong>Nama Temuan:</strong><br>
                             <span class="text-primary fw-bold">{{ $parent->nama_temuan ?? '-' }}</span>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <strong>Aksi Temuan:</strong><br>
+                            <button type="button" class="btn btn-danger btn-sm delete-temuan-btn"
+                                    data-kode-temuan="{{ $parent->kode_temuan ?? '' }}"
+                                    data-nama-temuan="{{ $parent->nama_temuan ?? '' }}"
+                                    data-temuan-id="{{ $parent->id ?? '' }}"
+                                    title="Hapus Seluruh Temuan & Rekomendasi">
+                                <i class="fas fa-trash"></i> Hapus Temuan
+                            </button>
                         </div>
                     </div>
 
@@ -930,6 +940,74 @@ $(document).ready(function() {
                 alert(errorMessage);
             }
         });
+    });
+
+    // Delete entire temuan functionality
+    $(document).on('click', '.delete-temuan-btn', function() {
+        var kodeTemuan = $(this).data('kode-temuan');
+        var namaTemuan = $(this).data('nama-temuan');
+        var temuanId = $(this).data('temuan-id');
+
+        console.log('Delete temuan button clicked for:', kodeTemuan, namaTemuan);
+
+        // Create detailed confirmation message
+        var confirmMessage = '⚠️ PERINGATAN: Anda akan menghapus SELURUH TEMUAN!\n\n';
+        confirmMessage += 'Kode Temuan: ' + kodeTemuan + '\n';
+        confirmMessage += 'Nama Temuan: ' + namaTemuan + '\n\n';
+        confirmMessage += 'Tindakan ini akan menghapus:\n';
+        confirmMessage += '• Temuan utama\n';
+        confirmMessage += '• SEMUA rekomendasi\n';
+        confirmMessage += '• SEMUA sub-rekomendasi\n';
+        confirmMessage += '• SEMUA nested sub-rekomendasi\n\n';
+        confirmMessage += 'Apakah Anda yakin ingin melanjutkan?\n';
+        confirmMessage += '(Data yang terhapus TIDAK DAPAT dikembalikan!)';
+
+        if (confirm(confirmMessage)) {
+            console.log('Delete temuan confirmed, sending AJAX request...');
+
+            // Send delete request
+            $.ajax({
+                url: '/adminTL/temuan/' + kodeTemuan + '/delete-all',
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    console.log('Sending DELETE temuan request to:', '/adminTL/temuan/' + kodeTemuan + '/delete-all');
+                },
+                success: function(response) {
+                    console.log('Delete temuan response:', response);
+                    if (response.success) {
+                        alert('✅ ' + (response.message || 'Temuan dan semua rekomendasi berhasil dihapus!'));
+                        location.reload();
+                    } else {
+                        alert('❌ ' + (response.message || 'Terjadi kesalahan saat menghapus temuan!'));
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Delete temuan error:', xhr);
+                    console.error('Status:', xhr.status);
+                    console.error('Response Text:', xhr.responseText);
+
+                    var errorMessage = 'Terjadi kesalahan saat menghapus temuan!';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    alert('❌ ' + errorMessage);
+                }
+            });
+        }
     });
 });
 </script>
