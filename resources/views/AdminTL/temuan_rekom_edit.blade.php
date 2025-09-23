@@ -804,8 +804,12 @@ $(document).ready(function() {
     // Delete recommendation functionality
     $(document).on('click', '.delete-rekom-btn', function() {
         var id = $(this).data('id');
-        
+
+        console.log('Delete button clicked for ID:', id);
+
         if (confirm('Apakah Anda yakin ingin menghapus rekomendasi ini?')) {
+            console.log('Delete confirmed, sending AJAX request...');
+
             // Send delete request
             $.ajax({
                 url: '/adminTL/rekomendasi/' + id,
@@ -813,12 +817,40 @@ $(document).ready(function() {
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
+                beforeSend: function() {
+                    console.log('Sending DELETE request to:', '/adminTL/rekomendasi/' + id);
+                },
                 success: function(response) {
-                    alert('Rekomendasi berhasil dihapus!');
-                    location.reload();
+                    console.log('Delete response:', response);
+
+                    if (response.success) {
+                        alert(response.message || 'Rekomendasi berhasil dihapus!');
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Terjadi kesalahan saat menghapus data!');
+                    }
                 },
                 error: function(xhr) {
-                    alert('Terjadi kesalahan saat menghapus data!');
+                    console.error('Delete error:', xhr);
+                    console.error('Status:', xhr.status);
+                    console.error('Response Text:', xhr.responseText);
+
+                    var errorMessage = 'Terjadi kesalahan saat menghapus data!';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    alert(errorMessage);
                 }
             });
         }
@@ -827,7 +859,7 @@ $(document).ready(function() {
     // Submit edit form
     $('#editForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         var formData = {
             id: $('#edit-id').val(),
             rekomendasi: $('#edit-rekomendasi').val(),
@@ -841,12 +873,33 @@ $(document).ready(function() {
             type: 'POST',
             data: formData,
             success: function(response) {
-                alert('Rekomendasi berhasil diperbarui!');
-                $('#editModal').modal('hide');
-                location.reload();
+                if (response.success) {
+                    alert(response.message || 'Rekomendasi berhasil diperbarui!');
+                    $('#editModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(response.message || 'Terjadi kesalahan saat memperbarui data!');
+                }
             },
             error: function(xhr) {
-                alert('Terjadi kesalahan saat memperbarui data!');
+                console.error('Update error:', xhr);
+
+                var errorMessage = 'Terjadi kesalahan saat memperbarui data!';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
+                }
+
+                alert(errorMessage);
             }
         });
     });
@@ -864,7 +917,7 @@ $(document).ready(function() {
             <form id="editForm">
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label"><strong>Kode Temuan:</strong></label>
