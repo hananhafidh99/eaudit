@@ -367,6 +367,13 @@ class DashboardAminTLController extends Controller
     private function handleModalAddRecord(Request $request)
     {
         try {
+            // Debug logging
+            Log::info('Modal Add Record Called', [
+                'request_data' => $request->all(),
+                'has_add_new_records' => $request->has('add_new_records'),
+                'add_new_records_value' => $request->get('add_new_records')
+            ]);
+
             // Validate modal form data
             $request->validate([
                 'id_pengawasan' => 'required',
