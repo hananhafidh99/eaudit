@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Pengawasan;
+use App\Models\Jenis_temuan;
 
 class DashboardAminTLController extends Controller
 {
@@ -287,7 +289,12 @@ class DashboardAminTLController extends Controller
 
     public function temuanStore(Request $request)
     {
-        // Validate request
+        // Check if this is from modal add new record
+        if ($request->has('add_new_records')) {
+            return $this->handleModalAddRecord($request);
+        }
+
+        // Validate request for regular form submission
         $request->validate([
             'id_pengawasan' => 'required',
             'id_penugasan' => 'required',
@@ -352,6 +359,130 @@ class DashboardAminTLController extends Controller
             ]);
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Handle modal add new record submission
+     */
+    private function handleModalAddRecord(Request $request)
+    {
+        try {
+            // Validate modal form data
+            $request->validate([
+                'id_pengawasan' => 'required',
+                'id_penugasan' => 'required',
+                'kode_temuan' => 'required|string',
+                'records' => 'required|array|min:1',
+            ], [
+                'records.required' => 'Minimal harus ada satu rekomendasi yang diisi',
+                'records.min' => 'Minimal harus ada satu rekomendasi yang diisi',
+            ]);
+
+            $data = $request->all();
+            $savedCount = 0;
+
+            // Get temuan data from request
+            $kodeTemuan = $data['kode_temuan'];
+
+            // Find nama temuan from existing data
+            $namaTemuan = '';
+            $pengawasan = Pengawasan::find($data['id_pengawasan']);
+            if ($pengawasan && $pengawasan->id_penugasan == $data['id_penugasan']) {
+                // Get nama temuan from first recommendation in the same kode_temuan group
+                $existingRekom = Jenis_temuan::where('id_pengawasan', $data['id_pengawasan'])
+                    ->where('id_penugasan', $data['id_penugasan'])
+                    ->where('kode_temuan', $kodeTemuan)
+                    ->first();
+
+                if ($existingRekom) {
+                    $namaTemuan = $existingRekom->nama_temuan;
+                }
+            }
+
+            if (empty($namaTemuan)) {
+                return redirect()->back()->with('error', 'Data temuan tidak ditemukan!');
+            }
+
+            // Process each record from modal
+            foreach ($data['records'] as $recordIndex => $record) {
+                // Skip empty records
+                if (empty(trim($record['rekomendasi'] ?? ''))) {
+                    continue;
+                }
+
+                // Save main recommendation
+                $mainRekom = $this->saveRekomendasi(
+                    $record,
+                    $data['id_pengawasan'],
+                    $data['id_penugasan'],
+                    $namaTemuan,
+                    $kodeTemuan,
+                    null // no parent
+                );
+
+                if ($mainRekom) {
+                    $savedCount++;
+
+                    // Process sub-recommendations if any
+                    if (isset($record['sub']) && is_array($record['sub'])) {
+                        foreach ($record['sub'] as $subRecord) {
+                            if (!empty(trim($subRecord['rekomendasi'] ?? ''))) {
+                                $subRekom = $this->saveRekomendasi(
+                                    $subRecord,
+                                    $data['id_pengawasan'],
+                                    $data['id_penugasan'],
+                                    $namaTemuan,
+                                    $kodeTemuan,
+                                    $mainRekom->id
+                                );
+                                if ($subRekom) {
+                                    $savedCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ($savedCount === 0) {
+                return redirect()->back()->with('error', 'Tidak ada data yang disimpan. Pastikan ada rekomendasi yang diisi!');
+            }
+
+            return redirect()->back()->with('success', "Data rekomendasi berhasil ditambahkan! ($savedCount rekomendasi tersimpan)");
+
+        } catch (\Exception $e) {
+            Log::error('Modal Add Record Error:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Save individual recommendation record
+     */
+    private function saveRekomendasi($rekomData, $id_pengawasan, $id_penugasan, $nama_temuan, $kode_temuan, $parent_id = null)
+    {
+        // Clean and validate pengembalian value
+        $pengembalian = 0;
+        if (!empty($rekomData['pengembalian'])) {
+            $cleanNumber = preg_replace('/[^0-9,.]/', '', $rekomData['pengembalian']);
+            $cleanNumber = str_replace(['.', ','], ['', '.'], $cleanNumber);
+            $pengembalian = floatval($cleanNumber);
+        }
+
+        return Jenis_temuan::create([
+            'id_pengawasan' => $id_pengawasan,
+            'id_penugasan' => $id_penugasan,
+            'nama_temuan' => $nama_temuan,
+            'kode_temuan' => $kode_temuan,
+            'rekomendasi' => trim($rekomData['rekomendasi']),
+            'keterangan' => trim($rekomData['keterangan'] ?? ''),
+            'pengembalian' => $pengembalian,
+            'id_parent' => $parent_id,
+        ]);
     }
 
     /**
