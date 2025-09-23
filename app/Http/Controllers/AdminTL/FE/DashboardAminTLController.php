@@ -421,14 +421,102 @@ class DashboardAminTLController extends Controller
         return $count;
     }
 
-    public function temuanrekomEdit($id)
+    public function temuanrekomEdit(Request $request, $id)
     {
         $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
+        try {
+            // Ambil data parent (dimana id_parent = id, artinya top-level records)
+            $parentTemuans = DB::table('jenis_temuans')
+                ->where('id_parent', DB::raw('id'))
+                ->where('id_pengawasan', $id)
+                ->orderBy('id')
+                ->get();
 
+            // Untuk setiap parent, ambil nested children secara rekursif
+            foreach ($parentTemuans as $parent) {
+                $parent->children = $this->getNestedChildren($parent->id);
+            }
 
-        return view('AdminTL.temuan_rekom_edit', ['pengawasan' => $pengawasan]);
+            return view('AdminTL.temuan_rekom_edit', [
+                'pengawasan' => $pengawasan,
+                'existingData' => $parentTemuans
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error loading temuan data:', [
+                'error' => $e->getMessage(),
+                'id_pengawasan' => $id
+            ]);
+
+            return view('AdminTL.temuan_rekom_edit', [
+                'pengawasan' => $pengawasan,
+                'existingData' => collect([])
+            ]);
+        }
+    }
+
+    /**
+     * Recursive function to get nested children
+     */
+    private function getNestedChildren($parentId)
+    {
+        $children = DB::table('jenis_temuans')
+            ->where('id_parent', $parentId)
+            ->where('id', '!=', $parentId) // Exclude self-reference
+            ->orderBy('id')
+            ->get();
+
+        foreach ($children as $child) {
+            $child->children = $this->getNestedChildren($child->id);
+        }
+
+        return $children;
+    }
+
+    /**
+     * Helper function to render nested recommendations in Blade
+     */
+    public function renderNestedRecommendations($children, $parentNumber, $level)
+    {
+        $html = '';
+        $counter = 1;
+
+        foreach ($children as $child) {
+            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
+            $number = $parentNumber . '.' . $counter;
+            $levelClass = 'sub-level-' . min($level, 3);
+
+            $html .= '<tr class="' . $levelClass . '">';
+            $html .= '<td>' . $indent . '↳ ' . $number . '</td>';
+            $html .= '<td>' . $indent . ($child->rekomendasi ?? '-') . '</td>';
+            $html .= '<td>' . ($child->keterangan ?? '-') . '</td>';
+            $html .= '<td>';
+
+            if ($child->pengembalian && $child->pengembalian > 0) {
+                $html .= '<span class="text-success">Rp ' . number_format($child->pengembalian, 0, ',', '.') . '</span>';
+            } else {
+                $html .= '<span class="text-muted">-</span>';
+            }
+
+            $html .= '</td>';
+            $html .= '<td>';
+            $html .= '<button type="button" class="btn btn-warning btn-sm" title="Edit">';
+            $html .= '<i class="fas fa-edit"></i>';
+            $html .= '</button>';
+            $html .= '</td>';
+            $html .= '</tr>';
+
+            // Recursive call for nested children
+            if ($child->children && count($child->children) > 0) {
+                $html .= $this->renderNestedRecommendations($child->children, $number, $level + 1);
+            }
+
+            $counter++;
+        }
+
+        return $html;
     }
 
     public function indexdatadukungrekom()

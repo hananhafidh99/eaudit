@@ -229,6 +229,115 @@
             </div>
         @endif
 
+        {{-- Display existing data --}}
+        @if(isset($existingData) && $existingData->count() > 0)
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Data Temuan & Rekomendasi yang Sudah Ada</h5>
+            </div>
+            <div class="card-body">
+                @foreach($existingData as $parentIndex => $parent)
+                <div class="mb-4 border rounded p-3">
+                    <div class="row mb-3 bg-light p-2 rounded">
+                        <div class="col-md-3">
+                            <strong>Kode Temuan:</strong><br>
+                            <span class="badge bg-primary">{{ $parent->kode_temuan ?? '-' }}</span>
+                        </div>
+                        <div class="col-md-9">
+                            <strong>Nama Temuan:</strong><br>
+                            <span class="text-primary fw-bold">{{ $parent->nama_temuan ?? '-' }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Display recommendations hierarchically --}}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="10%">No</th>
+                                    <th width="35%">Rekomendasi</th>
+                                    <th width="25%">Keterangan</th>
+                                    <th width="20%">Pengembalian</th>
+                                    <th width="10%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{-- Parent recommendation --}}
+                                <tr>
+                                    <td><strong>{{ $parentIndex + 1 }}</strong></td>
+                                    <td><strong>{{ $parent->rekomendasi ?? '-' }}</strong></td>
+                                    <td>{{ $parent->keterangan ?? '-' }}</td>
+                                    <td>
+                                        @if($parent->pengembalian && $parent->pengembalian > 0)
+                                            <span class="text-success fw-bold">Rp {{ number_format($parent->pengembalian, 0, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                {{-- Recursive display of nested children --}}
+                                @if($parent->children && count($parent->children) > 0)
+                                    @php
+                                        $renderNested = function($children, $parentNumber, $level) use (&$renderNested) {
+                                            $counter = 1;
+                                            foreach ($children as $child) {
+                                                $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
+                                                $number = $parentNumber . '.' . $counter;
+                                                $levelClass = 'sub-level-' . min($level, 3);
+
+                                                echo '<tr class="' . $levelClass . '">';
+                                                echo '<td>' . $indent . '↳ ' . $number . '</td>';
+                                                echo '<td>' . $indent . ($child->rekomendasi ?? '-') . '</td>';
+                                                echo '<td>' . ($child->keterangan ?? '-') . '</td>';
+                                                echo '<td>';
+
+                                                if ($child->pengembalian && $child->pengembalian > 0) {
+                                                    echo '<span class="text-success fw-bold">Rp ' . number_format($child->pengembalian, 0, ',', '.') . '</span>';
+                                                } else {
+                                                    echo '<span class="text-muted">-</span>';
+                                                }
+
+                                                echo '</td>';
+                                                echo '<td>';
+                                                echo '<button type="button" class="btn btn-warning btn-sm" title="Edit">';
+                                                echo '<i class="fas fa-edit"></i>';
+                                                echo '</button>';
+                                                echo '</td>';
+                                                echo '</tr>';
+
+                                                // Recursive call for nested children
+                                                if ($child->children && count($child->children) > 0) {
+                                                    $renderNested($child->children, $number, $level + 1);
+                                                }
+
+                                                $counter++;
+                                            }
+                                        };
+
+                                        $renderNested($parent->children, $parentIndex + 1, 1);
+                                    @endphp
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Form for adding new data --}}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Temuan & Rekomendasi Baru</h5>
+            </div>
+            <div class="card-body">
         <form action="{{ url('adminTL/temuan/') }}" method="post" enctype="multipart/form-data">
            @method('POST')
            @csrf
@@ -281,6 +390,8 @@
               <a href="{{ url('adminTL/temuanrekom') }}" class="btn btn-secondary">Batal</a>
           </div>
         </form>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
