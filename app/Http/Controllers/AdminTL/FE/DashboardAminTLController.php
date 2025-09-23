@@ -202,7 +202,6 @@ class DashboardAminTLController extends Controller
         } catch (\Exception $e) {
             dd($e->getMessage());
         }
-        return view('AdminTL.rekom_edit', ['pengawasan' => $pengawasan]);
     }
 
     public function rekomStore(Request $request)
