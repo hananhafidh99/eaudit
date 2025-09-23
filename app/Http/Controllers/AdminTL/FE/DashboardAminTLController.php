@@ -287,7 +287,12 @@ class DashboardAminTLController extends Controller
 
     public function temuanStore(Request $request)
     {
-        // Validate request
+        // Check if this is from modal add new record
+        if ($request->has('add_new_records')) {
+            return $this->handleModalAddRecord($request);
+        }
+
+        // Validate request for regular form submission
         $request->validate([
             'id_pengawasan' => 'required',
             'id_penugasan' => 'required',
