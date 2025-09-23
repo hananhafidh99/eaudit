@@ -289,10 +289,20 @@ class DashboardAminTLController extends Controller
 
     public function temuanStore(Request $request)
     {
+        // Debug logging
+        Log::info('temuanStore Called', [
+            'has_add_new_records' => $request->has('add_new_records'),
+            'add_new_records_value' => $request->get('add_new_records'),
+            'request_keys' => array_keys($request->all())
+        ]);
+
         // Check if this is from modal add new record
         if ($request->has('add_new_records')) {
+            Log::info('Routing to handleModalAddRecord');
             return $this->handleModalAddRecord($request);
         }
+
+        Log::info('Processing regular form submission');
 
         // Validate request for regular form submission
         $request->validate([
@@ -367,6 +377,13 @@ class DashboardAminTLController extends Controller
     private function handleModalAddRecord(Request $request)
     {
         try {
+            // Debug logging
+            Log::info('Modal Add Record Called', [
+                'request_data' => $request->all(),
+                'has_add_new_records' => $request->has('add_new_records'),
+                'add_new_records_value' => $request->get('add_new_records')
+            ]);
+
             // Validate modal form data
             $request->validate([
                 'id_pengawasan' => 'required',

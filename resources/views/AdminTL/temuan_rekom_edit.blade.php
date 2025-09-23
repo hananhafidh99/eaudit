@@ -874,6 +874,11 @@ $(document).ready(function() {
 
     // Form validation before submit
     $('form').on('submit', function(e) {
+        // Skip validation for modal form
+        if ($(this).attr('id') === 'addRecordForm') {
+            return; // Let modal form handle its own validation
+        }
+
         var hasError = false;
         var errorMessages = [];
 
@@ -954,6 +959,49 @@ $(document).ready(function() {
                 }
             }
         });
+
+        if (hasError) {
+            e.preventDefault();
+            alert('Error:\n' + errorMessages.join('\n'));
+        }
+    });
+
+    // Modal form validation
+    $('#addRecordForm').on('submit', function(e) {
+        var hasError = false;
+        var errorMessages = [];
+
+        console.log('=== MODAL FORM SUBMISSION DEBUG ===');
+
+        // Log form data
+        var formData = new FormData(this);
+        console.log('Modal form entries:');
+        for (var pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
+        // Check if at least one record has rekomendasi filled
+        var hasValidRecord = false;
+        var recordCount = 0;
+        $(this).find('textarea[name*="records"][name*="[rekomendasi]"]').each(function() {
+            recordCount++;
+            console.log('Checking record ' + recordCount + ':', $(this).val().trim());
+            if ($(this).val().trim() !== '') {
+                hasValidRecord = true;
+                console.log('Found valid record!');
+            }
+        });
+
+        console.log('Total records found:', recordCount);
+        console.log('Has valid record:', hasValidRecord);
+
+        if (!hasValidRecord) {
+            errorMessages.push('Minimal harus ada satu rekomendasi yang diisi');
+            hasError = true;
+        }
+
+        console.log('Has error:', hasError);
+        console.log('=== END MODAL DEBUG ===');
 
         if (hasError) {
             e.preventDefault();
@@ -1171,22 +1219,28 @@ $(document).ready(function() {
         var namaTemuan = $(this).data('nama-temuan');
         var temuanId = $(this).data('temuan-id');
 
+        console.log('=== MODAL OPENING DEBUG ===');
+        console.log('Kode Temuan:', kodeTemuan);
+        console.log('Nama Temuan:', namaTemuan);
+
         // Set modal data
         $('#add-temuan-kode').val(kodeTemuan);
         $('#add-display-kode').text(kodeTemuan);
         $('#add-display-nama').text(namaTemuan);
 
-        // Reset form
-        $('#addRecordForm')[0].reset();
-        $('#add-temuan-kode').val(kodeTemuan); // Reset this after form reset
-
-        // Reset containers
+        // Reset containers and counters BEFORE resetting form
         $('#recordsContainer').html('');
         recordCounter = 1;
         subRecordCounters = {};
 
         // Add first record
         addNewRecord();
+
+        // Now set hidden values after adding record
+        $('#add-temuan-kode').val(kodeTemuan);
+
+        console.log('Modal setup complete, kode_temuan set to:', $('#add-temuan-kode').val());
+        console.log('=== END MODAL OPENING DEBUG ===');
 
         // Show modal
         $('#addRecordModal').modal('show');
