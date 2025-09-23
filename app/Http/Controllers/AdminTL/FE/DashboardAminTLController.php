@@ -490,7 +490,7 @@ class DashboardAminTLController extends Controller
             $pengembalian = floatval($cleanNumber);
         }
 
-        return Jenis_temuan::create([
+        $record = Jenis_temuan::create([
             'id_pengawasan' => $id_pengawasan,
             'id_penugasan' => $id_penugasan,
             'nama_temuan' => $nama_temuan,
@@ -500,6 +500,13 @@ class DashboardAminTLController extends Controller
             'pengembalian' => $pengembalian,
             'id_parent' => $parent_id,
         ]);
+
+        // If this is a parent record (no parent_id), update id_parent to its own id
+        if ($parent_id === null && $record) {
+            $record->update(['id_parent' => $record->id]);
+        }
+
+        return $record;
     }
 
     /**
