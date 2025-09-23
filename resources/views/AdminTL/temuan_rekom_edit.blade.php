@@ -262,43 +262,31 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- Parent recommendation --}}
-                                <tr>
-                                    <td><strong>{{ $parentIndex + 1 }}</strong></td>
-                                    <td><strong>{{ $parent->rekomendasi ?? '-' }}</strong></td>
-                                    <td>{{ $parent->keterangan ?? '-' }}</td>
-                                    <td>
-                                        @if($parent->pengembalian && $parent->pengembalian > 0)
-                                            <span class="text-success fw-bold">Rp {{ number_format($parent->pengembalian, 0, ',', '.') }}</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-warning btn-sm" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                {{-- Recursive display of nested children --}}
-                                @if($parent->children && count($parent->children) > 0)
+                                {{-- Display all recommendations for this temuan --}}
+                                @if($parent->recommendations && count($parent->recommendations) > 0)
                                     @php
-                                        $renderNested = function($children, $parentNumber, $level) use (&$renderNested) {
-                                            $counter = 1;
-                                            foreach ($children as $child) {
+                                        $rekomCounter = 1;
+                                        $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0) use (&$renderRecommendations, &$rekomCounter) {
+                                            foreach ($recommendations as $rekom) {
                                                 $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
-                                                $number = $parentNumber . '.' . $counter;
-                                                $levelClass = 'sub-level-' . min($level, 3);
+                                                $number = $baseNumber ? $baseNumber . '.' . $rekomCounter : $rekomCounter;
+                                                $levelClass = $level > 0 ? 'sub-level-' . min($level, 3) : '';
 
                                                 echo '<tr class="' . $levelClass . '">';
-                                                echo '<td>' . $indent . '↳ ' . $number . '</td>';
-                                                echo '<td>' . $indent . ($child->rekomendasi ?? '-') . '</td>';
-                                                echo '<td>' . ($child->keterangan ?? '-') . '</td>';
+
+                                                if ($level > 0) {
+                                                    echo '<td>' . $indent . '↳ ' . $number . '</td>';
+                                                } else {
+                                                    echo '<td><strong>' . $number . '</strong></td>';
+                                                }
+
+                                                $rekomStyle = $level > 0 ? '' : 'font-weight: bold;';
+                                                echo '<td style="' . $rekomStyle . '">' . $indent . ($rekom->rekomendasi ?? '-') . '</td>';
+                                                echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
                                                 echo '<td>';
 
-                                                if ($child->pengembalian && $child->pengembalian > 0) {
-                                                    echo '<span class="text-success fw-bold">Rp ' . number_format($child->pengembalian, 0, ',', '.') . '</span>';
+                                                if ($rekom->pengembalian && $rekom->pengembalian > 0) {
+                                                    echo '<span class="text-success fw-bold">Rp ' . number_format($rekom->pengembalian, 0, ',', '.') . '</span>';
                                                 } else {
                                                     echo '<span class="text-muted">-</span>';
                                                 }
@@ -311,17 +299,24 @@
                                                 echo '</td>';
                                                 echo '</tr>';
 
-                                                // Recursive call for nested children
-                                                if ($child->children && count($child->children) > 0) {
-                                                    $renderNested($child->children, $number, $level + 1);
+                                                // Increment counter hanya untuk root level
+                                                if ($level == 0) {
+                                                    $rekomCounter++;
                                                 }
 
-                                                $counter++;
+                                                // Recursive call for nested children
+                                                if (isset($rekom->children) && count($rekom->children) > 0) {
+                                                    $renderRecommendations($rekom->children, $number, $level + 1);
+                                                }
                                             }
                                         };
 
-                                        $renderNested($parent->children, $parentIndex + 1, 1);
+                                        $renderRecommendations($parent->recommendations);
                                     @endphp
+                                @else
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Tidak ada rekomendasi</td>
+                                    </tr>
                                 @endif
                             </tbody>
                         </table>

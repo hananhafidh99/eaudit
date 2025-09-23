@@ -427,21 +427,45 @@ class DashboardAminTLController extends Controller
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
         try {
-            // Ambil data parent (dimana id_parent = id, artinya top-level records)
-            $parentTemuans = DB::table('jenis_temuans')
-                ->where('id_parent', DB::raw('id'))
+            // Ambil semua data dan kelompokkan berdasarkan kode_temuan dan nama_temuan
+            $allData = DB::table('jenis_temuans')
                 ->where('id_pengawasan', $id)
+                ->orderBy('kode_temuan')
                 ->orderBy('id')
                 ->get();
 
-            // Untuk setiap parent, ambil nested children secara rekursif
-            foreach ($parentTemuans as $parent) {
-                $parent->children = $this->getNestedChildren($parent->id);
+            // Kelompokkan berdasarkan kombinasi kode_temuan + nama_temuan
+            $groupedData = [];
+
+            foreach ($allData as $item) {
+                $key = $item->kode_temuan . '|' . $item->nama_temuan;
+
+                if (!isset($groupedData[$key])) {
+                    $groupedData[$key] = [
+                        'kode_temuan' => $item->kode_temuan,
+                        'nama_temuan' => $item->nama_temuan,
+                        'recommendations' => []
+                    ];
+                }
+
+                // Tambahkan item sebagai rekomendasi
+                $groupedData[$key]['recommendations'][] = $item;
+            }
+
+            // Convert ke format yang dibutuhkan view dan build hierarchy
+            $formattedData = [];
+            foreach ($groupedData as $group) {
+                $temuan = (object) [
+                    'kode_temuan' => $group['kode_temuan'],
+                    'nama_temuan' => $group['nama_temuan'],
+                    'recommendations' => $this->buildRecommendationHierarchy($group['recommendations'])
+                ];
+                $formattedData[] = $temuan;
             }
 
             return view('AdminTL.temuan_rekom_edit', [
                 'pengawasan' => $pengawasan,
-                'existingData' => $parentTemuans
+                'existingData' => collect($formattedData)
             ]);
 
         } catch (\Exception $e) {
@@ -458,67 +482,33 @@ class DashboardAminTLController extends Controller
     }
 
     /**
-     * Recursive function to get nested children
+     * Build recommendation hierarchy from flat array
      */
-    private function getNestedChildren($parentId)
+    private function buildRecommendationHierarchy($recommendations)
     {
-        $children = DB::table('jenis_temuans')
-            ->where('id_parent', $parentId)
-            ->where('id', '!=', $parentId) // Exclude self-reference
-            ->orderBy('id')
-            ->get();
-
-        foreach ($children as $child) {
-            $child->children = $this->getNestedChildren($child->id);
+        // Create lookup array
+        $lookup = [];
+        foreach ($recommendations as $item) {
+            $lookup[$item->id] = $item;
+            $item->children = [];
         }
 
-        return $children;
-    }
-
-    /**
-     * Helper function to render nested recommendations in Blade
-     */
-    public function renderNestedRecommendations($children, $parentNumber, $level)
-    {
-        $html = '';
-        $counter = 1;
-
-        foreach ($children as $child) {
-            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
-            $number = $parentNumber . '.' . $counter;
-            $levelClass = 'sub-level-' . min($level, 3);
-
-            $html .= '<tr class="' . $levelClass . '">';
-            $html .= '<td>' . $indent . '↳ ' . $number . '</td>';
-            $html .= '<td>' . $indent . ($child->rekomendasi ?? '-') . '</td>';
-            $html .= '<td>' . ($child->keterangan ?? '-') . '</td>';
-            $html .= '<td>';
-
-            if ($child->pengembalian && $child->pengembalian > 0) {
-                $html .= '<span class="text-success">Rp ' . number_format($child->pengembalian, 0, ',', '.') . '</span>';
+        // Build hierarchy
+        $roots = [];
+        foreach ($recommendations as $item) {
+            if ($item->id_parent == $item->id) {
+                // This is a root item (self-referencing)
+                $roots[] = $item;
             } else {
-                $html .= '<span class="text-muted">-</span>';
+                // This is a child item
+                if (isset($lookup[$item->id_parent])) {
+                    $lookup[$item->id_parent]->children[] = $item;
+                }
             }
-
-            $html .= '</td>';
-            $html .= '<td>';
-            $html .= '<button type="button" class="btn btn-warning btn-sm" title="Edit">';
-            $html .= '<i class="fas fa-edit"></i>';
-            $html .= '</button>';
-            $html .= '</td>';
-            $html .= '</tr>';
-
-            // Recursive call for nested children
-            if ($child->children && count($child->children) > 0) {
-                $html .= $this->renderNestedRecommendations($child->children, $number, $level + 1);
-            }
-
-            $counter++;
         }
 
-        return $html;
+        return $roots;
     }
-
     public function indexdatadukungrekom()
     {
         $client = new Client();
