@@ -1219,22 +1219,28 @@ $(document).ready(function() {
         var namaTemuan = $(this).data('nama-temuan');
         var temuanId = $(this).data('temuan-id');
 
+        console.log('=== MODAL OPENING DEBUG ===');
+        console.log('Kode Temuan:', kodeTemuan);
+        console.log('Nama Temuan:', namaTemuan);
+
         // Set modal data
         $('#add-temuan-kode').val(kodeTemuan);
         $('#add-display-kode').text(kodeTemuan);
         $('#add-display-nama').text(namaTemuan);
 
-        // Reset form
-        $('#addRecordForm')[0].reset();
-        $('#add-temuan-kode').val(kodeTemuan); // Reset this after form reset
-
-        // Reset containers
+        // Reset containers and counters BEFORE resetting form
         $('#recordsContainer').html('');
         recordCounter = 1;
         subRecordCounters = {};
 
         // Add first record
         addNewRecord();
+
+        // Now set hidden values after adding record
+        $('#add-temuan-kode').val(kodeTemuan);
+
+        console.log('Modal setup complete, kode_temuan set to:', $('#add-temuan-kode').val());
+        console.log('=== END MODAL OPENING DEBUG ===');
 
         // Show modal
         $('#addRecordModal').modal('show');
