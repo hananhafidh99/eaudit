@@ -274,13 +274,13 @@
 <div class="card mt-3" style="width: 100%; ">
     <div class="card-header">Upload Data Dukung</div>
     <div class="card-body">
-            <form action="" method="post" name="photo" id="imageuploadform" enctype="multipart/form-data">
+            <form action="{{ url('adminTL/rekom/datadukung') }}" method="post" name="photo" id="imageuploadform" enctype="multipart/form-data">
                 <div class="row">
                     <div class="col-12">
         <input type="file" id="fileUpload" multiple placeholder="choose file or browse" class="form-control"/> <!-- Add 'multiple' attribute for multiple file selection -->
                     </div>
                 </div>
-        <button onclick="uploadFiles()" class="mt-3 btn btn-info">Upload</button> <!-- Change function name -->
+        <button  class="mt-3 btn btn-info">Upload</button> <!-- Change function name -->
             </form>
         <div>
             <table id="progressBarsContainer">

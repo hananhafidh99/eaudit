@@ -683,7 +683,9 @@ class DashboardAminTLController extends Controller
 
     public function datadukungrekomEdit($id)
     {
-
+$token = session('ctoken');
+        $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
+                return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan]);
     }
 
     /**

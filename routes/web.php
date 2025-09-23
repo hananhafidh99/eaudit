@@ -52,12 +52,12 @@ Route::delete('adminTL/rekomendasi/{id}', [DashboardAminTLController::class, 'de
 Route::delete('adminTL/temuan/{kode_temuan}/delete-all', [DashboardAminTLController::class, 'deleteTemuanWithAllRekomendasi']);
 
 Route::post('adminTL/rekom/datadukung', [DashboardAminTLController::class, 'datadukungrekomStore']);
-Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::class, 'datadukungrekomEdit']);
+// Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::class, 'datadukungrekomEdit']);
 
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);
 
-// Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
-// Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekom']);
+Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
+Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekomEdit']);
 
 // Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
 // Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
