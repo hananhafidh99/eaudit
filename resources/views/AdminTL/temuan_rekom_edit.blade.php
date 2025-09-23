@@ -87,6 +87,47 @@
         font-style: italic;
         font-size: 0.85em;
     }
+
+    /* Styling untuk temuan baru */
+    .temuan-section {
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .border-success {
+        border-color: #198754 !important;
+    }
+
+    #addTemuanBtn {
+        transition: all 0.3s ease;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #addTemuanBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .remove-temuan-btn {
+        transition: all 0.2s ease;
+    }
+
+    .remove-temuan-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
     </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -423,6 +464,16 @@
           <!-- Temuan tambahan akan ditambahkan di sini -->
           <div id="temuanBaru" class="mt-4"></div>
 
+          <!-- Tombol untuk menambah temuan baru -->
+          <div class="mt-3 mb-3 text-center">
+              <button type="button" id="addTemuanBtn" class="btn btn-success btn-lg">
+                  <i class="fas fa-plus-circle"></i> Tambah Temuan Baru (Contoh: 3, 4, dll)
+              </button>
+              <small class="d-block mt-2 text-muted">
+                  Klik untuk menambah temuan baru seperti data 3, data 4, dan seterusnya
+              </small>
+          </div>
+
           <div class="mt-3">
               <button type="submit" class="btn btn-primary">Simpan</button>
               <a href="{{ url('adminTL/temuanrekom') }}" class="btn btn-secondary">Batal</a>
@@ -514,6 +565,100 @@ function renumberTable(tbody) {
 }
 
 $(document).ready(function() {
+
+    // Add new temuan handler
+    $('#addTemuanBtn').on('click', function() {
+        var temuanIndex = temuanCounter;
+
+        var html = '';
+        html += '<div class="temuan-section" data-temuan-index="' + temuanIndex + '">';
+        html += '<div class="card mb-4 border-success">';
+        html += '<div class="card-header bg-success text-white d-flex justify-content-between align-items-center">';
+        html += '<h6 class="mb-0"><i class="fas fa-plus"></i> Temuan Baru #' + (temuanIndex + 1) + '</h6>';
+        html += '<button type="button" class="btn btn-sm btn-outline-light remove-temuan-btn" data-temuan-index="' + temuanIndex + '">';
+        html += '<i class="fas fa-times"></i> Hapus Temuan';
+        html += '</button>';
+        html += '</div>';
+        html += '<div class="card-body">';
+
+        // Table for kode and nama temuan
+        html += '<table class="table table-bordered mb-3">';
+        html += '<thead class="table-light">';
+        html += '<tr>';
+        html += '<th scope="col">KODE TEMUAN <span class="text-danger">*</span></th>';
+        html += '<th scope="col">NAMA TEMUAN <span class="text-danger">*</span></th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody>';
+        html += '<tr>';
+        html += '<td><input type="text" name="temuan[' + temuanIndex + '][kode_temuan]" class="form-control" placeholder="Contoh: 3, 4, 5..." required></td>';
+        html += '<td><input type="text" name="temuan[' + temuanIndex + '][nama_temuan]" class="form-control" placeholder="Nama temuan baru..." required></td>';
+        html += '</tr>';
+        html += '</tbody>';
+        html += '</table>';
+
+        // Table for rekomendasi
+        html += '<table class="table table-bordered">';
+        html += '<thead class="table-light">';
+        html += '<tr>';
+        html += '<th scope="col">Nomor</th>';
+        html += '<th scope="col">NAMA REKOMENDASI <span class="text-danger">*</span></th>';
+        html += '<th scope="col">KETERANGAN REKOMENDASI</th>';
+        html += '<th scope="col">PENGEMBALIAN KEUANGAN</th>';
+        html += '<th>Aksi</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody class="body" id="parenttemuan_' + temuanIndex + '">';
+        html += '<tr class="sub' + temuanIndex + '" data-temuan-index="' + temuanIndex + '" data-rekom-index="0" data-level="0">';
+        html += '<td class="nomor-cell">1</td>';
+        html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][rekomendasi]" placeholder="Rekomendasi untuk temuan ini..." required></textarea></td>';
+        html += '<td><textarea class="form-control" name="temuan[' + temuanIndex + '][rekomendasi][0][keterangan]" placeholder="Keterangan rekomendasi..."></textarea></td>';
+        html += '<td><input type="text" class="form-control tanparupiah" name="temuan[' + temuanIndex + '][rekomendasi][0][pengembalian]" placeholder="Rp. 0"></td>';
+        html += '<td>';
+        html += '<button type="button" data-temuan-index="' + temuanIndex + '" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button> ';
+        html += '<button type="button" data-temuan-index="' + temuanIndex + '" data-rekom-index="0" data-level="1" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button>';
+        html += '</td>';
+        html += '</tr>';
+        html += '</tbody>';
+        html += '</table>';
+        html += '</div>'; // card-body
+        html += '</div>'; // card
+        html += '</div>'; // temuan-section
+
+        $('#temuanBaru').append(html);
+
+        // Initialize counters for this new temuan
+        rekomCounter[temuanIndex] = 1; // Already has rekomendasi[0]
+
+        // Increment global counter for next temuan
+        temuanCounter++;
+
+        // Show success message
+        $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+          '<i class="fas fa-check-circle"></i> Temuan baru #' + temuanIndex + ' berhasil ditambahkan!' +
+          '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+          '</div>').insertBefore('#temuanBaru').delay(3000).fadeOut();
+    });
+
+    // Remove temuan handler
+    $(document).on('click', '.remove-temuan-btn', function() {
+        var temuanIndex = $(this).data('temuan-index');
+
+        if (confirm('Apakah Anda yakin ingin menghapus temuan #' + (temuanIndex + 1) + ' beserta semua rekomendasinya?')) {
+            $('.temuan-section[data-temuan-index="' + temuanIndex + '"]').fadeOut(300, function() {
+                $(this).remove();
+            });
+
+            // Clean up counters
+            delete rekomCounter[temuanIndex];
+
+            // Show success message
+            $('<div class="alert alert-info alert-dismissible fade show" role="alert">' +
+              '<i class="fas fa-info-circle"></i> Temuan #' + (temuanIndex + 1) + ' berhasil dihapus!' +
+              '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+              '</div>').insertBefore('#temuanBaru').delay(3000).fadeOut();
+        }
+    });
 
     // Format rupiah on input
     $(document).on('keyup', '.tanparupiah', function (e) {
