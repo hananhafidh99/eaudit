@@ -256,10 +256,12 @@
                         <table class="table table-bordered table-sm">
                             <thead class="table-dark">
                                 <tr>
-                                    <th width="10%">No</th>
-                                    <th width="35%">Rekomendasi</th>
-                                    <th width="25%">Keterangan</th>
-                                    <th width="20%">Pengembalian</th>
+                                    <th width="5%">No</th>
+                                    <th width="8%">Kode Temuan</th>
+                                    <th width="12%">Nama Temuan</th>
+                                    <th width="30%">Rekomendasi</th>
+                                    <th width="20%">Keterangan</th>
+                                    <th width="15%">Pengembalian</th>
                                     <th width="10%">Aksi</th>
                                 </tr>
                             </thead>
@@ -268,7 +270,7 @@
                                 @if($parent->recommendations && count($parent->recommendations) > 0)
                                     @php
                                         $rekomCounter = 1;
-                                        $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0) use (&$renderRecommendations, &$rekomCounter) {
+                                        $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0, $parent = null) use (&$renderRecommendations, &$rekomCounter) {
                                             foreach ($recommendations as $rekom) {
                                                 $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
                                                 $number = $baseNumber ? $baseNumber . '.' . $rekomCounter : $rekomCounter;
@@ -280,6 +282,20 @@
                                                     echo '<td>' . $indent . '↳ ' . $number . '</td>';
                                                 } else {
                                                     echo '<td><strong>' . $number . '</strong></td>';
+                                                }
+
+                                                // Kode Temuan
+                                                if ($level == 0) {
+                                                    echo '<td><span class="badge bg-primary">' . ($parent->kode_temuan ?? '-') . '</span></td>';
+                                                } else {
+                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($parent->kode_temuan ?? '-') . '</small></td>';
+                                                }
+
+                                                // Nama Temuan
+                                                if ($level == 0) {
+                                                    echo '<td><strong>' . ($parent->nama_temuan ?? '-') . '</strong></td>';
+                                                } else {
+                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($parent->nama_temuan ?? '-') . '</small></td>';
                                                 }
 
                                                 $rekomStyle = $level > 0 ? '' : 'font-weight: bold;';
@@ -307,6 +323,9 @@
                                                 echo '</button> ';
                                                 echo '<button type="button" class="btn btn-danger btn-sm delete-rekom-btn" ';
                                                 echo 'data-id="' . $rekom->id . '" ';
+                                                echo 'data-kode-temuan="' . htmlspecialchars($parent->kode_temuan ?? '') . '" ';
+                                                echo 'data-nama-temuan="' . htmlspecialchars($parent->nama_temuan ?? '') . '" ';
+                                                echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
                                                 echo 'title="Hapus Rekomendasi">';
                                                 echo '<i class="fas fa-trash"></i>';
                                                 echo '</button>';
@@ -320,16 +339,16 @@
 
                                                 // Recursive call for nested children
                                                 if (isset($rekom->children) && count($rekom->children) > 0) {
-                                                    $renderRecommendations($rekom->children, $number, $level + 1);
+                                                    $renderRecommendations($rekom->children, $number, $level + 1, $parent);
                                                 }
                                             }
                                         };
 
-                                        $renderRecommendations($parent->recommendations);
+                                        $renderRecommendations($parent->recommendations, '', 0, $parent);
                                     @endphp
                                 @else
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">Tidak ada rekomendasi</td>
+                                        <td colspan="7" class="text-center text-muted">Tidak ada rekomendasi</td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -804,10 +823,19 @@ $(document).ready(function() {
     // Delete recommendation functionality
     $(document).on('click', '.delete-rekom-btn', function() {
         var id = $(this).data('id');
+        var kodeTemuan = $(this).data('kode-temuan');
+        var namaTemuan = $(this).data('nama-temuan');
+        var rekomendasi = $(this).data('rekomendasi');
 
         console.log('Delete button clicked for ID:', id);
 
-        if (confirm('Apakah Anda yakin ingin menghapus rekomendasi ini?')) {
+        // Create detailed confirmation message
+        var confirmMessage = 'Apakah Anda yakin ingin menghapus rekomendasi ini?\n\n';
+        confirmMessage += 'Kode Temuan: ' + kodeTemuan + '\n';
+        confirmMessage += 'Nama Temuan: ' + namaTemuan + '\n';
+        confirmMessage += 'Rekomendasi: ' + (rekomendasi.length > 100 ? rekomendasi.substring(0, 100) + '...' : rekomendasi);
+
+        if (confirm(confirmMessage)) {
             console.log('Delete confirmed, sending AJAX request...');
 
             // Send delete request
