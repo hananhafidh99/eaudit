@@ -43,12 +43,16 @@ Route::post('adminTL/rekom', [DashboardAminTLController::class, 'rekomStore']);
 
 Route::post('adminTL/temuan', [DashboardAminTLController::class, 'temuanStore']);
 Route::get('adminTL/temuan_rekom_edit/{id}/edit', [DashboardAminTLController::class, 'temuanrekomEdit']);
+
+Route::post('adminTL/rekom/datadukung', [DashboardAminTLController::class, 'datadukungrekomStore']);
+Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::class, 'datadukungrekomEdit']);
+
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);
 
 Route::put('adminTL/pkpt/{id}', [DashboardAminTLController::class, 'pkptupdate']);
 
-Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
-Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekom']);
+// Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
+// Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekom']);
 
 Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
 Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);

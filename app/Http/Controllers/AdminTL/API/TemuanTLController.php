@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\AdminTL\Api;
+namespace App\Http\Controllers\AdminTL\API;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -8,8 +8,7 @@ use App\Http\Controllers\Controller;
 
 class TemuanTLController extends Controller
 {
-    //
-    public function index()
+     public function index()
     {
         $pengawasan = DB::table('v_tl1')->where('tipe', '=', 'TemuandanRekomendasi')->get();
 

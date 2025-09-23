@@ -6,11 +6,10 @@ use App\Models\Pengawasan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 
 class DashboardAminTLController extends Controller
 {
-    public function arsip()
+     public function arsip()
     {
     $penugasan = DB::table('v_demo3')->orderBy('tanggalAwalPenugasan','DESC')->orderBy('noSurat','DESC')->get();
     return response()->json([

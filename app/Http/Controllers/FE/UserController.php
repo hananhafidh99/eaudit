@@ -25,7 +25,10 @@ class UserController extends Controller
         ];
 
         $response = Http::post("http://127.0.0.1:8000".('/api/login'),$params)->json();
-        // dd($response->json());
+        // dd($response);
+        if($response['code'] != 200){
+            return back()->with('error', $response['message']);
+        }
         $token = $response['token'];
         $name = $response['user_data']['name'];
         $username = $response['user_data']['username'];

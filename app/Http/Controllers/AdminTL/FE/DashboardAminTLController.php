@@ -215,7 +215,6 @@ class DashboardAminTLController extends Controller
             ('http://localhost:8000') . ('/api/rekom/store') . '?token=' . $token,
             $request->all()
         );
-        // dd($response->json());
         // try{
         //     DB::table('jenis_temuans')->where('id_pengawasan', $request->id_pengawasan)->delete();
         // }catch(\Exception $e){
@@ -307,6 +306,7 @@ class DashboardAminTLController extends Controller
         ]);
 
         $data = $request->all();
+
 
         // Debug: Log request data (only in development)
         if (config('app.debug')) {
@@ -426,6 +426,8 @@ class DashboardAminTLController extends Controller
         $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
+
+
         return view('AdminTL.temuan_rekom_edit', ['pengawasan' => $pengawasan]);
     }
 
@@ -442,35 +444,13 @@ class DashboardAminTLController extends Controller
         return view('AdminTL.datadukungrekom', ['data' => $data]);
     }
 
-    public function datadukungrekom($id)
+    public function datadukungrekomStore()
     {
-        $token = session('ctoken');
-        $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
-        try {
-            $getparent = DB::table('jenis_temuans')
-                ->where('id_parent', DB::raw('id'))
-                ->where('id_pengawasan', $id)
-                ->get();
-
-            foreach ($getparent as $key => $value) {
-                $value->sub = DB::table('jenis_temuans')
-                    ->where('id_parent', $value->id)
-                    ->where('id', '!=', $value->id)
-                    ->get();
-
-                foreach ($value->sub as $subKey => $subValue) {
-                    $subValue->sub = DB::table('jenis_temuans')
-                        ->where('id_parent', $subValue->id)
-                        ->where('id', '!=', $subValue->id)
-                        ->get();
-                }
-            }
-            return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan, 'data' => $getparent]);
-        } catch (\Exception $e) {
-            dd($e->getMessage());
-        }
-        return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan]);
     }
 
+    public function datadukungrekomEdit($id)
+    {
+
+    }
 }

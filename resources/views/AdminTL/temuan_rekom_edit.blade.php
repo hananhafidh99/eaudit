@@ -267,7 +267,7 @@
                 <td>
                     <button type="button" data-temuan-index="0" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button>
                     <button type="button" data-temuan-index="0" data-rekom-index="0" data-level="1" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button>
-                    <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>
+                    {{-- <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button> --}}
                 </td>
               </tr>
             </tbody>

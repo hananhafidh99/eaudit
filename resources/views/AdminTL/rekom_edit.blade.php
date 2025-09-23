@@ -256,7 +256,7 @@
                     <td><textarea class="form-control" name="tipeA[0][rekomendasi]"></textarea></td>
                     <td><textarea class="form-control" name="tipeA[0][keterangan]"></textarea></td>
                     <td><textarea class="form-control tanparupiah" name="tipeA[0][pengembalian]"></textarea></td>
-                    <td>
+                     <td>
                         <button type="button" data-level1="0" class="btn btn-success" id="add_btn1"><i class="fa-solid fa-plus"></i></button>
                     </td>
                     <td>
