@@ -3,8 +3,8 @@
 use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
 use App\Http\Controllers\FE\DashboardTLController;
 use App\Http\Controllers\FE\UserController as FEUserController;
-use App\Http\Controllers\ObrikTL\DashboardObrikTLController;
-use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
+// use App\Http\Controllers\ObrikTL\DashboardObrikTLController;
+// use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -53,10 +53,8 @@ Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::cla
 
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);
 
-Route::put('adminTL/pkpt/{id}', [DashboardAminTLController::class, 'pkptupdate']);
-
 // Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
 // Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekom']);
 
-Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
-Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
+// Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
+// Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
