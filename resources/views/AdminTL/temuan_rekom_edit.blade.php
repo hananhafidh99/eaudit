@@ -1,6 +1,8 @@
 @extends('template')
 @section('content')
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <style>
     #mytable {
       font-family: Arial, Helvetica, sans-serif;
@@ -293,8 +295,20 @@
 
                                                 echo '</td>';
                                                 echo '<td>';
-                                                echo '<button type="button" class="btn btn-warning btn-sm" title="Edit">';
+                                                echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
+                                                echo 'data-id="' . $rekom->id . '" ';
+                                                echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
+                                                echo 'data-keterangan="' . htmlspecialchars($rekom->keterangan ?? '') . '" ';
+                                                echo 'data-pengembalian="' . ($rekom->pengembalian ?? 0) . '" ';
+                                                echo 'data-kode-temuan="' . htmlspecialchars($parent->kode_temuan ?? '') . '" ';
+                                                echo 'data-nama-temuan="' . htmlspecialchars($parent->nama_temuan ?? '') . '" ';
+                                                echo 'title="Edit Rekomendasi">';
                                                 echo '<i class="fas fa-edit"></i>';
+                                                echo '</button> ';
+                                                echo '<button type="button" class="btn btn-danger btn-sm delete-rekom-btn" ';
+                                                echo 'data-id="' . $rekom->id . '" ';
+                                                echo 'title="Hapus Rekomendasi">';
+                                                echo '<i class="fas fa-trash"></i>';
                                                 echo '</button>';
                                                 echo '</td>';
                                                 echo '</tr>';
@@ -765,6 +779,129 @@ $(document).ready(function() {
             alert('Error:\n' + errorMessages.join('\n'));
         }
     });
+
+    // Edit recommendation functionality
+    $(document).on('click', '.edit-rekom-btn', function() {
+        var id = $(this).data('id');
+        var rekomendasi = $(this).data('rekomendasi');
+        var keterangan = $(this).data('keterangan');
+        var pengembalian = $(this).data('pengembalian');
+        var kodeTemuan = $(this).data('kode-temuan');
+        var namaTemuan = $(this).data('nama-temuan');
+
+        // Populate modal with data
+        $('#edit-id').val(id);
+        $('#edit-rekomendasi').val(rekomendasi);
+        $('#edit-keterangan').val(keterangan);
+        $('#edit-pengembalian').val(pengembalian > 0 ? formatRupiah(pengembalian.toString()) : '');
+        $('#edit-kode-temuan').text(kodeTemuan);
+        $('#edit-nama-temuan').text(namaTemuan);
+
+        // Show modal
+        $('#editModal').modal('show');
+    });
+
+    // Delete recommendation functionality
+    $(document).on('click', '.delete-rekom-btn', function() {
+        var id = $(this).data('id');
+        
+        if (confirm('Apakah Anda yakin ingin menghapus rekomendasi ini?')) {
+            // Send delete request
+            $.ajax({
+                url: '/adminTL/rekomendasi/' + id,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    alert('Rekomendasi berhasil dihapus!');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Terjadi kesalahan saat menghapus data!');
+                }
+            });
+        }
+    });
+
+    // Submit edit form
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = {
+            id: $('#edit-id').val(),
+            rekomendasi: $('#edit-rekomendasi').val(),
+            keterangan: $('#edit-keterangan').val(),
+            pengembalian: $('#edit-pengembalian').val().replace(/[^0-9]/g, ''), // Remove formatting
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
+
+        $.ajax({
+            url: '/adminTL/rekomendasi/update',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                alert('Rekomendasi berhasil diperbarui!');
+                $('#editModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('Terjadi kesalahan saat memperbarui data!');
+            }
+        });
+    });
 });
 </script>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Rekomendasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-id">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Kode Temuan:</strong></label>
+                            <div class="form-control-plaintext bg-light p-2 rounded">
+                                <span id="edit-kode-temuan"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Nama Temuan:</strong></label>
+                            <div class="form-control-plaintext bg-light p-2 rounded">
+                                <span id="edit-nama-temuan"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit-rekomendasi" class="form-label">Rekomendasi <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="edit-rekomendasi" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit-keterangan" class="form-label">Keterangan</label>
+                        <textarea class="form-control" id="edit-keterangan" rows="2"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit-pengembalian" class="form-label">Pengembalian Keuangan</label>
+                        <input type="text" class="form-control tanparupiah" id="edit-pengembalian" placeholder="Rp. 0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection

@@ -202,7 +202,6 @@ class DashboardAminTLController extends Controller
         } catch (\Exception $e) {
             dd($e->getMessage());
         }
-        return view('AdminTL.rekom_edit', ['pengawasan' => $pengawasan]);
     }
 
     public function rekomStore(Request $request)
@@ -530,5 +529,100 @@ class DashboardAminTLController extends Controller
     public function datadukungrekomEdit($id)
     {
 
+    }
+
+    /**
+     * Update recommendation
+     */
+    public function updateRekomendasi(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required|integer',
+                'rekomendasi' => 'required|string|max:1000',
+                'keterangan' => 'nullable|string|max:500',
+                'pengembalian' => 'nullable|numeric|min:0'
+            ]);
+
+            $updated = DB::table('jenis_temuans')
+                ->where('id', $request->id)
+                ->update([
+                    'rekomendasi' => $request->rekomendasi,
+                    'keterangan' => $request->keterangan,
+                    'pengembalian' => $request->pengembalian ?: 0,
+                    'updated_at' => now()
+                ]);
+
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Rekomendasi berhasil diperbarui'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error updating rekomendasi:', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete recommendation
+     */
+    public function deleteRekomendasi($id)
+    {
+        try {
+            // Check if this recommendation has children
+            $hasChildren = DB::table('jenis_temuans')
+                ->where('id_parent', $id)
+                ->where('id', '!=', $id)
+                ->exists();
+
+            if ($hasChildren) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat menghapus rekomendasi yang memiliki sub-rekomendasi. Hapus sub-rekomendasi terlebih dahulu.'
+                ], 400);
+            }
+
+            $deleted = DB::table('jenis_temuans')
+                ->where('id', $id)
+                ->delete();
+
+            if ($deleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Rekomendasi berhasil dihapus'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting rekomendasi:', [
+                'error' => $e->getMessage(),
+                'id' => $id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

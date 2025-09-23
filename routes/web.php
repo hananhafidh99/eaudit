@@ -3,8 +3,8 @@
 use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
 use App\Http\Controllers\FE\DashboardTLController;
 use App\Http\Controllers\FE\UserController as FEUserController;
-use App\Http\Controllers\ObrikTL\DashboardObrikTLController;
-use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
+// use App\Http\Controllers\ObrikTL\DashboardObrikTLController;
+// use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -44,15 +44,17 @@ Route::post('adminTL/rekom', [DashboardAminTLController::class, 'rekomStore']);
 Route::post('adminTL/temuan', [DashboardAminTLController::class, 'temuanStore']);
 Route::get('adminTL/temuan_rekom_edit/{id}/edit', [DashboardAminTLController::class, 'temuanrekomEdit']);
 
+// Routes for rekomendasi CRUD
+Route::post('adminTL/rekomendasi/update', [DashboardAminTLController::class, 'updateRekomendasi']);
+Route::delete('adminTL/rekomendasi/{id}', [DashboardAminTLController::class, 'deleteRekomendasi']);
+
 Route::post('adminTL/rekom/datadukung', [DashboardAminTLController::class, 'datadukungrekomStore']);
 Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::class, 'datadukungrekomEdit']);
 
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);
 
-Route::put('adminTL/pkpt/{id}', [DashboardAminTLController::class, 'pkptupdate']);
-
 // Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
 // Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekom']);
 
-Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
-Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
+// Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
+// Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
