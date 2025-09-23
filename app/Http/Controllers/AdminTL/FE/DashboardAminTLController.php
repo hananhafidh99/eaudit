@@ -657,4 +657,93 @@ class DashboardAminTLController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Delete entire temuan with all its recommendations and sub-recommendations
+     */
+    public function deleteTemuanWithAllRekomendasi($kode_temuan)
+    {
+        try {
+            Log::info('Delete temuan request received for kode: ' . $kode_temuan);
+
+            // Validate kode_temuan
+            if (empty($kode_temuan)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kode temuan tidak valid'
+                ], 400);
+            }
+
+            // Check if temuan exists
+            $temuanExists = DB::table('jenis_temuans')
+                ->where('kode_temuan', $kode_temuan)
+                ->exists();
+
+            if (!$temuanExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Temuan dengan kode "' . $kode_temuan . '" tidak ditemukan'
+                ], 404);
+            }
+
+            // Get all records related to this temuan (including nested children)
+            $allRecords = DB::table('jenis_temuans')
+                ->where('kode_temuan', $kode_temuan)
+                ->get();
+
+            $recordCount = $allRecords->count();
+
+            Log::info('Found records to delete:', [
+                'kode_temuan' => $kode_temuan,
+                'total_records' => $recordCount,
+                'records' => $allRecords->toArray()
+            ]);
+
+            // Start transaction
+            DB::beginTransaction();
+
+            try {
+                // Delete all records with this kode_temuan
+                $deletedCount = DB::table('jenis_temuans')
+                    ->where('kode_temuan', $kode_temuan)
+                    ->delete();
+
+                if ($deletedCount > 0) {
+                    DB::commit();
+
+                    Log::info('Temuan and all recommendations deleted successfully:', [
+                        'kode_temuan' => $kode_temuan,
+                        'deleted_count' => $deletedCount
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Temuan "' . $kode_temuan . '" beserta ' . $deletedCount . ' rekomendasi berhasil dihapus'
+                    ]);
+                } else {
+                    DB::rollback();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tidak ada data yang berhasil dihapus'
+                    ], 500);
+                }
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting temuan with all recommendations:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'kode_temuan' => $kode_temuan
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
