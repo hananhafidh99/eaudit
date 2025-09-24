@@ -918,6 +918,12 @@ class DashboardAminTLController extends Controller
     public function uploadFile(Request $request)
     {
         try {
+            Log::info('Upload request received', [
+                'has_file' => $request->hasFile('file'),
+                'id_pengawasan' => $request->id_pengawasan,
+                'id_penugasan' => $request->id_penugasan
+            ]);
+
             // Validate file
             $request->validate([
                 'file' => 'required|file|max:10240', // Max 10MB
@@ -926,6 +932,22 @@ class DashboardAminTLController extends Controller
             ]);
 
             $file = $request->file('file');
+
+            // Validate file object
+            if (!$file || !$file->isValid()) {
+                Log::error('Invalid file object', [
+                    'file_exists' => $file ? 'yes' : 'no',
+                    'is_valid' => $file ? $file->isValid() : 'unknown',
+                    'error' => $file ? $file->getError() : 'file is null'
+                ]);
+                throw new \Exception('Invalid file uploaded');
+            }
+
+            Log::info('File validation passed', [
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime_type' => $file->getClientMimeType()
+            ]);
 
             // Check file extension
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'svg', 'zip', 'docx', 'xlsx', 'doc', 'xls', 'ppt', 'pptx'];
@@ -938,6 +960,11 @@ class DashboardAminTLController extends Controller
                 ], 400);
             }
 
+            // Get file information BEFORE moving the file
+            $originalName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+            $fileMimeType = $file->getClientMimeType();
+
             // Generate random filename
             $randomName = uniqid() . '_' . time() . '.' . $fileExtension;
 
@@ -945,17 +972,61 @@ class DashboardAminTLController extends Controller
             $uploadPath = 'uploads/data_dukung/' . $request->id_pengawasan;
             $fullUploadPath = public_path($uploadPath);
 
+            Log::info('Directory check', [
+                'upload_path' => $uploadPath,
+                'full_path' => $fullUploadPath,
+                'exists' => file_exists($fullUploadPath),
+                'public_path' => public_path()
+            ]);
+
             if (!file_exists($fullUploadPath)) {
-                mkdir($fullUploadPath, 0755, true);
+                if (!mkdir($fullUploadPath, 0777, true)) {
+                    throw new \Exception('Failed to create upload directory: ' . $fullUploadPath);
+                }
+                Log::info('Directory created successfully: ' . $fullUploadPath);
             }
+
+            // Validate directory is writable (skip on Windows as it's often unreliable)
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+            if (!$isWindows && !is_writable($fullUploadPath)) {
+                throw new \Exception('Upload directory is not writable: ' . $fullUploadPath);
+            }
+
+            // Log before move
+            Log::info('About to move file', [
+                'temp_path' => $file->getPathname(),
+                'destination' => $fullUploadPath . '/' . $randomName,
+                'temp_exists' => file_exists($file->getPathname())
+            ]);
 
             // Move file to upload directory
             $file->move($fullUploadPath, $randomName);
 
+            // Verify file was moved successfully
+            $finalPath = $fullUploadPath . '/' . $randomName;
+            if (!file_exists($finalPath)) {
+                throw new \Exception('File was not moved successfully to: ' . $finalPath);
+            }
+
+            Log::info('File moved successfully', [
+                'final_path' => $finalPath,
+                'file_size_after_move' => filesize($finalPath)
+            ]);
+
             // Save to database sesuai skema tabel datadukung
+            Log::info('Attempting to save to database', [
+                'id_pengawasan' => $request->id_pengawasan,
+                'nama_file' => $uploadPath . '/' . $randomName
+            ]);
+
             $dataDukung = DataDukung::create([
                 'id_pengawasan' => $request->id_pengawasan,
                 'nama_file' => $uploadPath . '/' . $randomName, // path file untuk database
+            ]);
+
+            Log::info('Database save successful', [
+                'id' => $dataDukung->id,
+                'created_at' => $dataDukung->created_at
             ]);
 
             // Log file data
@@ -963,9 +1034,9 @@ class DashboardAminTLController extends Controller
                 'id' => $dataDukung->id,
                 'id_pengawasan' => $request->id_pengawasan,
                 'nama_file' => $uploadPath . '/' . $randomName,
-                'original_name' => $file->getClientOriginalName(),
+                'original_name' => $originalName,
                 'stored_name' => $randomName,
-                'file_size' => $file->getSize(),
+                'file_size' => $fileSize,
             ]);
 
             return response()->json([
@@ -974,15 +1045,20 @@ class DashboardAminTLController extends Controller
                 'file_id' => $dataDukung->id,
                 'stored_name' => $randomName,
                 'path' => $uploadPath . '/' . $randomName,
-                'size' => $file->getSize(),
-                'original_name' => $file->getClientOriginalName(),
+                'size' => $fileSize,
+                'original_name' => $originalName,
                 'database_id' => $dataDukung->id
             ]);
 
         } catch (\Exception $e) {
             Log::error('File Upload Error:', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'request_data' => [
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'id_penugasan' => $request->id_penugasan,
+                    'has_file' => $request->hasFile('file')
+                ]
             ]);
 
             return response()->json([

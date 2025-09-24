@@ -13,11 +13,7 @@ class DataDukung extends Model
 
     protected $fillable = [
         'id_pengawasan',
-        'nama_file',
-        'original_name',
-        'file_path',
-        'file_size',
-        'file_type'
+        'nama_file'
     ];
 
     protected $casts = [
