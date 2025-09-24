@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Pengawasan;
 use App\Models\Jenis_temuan;
+use App\Models\DataDukung;
 
 class DashboardAminTLController extends Controller
 {
@@ -685,7 +686,14 @@ class DashboardAminTLController extends Controller
     {
         $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
-        return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan]);
+
+        // Get uploaded files from database
+        $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
+
+        return view('AdminTL.datadukungrekom_upload', [
+            'pengawasan' => $pengawasan,
+            'uploadedFiles' => $uploadedFiles
+        ]);
     }
 
     /**
@@ -944,30 +952,31 @@ class DashboardAminTLController extends Controller
             // Move file to upload directory
             $file->move($fullUploadPath, $randomName);
 
-            // Prepare file data for database (not saving yet as per request)
-            $fileData = [
+            // Save to database sesuai skema tabel datadukung
+            $dataDukung = DataDukung::create([
                 'id_pengawasan' => $request->id_pengawasan,
-                'id_penugasan' => $request->id_penugasan,
+                'nama_file' => $uploadPath . '/' . $randomName, // path file untuk database
+            ]);
+
+            // Log file data
+            Log::info('File uploaded and saved to database successfully', [
+                'id' => $dataDukung->id,
+                'id_pengawasan' => $request->id_pengawasan,
+                'nama_file' => $uploadPath . '/' . $randomName,
                 'original_name' => $file->getClientOriginalName(),
                 'stored_name' => $randomName,
-                'file_path' => $uploadPath . '/' . $randomName,
                 'file_size' => $file->getSize(),
-                'file_type' => $file->getClientMimeType(),
-                'uploaded_at' => now(),
-            ];
-
-            // Log file data for future database insertion
-            Log::info('File uploaded successfully', $fileData);
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'File uploaded successfully',
-                'file_id' => uniqid(), // Temporary ID
+                'file_id' => $dataDukung->id,
                 'stored_name' => $randomName,
                 'path' => $uploadPath . '/' . $randomName,
                 'size' => $file->getSize(),
                 'original_name' => $file->getClientOriginalName(),
-                'file_data' => $fileData // For future database insertion
+                'database_id' => $dataDukung->id
             ]);
 
         } catch (\Exception $e) {
@@ -993,12 +1002,34 @@ class DashboardAminTLController extends Controller
                 'file_id' => 'required',
             ]);
 
-            // Since we're not saving to database yet,
-            // we can't delete from database
-            // This is a placeholder for future implementation
+            // Find file record in database
+            $dataDukung = DataDukung::find($request->file_id);
 
-            Log::info('File delete requested', [
-                'file_id' => $request->file_id
+            if (!$dataDukung) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File not found in database'
+                ], 404);
+            }
+
+            // Store file info before deletion
+            $namaFile = $dataDukung->nama_file;
+
+            // Get file path
+            $filePath = public_path($namaFile);
+
+            // Delete physical file if exists
+            if (file_exists($filePath)) {
+                unlink($filePath);
+                Log::info('Physical file deleted: ' . $filePath);
+            }
+
+            // Delete from database
+            $dataDukung->delete();
+
+            Log::info('File deleted successfully', [
+                'file_id' => $request->file_id,
+                'nama_file' => $namaFile
             ]);
 
             return response()->json([
