@@ -369,7 +369,48 @@
 <div class="card mt-3" style="width: 100%; ">
     <div class="card-header">Berkas Data Dukung</div>
     <div class="card-body">
-
+        @if(isset($uploadedFiles) && $uploadedFiles->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama File</th>
+                            <th>Tanggal Upload</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($uploadedFiles as $key => $file)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>
+                                <i class="fas fa-file"></i>
+                                {{ basename($file->nama_file) }}
+                            </td>
+                            <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
+                            <td>
+                                <a href="{{ asset($file->nama_file) }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Lihat
+                                </a>
+                                <a href="{{ asset($file->nama_file) }}" download class="btn btn-sm btn-success">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <button type="button" onclick="deleteUploadedFile({{ $file->id }}, this)" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-file-upload fa-3x mb-3"></i>
+                <p>Belum ada file yang diupload</p>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -518,6 +559,11 @@
 
                         console.log('File uploaded successfully:', response);
 
+                        // Refresh page after successful upload to show the new file in the list
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+
                     } else {
                         throw new Error(response.message || 'Upload failed');
                     }
@@ -598,6 +644,58 @@
             document.getElementById('uploadProgress').style.display = 'none';
             document.getElementById('uploadStatus').innerHTML = '';
         });
+
+        // Delete uploaded file from database
+        function deleteUploadedFile(fileId, buttonElement) {
+            if (!confirm('Apakah Anda yakin ingin menghapus file ini?')) {
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('file_id', fileId);
+            formData.append('_token', document.querySelector('input[name="_token"]').value);
+
+            // Disable button during request
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.addEventListener('load', function(event) {
+                try {
+                    var response = JSON.parse(event.target.responseText);
+
+                    if (response.success) {
+                        // Remove the table row
+                        var row = buttonElement.closest('tr');
+                        row.remove();
+
+                        // Show success message
+                        alert('File berhasil dihapus');
+
+                        // Refresh page to update file list
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                        buttonElement.disabled = false;
+                        buttonElement.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+                }
+            });
+
+            xhr.addEventListener('error', function(event) {
+                alert('Network error occurred while deleting file');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+            });
+
+            xhr.open('POST', '{{ url("adminTL/rekom/delete-file") }}', true);
+            xhr.send(formData);
+        }
     </script>
 
 
