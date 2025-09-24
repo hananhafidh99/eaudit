@@ -459,11 +459,20 @@
         }
 
         function uploadFile(file, index) {
+            console.log('Starting upload for file:', file.name, 'Size:', file.size);
+
             var formData = new FormData();
             formData.append('file', file);
             formData.append('_token', document.querySelector('input[name="_token"]').value);
             formData.append('id_pengawasan', document.querySelector('input[name="id_pengawasan"]').value);
             formData.append('id_penugasan', document.querySelector('input[name="id_penugasan"]').value);
+
+            console.log('FormData prepared:', {
+                file_name: file.name,
+                file_size: file.size,
+                id_pengawasan: document.querySelector('input[name="id_pengawasan"]').value,
+                id_penugasan: document.querySelector('input[name="id_penugasan"]').value
+            });
 
             // Create progress bar container
             var progressContainer = document.createElement('div');
