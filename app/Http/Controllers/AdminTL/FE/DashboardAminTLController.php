@@ -995,12 +995,31 @@ class DashboardAminTLController extends Controller
                 'file_id' => 'required',
             ]);
 
-            // Since we're not saving to database yet,
-            // we can't delete from database
-            // This is a placeholder for future implementation
+            // Find file record in database
+            $dataDukung = DataDukung::find($request->file_id);
 
-            Log::info('File delete requested', [
-                'file_id' => $request->file_id
+            if (!$dataDukung) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File not found in database'
+                ], 404);
+            }
+
+            // Get file path
+            $filePath = public_path($dataDukung->nama_file);
+
+            // Delete physical file if exists
+            if (file_exists($filePath)) {
+                unlink($filePath);
+                Log::info('Physical file deleted: ' . $filePath);
+            }
+
+            // Delete from database
+            $dataDukung->delete();
+
+            Log::info('File deleted successfully', [
+                'file_id' => $request->file_id,
+                'nama_file' => $dataDukung->nama_file
             ]);
 
             return response()->json([
