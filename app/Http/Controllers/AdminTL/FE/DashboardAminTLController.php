@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Pengawasan;
 use App\Models\Jenis_temuan;
+use App\Models\DataDukung;
 
 class DashboardAminTLController extends Controller
 {
