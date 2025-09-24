@@ -686,7 +686,14 @@ class DashboardAminTLController extends Controller
     {
         $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
-        return view('AdminTL.datadukungrekom_upload', ['pengawasan' => $pengawasan]);
+
+        // Get uploaded files from database
+        $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
+
+        return view('AdminTL.datadukungrekom_upload', [
+            'pengawasan' => $pengawasan,
+            'uploadedFiles' => $uploadedFiles
+        ]);
     }
 
     /**
@@ -1005,8 +1012,11 @@ class DashboardAminTLController extends Controller
                 ], 404);
             }
 
+            // Store file info before deletion
+            $namaFile = $dataDukung->nama_file;
+
             // Get file path
-            $filePath = public_path($dataDukung->nama_file);
+            $filePath = public_path($namaFile);
 
             // Delete physical file if exists
             if (file_exists($filePath)) {
@@ -1019,7 +1029,7 @@ class DashboardAminTLController extends Controller
 
             Log::info('File deleted successfully', [
                 'file_id' => $request->file_id,
-                'nama_file' => $dataDukung->nama_file
+                'nama_file' => $namaFile
             ]);
 
             return response()->json([
