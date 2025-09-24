@@ -945,30 +945,31 @@ class DashboardAminTLController extends Controller
             // Move file to upload directory
             $file->move($fullUploadPath, $randomName);
 
-            // Prepare file data for database (not saving yet as per request)
-            $fileData = [
+            // Save to database sesuai skema tabel datadukung
+            $dataDukung = DataDukung::create([
                 'id_pengawasan' => $request->id_pengawasan,
-                'id_penugasan' => $request->id_penugasan,
+                'nama_file' => $uploadPath . '/' . $randomName, // path file untuk database
+            ]);
+
+            // Log file data
+            Log::info('File uploaded and saved to database successfully', [
+                'id' => $dataDukung->id,
+                'id_pengawasan' => $request->id_pengawasan,
+                'nama_file' => $uploadPath . '/' . $randomName,
                 'original_name' => $file->getClientOriginalName(),
                 'stored_name' => $randomName,
-                'file_path' => $uploadPath . '/' . $randomName,
                 'file_size' => $file->getSize(),
-                'file_type' => $file->getClientMimeType(),
-                'uploaded_at' => now(),
-            ];
-
-            // Log file data for future database insertion
-            Log::info('File uploaded successfully', $fileData);
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'File uploaded successfully',
-                'file_id' => uniqid(), // Temporary ID
+                'file_id' => $dataDukung->id,
                 'stored_name' => $randomName,
                 'path' => $uploadPath . '/' . $randomName,
                 'size' => $file->getSize(),
                 'original_name' => $file->getClientOriginalName(),
-                'file_data' => $fileData // For future database insertion
+                'database_id' => $dataDukung->id
             ]);
 
         } catch (\Exception $e) {
