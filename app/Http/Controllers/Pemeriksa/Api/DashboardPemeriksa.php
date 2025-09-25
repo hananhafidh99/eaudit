@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\AdminTL\API;
+namespace App\Http\Controllers\Pemeriksa\Api;
 
 use App\Models\Pengawasan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
-class DashboardAminTLController extends Controller
+class DashboardPemeriksa extends Controller
 {
      public function arsip()
     {
@@ -203,5 +203,4 @@ public function rekom(Request $request)
             'data'       => $pengawasan
         ],200);
     }
-
 }

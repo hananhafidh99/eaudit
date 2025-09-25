@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Login\Api;
 
 use Carbon\Carbon;
 use App\Models\User;
@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 
-class UserController extends Controller {
-
+class UserController extends Controller
+{
     public function login(Request $request)
     {
         $username = $request->username;
@@ -47,8 +47,8 @@ class UserController extends Controller {
         $levelPaths = [
             'admineaudit' => 'skpd',
             'adminTL'     => 'adminTL',
-            'pemeriksa'   => 'PemeriksaTL',
-            'obrik'       => 'divisionHead',
+            'PemeriksaTL' => 'Pemeriksa',
+            'OpdTL'       => 'OPD',
         ];
 
         $path = $levelPaths[$cekuser->level] ?? '/';
