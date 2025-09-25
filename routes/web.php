@@ -53,6 +53,9 @@ Route::post('adminTL/rekom/delete-file', [DashboardAminTLController::class, 'del
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);
 Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);
 Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, 'datadukungrekomEdit']);
+
+Route::get('adminTL/datadukung/temuan', [DashboardAminTLController::class, 'indexdatadukungtemuan']);
+Route::get('adminTL/datadukung/temuan/{id}', [DashboardAminTLController::class, 'datadukungtemuanEdit']);
 // Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
 // Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
 
