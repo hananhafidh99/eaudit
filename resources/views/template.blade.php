@@ -128,7 +128,7 @@
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/rekom') }}">Rekomendasi</a></li>
-                <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/temuanrekom') }}">Temuan dan Rekom</a></li>
+                <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/temuan') }}">Temuan dan Rekom</a></li>
               </ul>
             </div>
           </li>

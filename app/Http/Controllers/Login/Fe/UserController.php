@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\FE;
+namespace App\Http\Controllers\Login\Fe;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;

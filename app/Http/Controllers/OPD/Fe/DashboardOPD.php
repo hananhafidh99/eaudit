@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\AdminTL\FE;
+namespace App\Http\Controllers\OPD\Fe;
 
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -12,13 +12,12 @@ use App\Models\Pengawasan;
 use App\Models\Jenis_temuan;
 use App\Models\DataDukung;
 
-class DashboardAminTLController extends Controller
+class DashboardOPD extends Controller
 {
     public function index()
     {
         return view('adminTL.index');
     }
-
 
     public function pkpt(Request $request)
     {
@@ -677,17 +676,9 @@ class DashboardAminTLController extends Controller
         return view('AdminTL.datadukungrekom', ['data' => $data]);
     }
 
-    public function indexdatadukungtemuan()
+    public function datadukungrekomStore()
     {
-        $client = new Client();
-        $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/temuan?token=" . $token;
-        $response = $client->request('GET', $url);
-        $content = $response->getBody()->getContents();
-        $contentArray = json_decode($content, true);
-        $data = $contentArray['data'];
-        $data['data'] = $data;
-        return view('AdminTL.datadukungtemuan', ['data' => $data]);
+
     }
 
     public function datadukungrekomEdit($id)
@@ -698,100 +689,10 @@ class DashboardAminTLController extends Controller
         // Get uploaded files from database
         $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
 
-         try {
-            $getparent = DB::table('jenis_temuans')
-                ->where('id_parent', DB::raw('id'))
-                ->where('id_pengawasan', $id)
-                ->get();
-
-            foreach ($getparent as $key => $value) {
-                $value->sub = DB::table('jenis_temuans')
-                    ->where('id_parent', $value->id)
-                    ->where('id', '!=', $value->id)
-                    ->get();
-
-                foreach ($value->sub as $subKey => $subValue) {
-                    $subValue->sub = DB::table('jenis_temuans')
-                        ->where('id_parent', $subValue->id)
-                        ->where('id', '!=', $subValue->id)
-                        ->get();
-                }
-            }
-             return view('AdminTL.datadukungrekom_upload', [
+        return view('AdminTL.datadukungrekom_upload', [
             'pengawasan' => $pengawasan,
-            'uploadedFiles' => $uploadedFiles,
-            'data' => $getparent
+            'uploadedFiles' => $uploadedFiles
         ]);
-        } catch (\Exception $e) {
-            dd($e->getMessage());
-        }
-    }
-
-    public function datadukungtemuanEdit($id)
-    {
-        $token = session('ctoken');
-        $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
-
-        // Get uploaded files from database
-        $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
-
-        try {
-            // Ambil semua data dan kelompokkan berdasarkan kode_temuan dan nama_temuan
-            $allData = DB::table('jenis_temuans')
-                ->where('id_pengawasan', $id)
-                ->orderBy('kode_temuan')
-                ->orderBy('id')
-                ->get();
-
-            // Kelompokkan berdasarkan kombinasi kode_temuan + nama_temuan
-            $groupedData = [];
-
-            foreach ($allData as $item) {
-                $key = $item->kode_temuan . '|' . $item->nama_temuan;
-
-                if (!isset($groupedData[$key])) {
-                    $groupedData[$key] = [
-                        'kode_temuan' => $item->kode_temuan,
-                        'nama_temuan' => $item->nama_temuan,
-                        'recommendations' => []
-                    ];
-                }
-
-                // Tambahkan item sebagai rekomendasi
-                $groupedData[$key]['recommendations'][] = $item;
-            }
-
-            // Convert ke format yang dibutuhkan view dan build hierarchy
-            $formattedData = [];
-            foreach ($groupedData as $group) {
-                $temuan = (object) [
-                    'kode_temuan' => $group['kode_temuan'],
-                    'nama_temuan' => $group['nama_temuan'],
-                    'recommendations' => $this->buildRecommendationHierarchy($group['recommendations'])
-                ];
-                $formattedData[] = $temuan;
-            }
-
-            return view('AdminTL.datadukungtemuan_upload', [
-                'pengawasan' => $pengawasan,
-                'existingData' => collect($formattedData),
-                'uploadedFiles' => $uploadedFiles
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error loading temuan data:', [
-                'error' => $e->getMessage(),
-                'id_pengawasan' => $id
-            ]);
-
-             return view('AdminTL.datadukungtemuan_upload', [
-                'pengawasan' => $pengawasan,
-                'existingData' => collect([]),
-                 'uploadedFiles' => $uploadedFiles
-            ]);
-        }
-
-
     }
 
     /**

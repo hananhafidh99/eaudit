@@ -128,7 +128,7 @@
     .remove-temuan-btn:hover {
         background-color: rgba(255, 255, 255, 0.2) !important;
     }
-</style>
+    </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <!-- Button trigger modal -->
@@ -243,7 +243,10 @@
 
 <div class="card mb-4" style="width: 100%;">
 <div class="card-header"> Jenis Temuan dan Rekomendasi</div>
+<div class="d-flex justify-content-end" style="background-color:bisque"><button type="button" class="btn btn-primary btn-sm" id="add_card"><i class="fa-solid fa-plus"></i></button></div>
     <div class="card-body">
+
+        {{-- Display Success/Error Messages --}}
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
