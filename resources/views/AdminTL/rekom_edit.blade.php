@@ -262,61 +262,8 @@
 </div>
 
 <div class="card mb-4" style="width: 100%;">
-    <div class="card-header">Data Pengawasan</div>
+<div class="card-header"> Jenis Rekomendasi</div>
     <div class="card-body">
-        {{-- <form action="{{ url('/jabatan_baru'.$penugasan['id']) }}" method="post" enctype="multipart/form-data"> --}}
-            @method('post')
-            @csrf
-            <div class="row">
-                <div class="col-4 mb-3">
-                    <label for="">Tanggal Surat Keluar </label>
-                    <input type="date" name="tglkeluar" style="color: black; background-color:white" class="form-control" value="{{ $pengawasan['tglkeluar'] }}"  >
-                </div>
-                 <div class="col-4 mb-3">
-                    <label for="">Tipe Rekomendasi </label>
-                    <select name="tipe" id="" class="form-control" style="color: black; background-color:white">
-                        <option value="Rekomendasi" @if ($pengawasan['tipe']=='Rekomendasi')selected='selected' @endif >Rekomendasi</option>
-                        <option value="TemuandanRekomendasi" @if ($pengawasan['tipe']=='TemuandanRekomendasi')selected='selected' @endif >Temuan dan Rekomendasi</option>
-                    </select>
-                </div>
-                <div class="col-4 mb-3">
-                    <label for="">Jenis Pemeriksaan </label>
-                     <select name="jenis" id="" class="form-control" style="color: black; background-color:white">
-                        <option value="pdtt" @if ($pengawasan['jenis']=='pdtt')selected='selected' @endif>PDTT</option>
-                        <option value="nspk" @if ($pengawasan['jenis']=='nspk')selected='selected' @endif>NSPK</option>
-                     </select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label for="">Wilayah </label>
-                     <select name="wilayah" id="" class="form-control" style="color: black; background-color:white">
-                        <option value="wilayah1" @if ($pengawasan['wilayah']=='wilayah1')selected='selected' @endif>Wilayah 1</option>
-                        <option value="wilayah2" @if ($pengawasan['wilayah']=='wilayah2')selected='selected' @endif>Wilayah 2</option>
-                     </select>
-                </div>
-                <div class="col-6 mb-3">
-                    <label for="">Pemeriksa </label>
-                     <select name="pemeriksa" id="" class="form-control" style="color: black; background-color:white">
-                        <option value="auditor" @if ($pengawasan['pemeriksa']=='auditor')selected='selected' @endif>Auditor</option>
-                        <option value="ppupd"   @if ($pengawasan['pemeriksa']=='ppupd')selected='selected' @endif>PPUPD</option>
-                     </select>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card mb-4" id="card" style="width: 100%">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span>Rekomendasi</span>
-        <button type="button" class="btn btn-primary btn-sm" id="add_btn">
-            <i class="fa-solid fa-plus"></i> Tambah Rekomendasi
-        </button>
-    </div>
-    <div class="card-body">
-
-        {{-- Display Success/Error Messages --}}
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -342,13 +289,170 @@
             </div>
         @endif
 
+        {{-- Display existing data --}}
+        @if(isset($data) && count($data) > 0)
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Data Rekomendasi yang Sudah Ada</h5>
+            </div>
+            <div class="card-body">
+                @foreach($data as $parentIndex => $parent)
+                <div class="mb-4 border rounded p-3">
+                    <div class="row mb-3 bg-light p-2 rounded">
+                        <div class="col-md-9">
+                            <strong>Rekomendasi Utama #{{ $parentIndex + 1 }}:</strong><br>
+                            <span class="text-primary fw-bold">{{ $parent->rekomendasi ?? '-' }}</span>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <strong>Aksi Rekomendasi:</strong><br>
+                            <button type="button" class="btn btn-success btn-sm add-new-record-btn"
+                                    data-parent-id="{{ $parent->id }}"
+                                    data-main-number="{{ $parentIndex + 1 }}"
+                                    title="Tambah Record Baru ke Rekomendasi Ini">
+                                <i class="fas fa-plus"></i> Add New Record
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm delete-rekom-btn ms-1"
+                                    data-id="{{ $parent->id }}"
+                                    data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}"
+                                    title="Hapus Seluruh Rekomendasi">
+                                <i class="fas fa-trash"></i> Hapus Rekomendasi
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Display recommendations hierarchically --}}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="8%">No</th>
+                                    <th width="40%">Rekomendasi</th>
+                                    <th width="27%">Keterangan</th>
+                                    <th width="15%">Pengembalian</th>
+                                    <th width="10%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{-- Display all recommendations for this main rekomendasi --}}
+                                @php
+                                    $rekomCounter = 1;
+                                    $subCounters = [$parentIndex + 1 => 1];
+
+                                    // Function to render hierarchical recommendations
+                                    $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0) use (&$renderRecommendations, &$rekomCounter, &$subCounters, $parentIndex) {
+                                        foreach ($recommendations as $rekom) {
+                                            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
+                                            $levelClass = $level > 0 ? 'sub-level-' . min($level, 3) : '';
+
+                                            // Determine numbering
+                                            if ($level === 0) {
+                                                $number = $rekomCounter;
+                                                $displayNumber = '<strong>' . $number . '</strong>';
+                                            } else {
+                                                $parentNum = $parentIndex + 1;
+                                                if (!isset($subCounters[$parentNum])) {
+                                                    $subCounters[$parentNum] = 1;
+                                                }
+                                                $subNum = $subCounters[$parentNum];
+                                                $displayNumber = '↳ ' . $parentNum . '.' . $subNum;
+                                                $subCounters[$parentNum]++;
+                                            }
+
+                                            echo '<tr class="' . $levelClass . '">';
+                                            echo '<td>' . $displayNumber . '</td>';
+
+                                            $rekomStyle = $level > 0 ? 'margin-left: ' . ($level * 20) . 'px; font-style: italic;' : 'font-weight: bold;';
+                                            echo '<td><span style="' . $rekomStyle . '">' . ($rekom->rekomendasi ?? '-') . '</span></td>';
+                                            echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
+                                            echo '<td>';
+
+                                            if ($rekom->pengembalian && $rekom->pengembalian > 0) {
+                                                echo '<span class="text-success fw-bold">Rp ' . number_format($rekom->pengembalian, 0, ',', '.') . '</span>';
+                                            } else {
+                                                echo '<span class="text-muted">-</span>';
+                                            }
+
+                                            echo '</td>';
+                                            echo '<td>';
+                                            echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
+                                            echo 'data-id="' . $rekom->id . '" ';
+                                            echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
+                                            echo 'data-keterangan="' . htmlspecialchars($rekom->keterangan ?? '') . '" ';
+                                            echo 'data-pengembalian="' . ($rekom->pengembalian ?? 0) . '" ';
+                                            echo 'title="Edit Rekomendasi">';
+                                            echo '<i class="fas fa-edit"></i>';
+                                            echo '</button> ';
+                                            echo '<button type="button" class="btn btn-danger btn-sm delete-rekom-btn" ';
+                                            echo 'data-id="' . $rekom->id . '" ';
+                                            echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
+                                            echo 'title="Hapus Rekomendasi">';
+                                            echo '<i class="fas fa-trash"></i>';
+                                            echo '</button>';
+                                            echo '</td>';
+                                            echo '</tr>';
+
+                                            // Increment counter only for root level
+                                            if ($level === 0) {
+                                                $rekomCounter++;
+                                            }
+
+                                            // Recursive call for nested children
+                                            if (isset($rekom->sub) && is_array($rekom->sub) && count($rekom->sub) > 0) {
+                                                $renderRecommendations($rekom->sub, $number, $level + 1);
+                                            }
+                                        }
+                                    };
+
+                                    // Create array with parent as first item, then all sub-recommendations
+                                    $allRecommendations = [$parent];
+
+                                    // Add sub-recommendations at same level if they exist
+                                    if (isset($parent->sub) && is_array($parent->sub) && count($parent->sub) > 0) {
+                                        foreach ($parent->sub as $subRekom) {
+                                            if (is_object($subRekom) && isset($subRekom->rekomendasi)) {
+                                                $allRecommendations[] = $subRekom;
+                                            }
+                                        }
+                                    }
+
+                                    $renderRecommendations($allRecommendations, '', 0);
+                                @endphp
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Form for adding new data --}}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Rekomendasi Baru</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Petunjuk:</strong> Silakan isi kolom rekomendasi yang tersedia kosong di bawah ini.
+                    Anda dapat menambah rekomendasi baru dengan menekan tombol <strong>"Tambah Rekomendasi Lain"</strong>
+                    dan menambah sub-rekomendasi dengan tombol <strong>"Sub"</strong>.
+                </div>
         <form action="{{ url('adminTL/rekom/') }}" method="post" enctype="multipart/form-data">
            @method('POST')
            @csrf
            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
 
-           <table class="table table-bordered" id="tabel1">
+           <div class="d-flex justify-content-between align-items-center mb-3">
+               <h6 class="mb-0 text-muted">Form Input Rekomendasi</h6>
+               <button type="button" class="btn btn-success btn-sm" id="add_btn">
+                   <i class="fa-solid fa-plus"></i> Tambah Rekomendasi Lain
+               </button>
+           </div>
+
+           <table class="table table-bordered">
             <thead class="table-light">
               <tr>
                 <th scope="col" style="width: 8%">Nomor</th>
@@ -359,93 +463,16 @@
               </tr>
             </thead>
             <tbody class="body">
-                @if(isset($data) && count($data) > 0)
-                @foreach($data as $key => $item)
-                <tr class="sub{{ $key }}" data-level="0" data-rekom-index="{{ $key }}">
-                    <td class="nomor-cell">{{ $loop->iteration }}</td>
-                    <td><textarea class="form-control" name="tipeA[{{ $key }}][rekomendasi]" required>{{ $item->rekomendasi }}</textarea></td>
-                    <td><textarea class="form-control" name="tipeA[{{ $key }}][keterangan]">{{ $item->keterangan }}</textarea></td>
-                    <td><input type="text" class="form-control tanparupiah"
-                               name="tipeA[{{ $key }}][pengembalian]"
-                               value="{{ number_format($item->pengembalian,0,',','.') }}"
-                               placeholder="Rp. 0"></td>
-                    <td>
-                        <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
-                        <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi" id="add_btnEdit">
-                            <i class="fa-solid fa-indent"></i>
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus">
-                            <i class="fa-solid fa-minus"></i>
-                        </button>
-                    </td>
-                </tr>
-
-                    @if(isset($item->sub))
-                        @foreach($item->sub as $subKey => $subItem)
-                            <tr class="sub-level-1" data-level="1" data-rekom-index="{{ $subKey }}" data-parent="{{ $key }}">
-                                <td class="nomor-cell"></td>
-                                <td>
-                                    <div class="rekomendasi-text">
-                                        <textarea class="form-control kolom1"
-                                                name="tipeA[{{ $key }}][sub][{{ $subKey }}][rekomendasi]"
-                                                required>{{ $subItem->rekomendasi }}</textarea>
-                                    </div>
-                                </td>
-                                <td><textarea class="form-control kolom1"
-                                        name="tipeA[{{ $key }}][sub][{{ $subKey }}][keterangan]">{{ $subItem->keterangan }}</textarea></td>
-                                <td><input type="text" class="form-control kolom1 tanparupiah"
-                                        name="tipeA[{{ $key }}][sub][{{ $subKey }}][pengembalian]"
-                                        value="{{ number_format($subItem->pengembalian,0,',','.') }}"
-                                        placeholder="Rp. 0"></td>
-                                <td>
-                                    <button type="button" data-level1="{{ $key }}" data-level2="{{ $subKey }}" data-parentid="{{ $subItem->id }}"
-                                            class="btn btn-info btn-sm add_subsub_btn" title="Tambah Sub-Sub Rekomendasi" id="add_btnEdit1">
-                                        <i class="fa-solid fa-indent"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>
-                                </td>
-                            </tr>
-                            @if(isset($subItem->sub))
-                                @foreach($subItem->sub as $nestedKey => $nestedItem)
-                                    <tr class="sub-level-2" data-level="2" data-rekom-index="{{ $nestedKey }}" data-parent="{{ $key }}_{{ $subKey }}">
-                                        <td class="nomor-cell"></td>
-                                        <td>
-                                            <div class="rekomendasi-text">
-                                                <textarea class="form-control kolom2"
-                                                        name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][rekomendasi]"
-                                                        required>{{ $nestedItem->rekomendasi }}</textarea>
-                                            </div>
-                                        </td>
-                                        <td><textarea class="form-control kolom2"
-                                                name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][keterangan]">{{ $nestedItem->keterangan }}</textarea></td>
-                                        <td><input type="text" class="form-control kolom2 tanparupiah"
-                                                name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][pengembalian]"
-                                                value="{{ number_format($nestedItem->pengembalian,0,',','.') }}"
-                                                placeholder="Rp. 0"></td>
-                                        <td>
-                                            <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @endif
-                        @endforeach
-                    @endif
-                @endforeach
-                @else
                 <tr class="sub0" data-level="0" data-rekom-index="0">
                     <td class="nomor-cell">1</td>
-                    <td><textarea class="form-control" name="tipeA[0][rekomendasi]" required placeholder="Masukkan rekomendasi..."></textarea></td>
-                    <td><textarea class="form-control" name="tipeA[0][keterangan]" placeholder="Keterangan rekomendasi..."></textarea></td>
+                    <td><textarea class="form-control" name="tipeA[0][rekomendasi]" rows="3" required placeholder="Masukkan rekomendasi..."></textarea></td>
+                    <td><textarea class="form-control" name="tipeA[0][keterangan]" rows="2" placeholder="Keterangan rekomendasi..."></textarea></td>
                     <td><input type="text" class="form-control tanparupiah" name="tipeA[0][pengembalian]" placeholder="Rp. 0"></td>
                     <td>
                         <button type="button" data-level1="0" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button>
-                        <button type="button" data-level1="0" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi" id="add_btn1"><i class="fa-solid fa-indent"></i></button>
-                        <button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>
+                        <button type="button" data-level1="0" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button>
                     </td>
                 </tr>
-                @endif
             </tbody>
           </table>
 
@@ -458,6 +485,8 @@
               </a>
           </div>
         </form>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
@@ -488,7 +517,9 @@ function formatRupiah(angka) {
 // Function to renumber table with hierarchical numbering
 function renumberTable(tbody) {
     var mainCounter = 1;
+    var currentMainNumber = 0;
     var subCounters = {}; // Track sub-counters for each parent
+    var subSubCounters = {}; // Track sub-sub-counters
 
     tbody.find('tr').each(function() {
         var row = $(this);
@@ -496,32 +527,35 @@ function renumberTable(tbody) {
         var numberCell = row.find('.nomor-cell, td:first');
 
         if (level === 0) {
-            // Main recommendation
+            // Main recommendation: 1, 2, 3, etc.
+            currentMainNumber = mainCounter;
             numberCell.text(mainCounter);
             mainCounter++;
-            subCounters[mainCounter - 2] = { level1: 0, level2: {} };
+            // Reset sub counters for this main item
+            subCounters[currentMainNumber] = 0;
+            subSubCounters[currentMainNumber] = {};
         } else if (level === 1) {
-            // Sub-recommendation
-            var parentIndex = 0; // Find parent index logic here
-            if (!subCounters[parentIndex]) subCounters[parentIndex] = { level1: 0, level2: {} };
-            subCounters[parentIndex].level1++;
-            numberCell.text(mainCounter - 1 + '.' + subCounters[parentIndex].level1);
+            // Sub-recommendation: 1.1, 1.2, 2.1, 2.2, etc.
+            if (!subCounters[currentMainNumber]) subCounters[currentMainNumber] = 0;
+            subCounters[currentMainNumber]++;
+            var subNumber = subCounters[currentMainNumber];
+            numberCell.text(currentMainNumber + '.' + subNumber);
+            // Reset sub-sub counter for this sub item
+            subSubCounters[currentMainNumber][subNumber] = 0;
         } else if (level === 2) {
-            // Sub-sub-recommendation
-            var parentIndex = 0;
-            var subIndex = 0;
-            if (!subCounters[parentIndex]) subCounters[parentIndex] = { level1: 0, level2: {} };
-            if (!subCounters[parentIndex].level2[subIndex]) subCounters[parentIndex].level2[subIndex] = 0;
-            subCounters[parentIndex].level2[subIndex]++;
-            numberCell.text((mainCounter - 1) + '.' + subCounters[parentIndex].level1 + '.' + subCounters[parentIndex].level2[subIndex]);
+            // Sub-sub-recommendation: 1.1.1, 1.1.2, 1.2.1, etc.
+            var currentSubNumber = subCounters[currentMainNumber] || 1;
+            if (!subSubCounters[currentMainNumber]) subSubCounters[currentMainNumber] = {};
+            if (!subSubCounters[currentMainNumber][currentSubNumber]) subSubCounters[currentMainNumber][currentSubNumber] = 0;
+            subSubCounters[currentMainNumber][currentSubNumber]++;
+            var subSubNumber = subSubCounters[currentMainNumber][currentSubNumber];
+            numberCell.text(currentMainNumber + '.' + currentSubNumber + '.' + subSubNumber);
         }
     });
 }
 
 $(document).ready(function () {
-    let index = {{ count($data) > 0 ? count($data) : 1 }};
-    let index1 = 0;
-    let index2 = 0;
+    let index = 1; // Start with 1 since we already have tipeA[0]
     let indexEdit = 0;
     let indexEdit1 = 0;
 
@@ -579,25 +613,10 @@ $(document).ready(function () {
         renumberTable($(this).closest('tbody'));
     });
 
-    // Legacy support for add_btn1 (sub recommendation)
+    // Legacy support for add_btn1 (sub recommendation) - updated for simpler form
     $(document).on('click', '#add_btn1', function () {
-        index1++;
-        var html = '';
-        var level1 = $(this).data('level1');
-
-        html += '<tr class="sub-level-1" data-level="1" data-rekom-index="' + index1 + '" data-parent="' + level1 + '">';
-        html += '<td class="nomor-cell"></td>';
-        html += '<td><div class="rekomendasi-text"><textarea class="form-control kolom1" name="tipeA[' + level1 + '][sub][' + index1 + '][rekomendasi]" required placeholder="Sub rekomendasi..."></textarea></div></td>';
-        html += '<td><textarea class="form-control kolom1" name="tipeA[' + level1 + '][sub][' + index1 + '][keterangan]" placeholder="Keterangan..."></textarea></td>';
-        html += '<td><input type="text" class="form-control kolom1 tanparupiah" name="tipeA[' + level1 + '][sub][' + index1 + '][pengembalian]" placeholder="Rp. 0"></td>';
-        html += '<td>';
-        html += '<button type="button" data-level1="' + level1 + '" data-level2="' + index1 + '" class="btn btn-info btn-sm add_subsub_btn" title="Tambah Sub-Sub Rekomendasi" id="add_btn2"><i class="fa-solid fa-indent"></i></button> ';
-        html += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>';
-        html += '</td>';
-        html += '</tr>';
-
-        $(this).closest('tr.sub' + level1).after(html);
-        renumberTable($(this).closest('tbody'));
+        // This is now handled by the generic add_sub_btn handler
+        $(this).trigger('click');
     });
     // Add new recommendation row
     $(document).on('click', '.add_rekom_btn', function () {
@@ -607,12 +626,12 @@ $(document).ready(function () {
         var html = '';
         html += '<tr class="sub' + index + '" data-level="0" data-rekom-index="' + index + '">';
         html += '<td class="nomor-cell">' + rowNumber + '</td>';
-        html += '<td><textarea class="form-control" name="tipeA[' + index + '][rekomendasi]" required placeholder="Masukkan rekomendasi..."></textarea></td>';
-        html += '<td><textarea class="form-control" name="tipeA[' + index + '][keterangan]" placeholder="Keterangan rekomendasi..."></textarea></td>';
+        html += '<td><textarea class="form-control" name="tipeA[' + index + '][rekomendasi]" rows="3" required placeholder="Masukkan rekomendasi..."></textarea></td>';
+        html += '<td><textarea class="form-control" name="tipeA[' + index + '][keterangan]" rows="2" placeholder="Keterangan rekomendasi..."></textarea></td>';
         html += '<td><input type="text" class="form-control tanparupiah" name="tipeA[' + index + '][pengembalian]" placeholder="Rp. 0"></td>';
         html += '<td>';
         html += '<button type="button" data-level1="' + index + '" class="btn btn-success btn-sm add_rekom_btn" title="Tambah Rekomendasi"><i class="fa-solid fa-plus"></i></button> ';
-        html += '<button type="button" data-level1="' + index + '" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi" id="add_btn1"><i class="fa-solid fa-indent"></i></button> ';
+        html += '<button type="button" data-level1="' + index + '" class="btn btn-info btn-sm add_sub_btn" title="Tambah Sub Rekomendasi"><i class="fa-solid fa-indent"></i></button> ';
         html += '<button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button>';
         html += '</td>';
         html += '</tr>';
@@ -622,57 +641,48 @@ $(document).ready(function () {
         renumberTable(tbody);
     });
 
-    // Legacy support for main add button
+    // Legacy support for main add button - find the first add_rekom_btn in the form
     $('#add_btn').on('click', function () {
-        $(this).closest('.card-header').find('.add_rekom_btn').first().click();
+        $('.add_rekom_btn').first().click();
     });
 
 
 
 
     // Remove recommendation row
-    $(document).on('click', '.remove_rekom_btn, #remove', function () {
+    $(document).on('click', '.remove_rekom_btn', function () {
         var tbody = $(this).closest('tbody');
         var rowToRemove = $(this).closest('tr');
         var parentLevel = rowToRemove.data('level') || 0;
 
-        if (tbody.find('tr[data-level="0"]').length <= 1 && parentLevel === 0) {
+        // Check if this is the only main recommendation
+        var mainRows = tbody.find('tr[data-level="0"]');
+        if (mainRows.length <= 1 && parentLevel === 0) {
             alert('Minimal harus ada satu rekomendasi utama!');
             return;
         }
 
-        // Remove the row and all its nested sub-rows
-        var nextRow = rowToRemove.next();
-        rowToRemove.remove();
+        // Confirm deletion
+        if (confirm('Apakah Anda yakin ingin menghapus rekomendasi ini beserta sub-rekomendasinya?')) {
+            // Remove the row and all its nested sub-rows
+            var nextRow = rowToRemove.next();
+            rowToRemove.remove();
 
-        // Remove all nested sub-rows that belong to this row
-        while (nextRow.length > 0 && nextRow.data('level') > parentLevel) {
-            var currentRow = nextRow;
-            nextRow = nextRow.next();
-            currentRow.remove();
+            // Remove all nested sub-rows that belong to this row
+            while (nextRow.length > 0 && nextRow.data('level') > parentLevel) {
+                var currentRow = nextRow;
+                nextRow = nextRow.next();
+                currentRow.remove();
+            }
+
+            // Renumber all rows in the table
+            renumberTable(tbody);
         }
-
-        // Renumber all rows in the table
-        renumberTable(tbody);
     });
 
-    // Legacy support for add_btn2 (sub-sub recommendation)
+    // Legacy support for add_btn2 (sub-sub recommendation) - handled by add_subsub_btn
     $(document).on('click', '#add_btn2', function () {
-        index2++;
-        var html = '';
-        var level1 = $(this).data('level1');
-        var level2 = $(this).data('level2');
-
-        html += '<tr class="sub-level-2" data-level="2" data-rekom-index="' + index2 + '" data-parent="' + level1 + '_' + level2 + '">';
-        html += '<td class="nomor-cell"></td>';
-        html += '<td><div class="rekomendasi-text"><textarea class="form-control kolom2" name="tipeA[' + level1 + '][sub][' + level2 + '][sub][' + index2 + '][rekomendasi]" required placeholder="Sub-sub rekomendasi..."></textarea></div></td>';
-        html += '<td><textarea class="form-control kolom2" name="tipeA[' + level1 + '][sub][' + level2 + '][sub][' + index2 + '][keterangan]" placeholder="Keterangan..."></textarea></td>';
-        html += '<td><input type="text" class="form-control kolom2 tanparupiah" name="tipeA[' + level1 + '][sub][' + level2 + '][sub][' + index2 + '][pengembalian]" placeholder="Rp. 0"></td>';
-        html += '<td><button type="button" class="btn btn-danger btn-sm remove_rekom_btn" title="Hapus"><i class="fa-solid fa-minus"></i></button></td>';
-        html += '</tr>';
-
-        $(this).closest('tr').after(html);
-        renumberTable($(this).closest('tbody'));
+        // This is now handled by the generic add_subsub_btn handler
     });
 
     // Form validation before submit
@@ -703,15 +713,284 @@ $(document).ready(function () {
 
     // Initialize numbering on page load
     renumberTable($('tbody.body'));
+
+    // Edit recommendation functionality
+    $(document).on('click', '.edit-rekom-btn', function() {
+        var id = $(this).data('id');
+        var rekomendasi = $(this).data('rekomendasi');
+        var keterangan = $(this).data('keterangan');
+        var pengembalian = $(this).data('pengembalian');
+
+        // Populate modal with data
+        $('#edit-id').val(id);
+        $('#edit-rekomendasi').val(rekomendasi);
+        $('#edit-keterangan').val(keterangan);
+        $('#edit-pengembalian').val(pengembalian > 0 ? formatRupiah(pengembalian.toString()) : '');
+
+        // Show modal
+        $('#editModal').modal('show');
+    });
+
+    // Delete recommendation functionality
+    $(document).on('click', '.delete-rekom-btn', function() {
+        var id = $(this).data('id');
+        var rekomendasi = $(this).data('rekomendasi');
+
+        console.log('Delete button clicked for ID:', id);
+
+        // Create detailed confirmation message
+        var confirmMessage = 'Apakah Anda yakin ingin menghapus rekomendasi ini?\n\n';
+        confirmMessage += 'Rekomendasi: ' + (rekomendasi.length > 100 ? rekomendasi.substring(0, 100) + '...' : rekomendasi);
+
+        if (confirm(confirmMessage)) {
+            console.log('Delete confirmed, sending AJAX request...');
+
+            // Send delete request
+            $.ajax({
+                url: '/adminTL/rekomendasi/' + id,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    console.log('Sending DELETE request to:', '/adminTL/rekomendasi/' + id);
+                },
+                success: function(response) {
+                    console.log('Delete response:', response);
+
+                    if (response.success) {
+                        alert(response.message || 'Rekomendasi berhasil dihapus!');
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Terjadi kesalahan saat menghapus data!');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Delete error:', xhr);
+                    console.error('Status:', xhr.status);
+                    console.error('Response Text:', xhr.responseText);
+
+                    var errorMessage = 'Terjadi kesalahan saat menghapus data!';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+
+                    alert(errorMessage);
+                }
+            });
+        }
+    });
+
+    // Submit edit form
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+
+        var formData = {
+            id: $('#edit-id').val(),
+            rekomendasi: $('#edit-rekomendasi').val(),
+            keterangan: $('#edit-keterangan').val(),
+            pengembalian: $('#edit-pengembalian').val().replace(/[^0-9]/g, ''), // Remove formatting
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
+
+        $.ajax({
+            url: '/adminTL/rekomendasi/update',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message || 'Rekomendasi berhasil diperbarui!');
+                    $('#editModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(response.message || 'Terjadi kesalahan saat memperbarui data!');
+                }
+            },
+            error: function(xhr) {
+                console.error('Update error:', xhr);
+
+                var errorMessage = 'Terjadi kesalahan saat memperbarui data!';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
+                }
+
+                alert(errorMessage);
+            }
+        });
+    });
+
+    // Add New Record Modal Handler for sub recommendations
+    $(document).on('click', '.add-new-record-btn', function() {
+        var parentId = $(this).data('parent-id');
+        var mainNumber = $(this).data('main-number');
+
+        console.log('=== SUB MODAL OPENING DEBUG ===');
+        console.log('Parent ID:', parentId);
+        console.log('Main Number:', mainNumber);
+
+        // Set modal data
+        $('#add-parent-id').val(parentId);
+        $('#add-display-number').text(mainNumber);
+
+        // Reset form
+        $('#addSubRecordForm')[0].reset();
+        $('#add-parent-id').val(parentId);
+
+        console.log('Modal setup complete, parent_id set to:', $('#add-parent-id').val());
+        console.log('=== END SUB MODAL OPENING DEBUG ===');
+
+        // Show modal
+        $('#addSubRecordModal').modal('show');
+    });
+
+    // Submit add sub record form
+    $('#addSubRecordForm').on('submit', function(e) {
+        e.preventDefault();
+
+        var formData = {
+            parent_id: $('#add-parent-id').val(),
+            rekomendasi: $('#add-sub-rekomendasi').val(),
+            keterangan: $('#add-sub-keterangan').val(),
+            pengembalian: $('#add-sub-pengembalian').val().replace(/[^0-9]/g, ''), // Remove formatting
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
+
+        console.log('=== SUBMITTING SUB RECORD ===');
+        console.log('Form Data:', formData);
+
+        $.ajax({
+            url: '/adminTL/rekomendasi/add-sub',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                console.log('Add sub response:', response);
+                if (response.success) {
+                    alert(response.message || 'Sub rekomendasi berhasil ditambahkan!');
+                    $('#addSubRecordModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(response.message || 'Terjadi kesalahan saat menambahkan sub rekomendasi!');
+                }
+            },
+            error: function(xhr) {
+                console.error('Add sub error:', xhr);
+
+                var errorMessage = 'Terjadi kesalahan saat menambahkan sub rekomendasi!';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
+                }
+
+                alert(errorMessage);
+            }
+        });
+    });
 });
 </script>
 
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Rekomendasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-id">
 
+                    <div class="mb-3">
+                        <label for="edit-rekomendasi" class="form-label">Rekomendasi <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="edit-rekomendasi" rows="3" required></textarea>
+                    </div>
 
+                    <div class="mb-3">
+                        <label for="edit-keterangan" class="form-label">Keterangan</label>
+                        <textarea class="form-control" id="edit-keterangan" rows="2"></textarea>
+                    </div>
 
+                    <div class="mb-3">
+                        <label for="edit-pengembalian" class="form-label">Pengembalian Keuangan</label>
+                        <input type="text" class="form-control tanparupiah" id="edit-pengembalian" placeholder="Rp. 0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-</script>
+<!-- Add Sub Record Modal -->
+<div class="modal fade" id="addSubRecordModal" tabindex="-1" aria-labelledby="addSubRecordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addSubRecordModalLabel">
+                    <i class="fas fa-plus-circle"></i> Tambah Sub Rekomendasi untuk #<span id="add-display-number"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addSubRecordForm">
+                <div class="modal-body">
+                    <input type="hidden" id="add-parent-id" name="parent_id">
 
+                    <div class="mb-3">
+                        <label for="add-sub-rekomendasi" class="form-label">Sub Rekomendasi <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="add-sub-rekomendasi" name="rekomendasi" rows="3" placeholder="Masukkan sub rekomendasi..." required></textarea>
+                    </div>
 
+                    <div class="mb-3">
+                        <label for="add-sub-keterangan" class="form-label">Keterangan</label>
+                        <textarea class="form-control" id="add-sub-keterangan" name="keterangan" rows="2" placeholder="Keterangan sub rekomendasi..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="add-sub-pengembalian" class="form-label">Pengembalian Keuangan</label>
+                        <input type="text" class="form-control tanparupiah" id="add-sub-pengembalian" name="pengembalian" placeholder="Rp. 0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Simpan Sub Rekomendasi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection
