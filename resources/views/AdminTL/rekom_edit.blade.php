@@ -715,10 +715,16 @@ $(document).ready(function () {
         // This is now handled by the generic add_subsub_btn handler
     });
 
-    // Form validation before submit
+    // Form validation and data cleaning before submit
     $('form').on('submit', function(e) {
         var hasError = false;
         var errorMessages = [];
+
+        // Clean rupiah formatting from all pengembalian fields before submit
+        $(this).find('input[name*="[pengembalian]"]').each(function() {
+            var cleanValue = $(this).val().replace(/[^0-9]/g, '');
+            $(this).val(cleanValue);
+        });
 
         // Check if at least one recommendation exists
         var rekomExists = false;

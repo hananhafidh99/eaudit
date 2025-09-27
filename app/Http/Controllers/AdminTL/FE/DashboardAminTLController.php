@@ -207,6 +207,21 @@ class DashboardAminTLController extends Controller
         }
     }
 
+    /**
+     * Helper function to clean rupiah formatting
+     */
+    private function cleanRupiahFormat($value)
+    {
+        if (empty($value)) {
+            return 0;
+        }
+
+        // Remove all non-numeric characters (Rp, spaces, dots, commas, etc.)
+        $cleaned = preg_replace('/[^0-9]/', '', $value);
+
+        return $cleaned ?: 0;
+    }
+
     public function rekomStore(Request $request)
     {
         try {
