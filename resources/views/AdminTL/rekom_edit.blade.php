@@ -334,7 +334,7 @@
                             </thead>
                             <tbody>
                                 {{-- Display main parent recommendation --}}
-                                @php 
+                                @php
                                     $mainNumber = $parentIndex + 1;
                                 @endphp
                                 <tr>
@@ -349,17 +349,17 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-warning btn-sm edit-rekom-btn" 
-                                                data-id="{{ $parent->id }}" 
-                                                data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}" 
-                                                data-keterangan="{{ htmlspecialchars($parent->keterangan ?? '') }}" 
-                                                data-pengembalian="{{ $parent->pengembalian ?? 0 }}" 
+                                        <button type="button" class="btn btn-warning btn-sm edit-rekom-btn"
+                                                data-id="{{ $parent->id }}"
+                                                data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}"
+                                                data-keterangan="{{ htmlspecialchars($parent->keterangan ?? '') }}"
+                                                data-pengembalian="{{ $parent->pengembalian ?? 0 }}"
                                                 title="Edit Rekomendasi">
                                             <i class="fas fa-edit"></i>
-                                        </button> 
-                                        <button type="button" class="btn btn-danger btn-sm delete-rekom-btn" 
-                                                data-id="{{ $parent->id }}" 
-                                                data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}" 
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm delete-rekom-btn"
+                                                data-id="{{ $parent->id }}"
+                                                data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}"
                                                 title="Hapus Rekomendasi">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -369,7 +369,7 @@
                                 {{-- Display sub-recommendations (level 1) --}}
                                 @if(isset($parent->sub) && is_array($parent->sub) && count($parent->sub) > 0)
                                     @foreach($parent->sub as $subIndex => $subRekom)
-                                        @php 
+                                        @php
                                             $subNumber = $mainNumber . '.' . ($subIndex + 1);
                                         @endphp
                                         <tr class="sub-level-1">
@@ -384,17 +384,17 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-warning btn-sm edit-rekom-btn" 
-                                                        data-id="{{ $subRekom->id }}" 
-                                                        data-rekomendasi="{{ htmlspecialchars($subRekom->rekomendasi ?? '') }}" 
-                                                        data-keterangan="{{ htmlspecialchars($subRekom->keterangan ?? '') }}" 
-                                                        data-pengembalian="{{ $subRekom->pengembalian ?? 0 }}" 
+                                                <button type="button" class="btn btn-warning btn-sm edit-rekom-btn"
+                                                        data-id="{{ $subRekom->id }}"
+                                                        data-rekomendasi="{{ htmlspecialchars($subRekom->rekomendasi ?? '') }}"
+                                                        data-keterangan="{{ htmlspecialchars($subRekom->keterangan ?? '') }}"
+                                                        data-pengembalian="{{ $subRekom->pengembalian ?? 0 }}"
                                                         title="Edit Rekomendasi">
                                                     <i class="fas fa-edit"></i>
-                                                </button> 
-                                                <button type="button" class="btn btn-danger btn-sm delete-rekom-btn" 
-                                                        data-id="{{ $subRekom->id }}" 
-                                                        data-rekomendasi="{{ htmlspecialchars($subRekom->rekomendasi ?? '') }}" 
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-sm delete-rekom-btn"
+                                                        data-id="{{ $subRekom->id }}"
+                                                        data-rekomendasi="{{ htmlspecialchars($subRekom->rekomendasi ?? '') }}"
                                                         title="Hapus Rekomendasi">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -404,7 +404,7 @@
                                         {{-- Display sub-sub-recommendations (level 2) --}}
                                         @if(isset($subRekom->sub) && is_array($subRekom->sub) && count($subRekom->sub) > 0)
                                             @foreach($subRekom->sub as $subSubIndex => $subSubRekom)
-                                                @php 
+                                                @php
                                                     $subSubNumber = $subNumber . '.' . ($subSubIndex + 1);
                                                 @endphp
                                                 <tr class="sub-level-2">
@@ -419,17 +419,17 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        <button type="button" class="btn btn-warning btn-sm edit-rekom-btn" 
-                                                                data-id="{{ $subSubRekom->id }}" 
-                                                                data-rekomendasi="{{ htmlspecialchars($subSubRekom->rekomendasi ?? '') }}" 
-                                                                data-keterangan="{{ htmlspecialchars($subSubRekom->keterangan ?? '') }}" 
-                                                                data-pengembalian="{{ $subSubRekom->pengembalian ?? 0 }}" 
+                                                        <button type="button" class="btn btn-warning btn-sm edit-rekom-btn"
+                                                                data-id="{{ $subSubRekom->id }}"
+                                                                data-rekomendasi="{{ htmlspecialchars($subSubRekom->rekomendasi ?? '') }}"
+                                                                data-keterangan="{{ htmlspecialchars($subSubRekom->keterangan ?? '') }}"
+                                                                data-pengembalian="{{ $subSubRekom->pengembalian ?? 0 }}"
                                                                 title="Edit Rekomendasi">
                                                             <i class="fas fa-edit"></i>
-                                                        </button> 
-                                                        <button type="button" class="btn btn-danger btn-sm delete-rekom-btn" 
-                                                                data-id="{{ $subSubRekom->id }}" 
-                                                                data-rekomendasi="{{ htmlspecialchars($subSubRekom->rekomendasi ?? '') }}" 
+                                                        </button>
+                                                        <button type="button" class="btn btn-danger btn-sm delete-rekom-btn"
+                                                                data-id="{{ $subSubRekom->id }}"
+                                                                data-rekomendasi="{{ htmlspecialchars($subSubRekom->rekomendasi ?? '') }}"
                                                                 title="Hapus Rekomendasi">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
