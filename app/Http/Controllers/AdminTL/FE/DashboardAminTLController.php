@@ -209,68 +209,85 @@ class DashboardAminTLController extends Controller
 
     public function rekomStore(Request $request)
     {
+        try {
+            Log::info('rekomStore called with data:', $request->all());
 
-        $token = session('ctoken');
+            // Delete existing recommendations for this pengawasan
+            $deletedRows = DB::table('jenis_temuans')->where('id_pengawasan', $request->id_pengawasan)->delete();
+            Log::info('Deleted existing rows:', ['count' => $deletedRows]);
 
-        $response = Http::post(
-                // ('http://localhost:8000').('/api/rekom/store') . '?token=' . $token,
-            ('http://localhost:8000') . ('/api/rekom/store') . '?token=' . $token,
-            $request->all()
-        );
-        // try{
-        //     DB::table('jenis_temuans')->where('id_pengawasan', $request->id_pengawasan)->delete();
-        // }catch(\Exception $e){
+            // Get the tipeA data (could be 'tipeA' for new submissions or 'ubahTipeA' for updates)
+            $tipeAData = $request->input('tipeA') ? $request->input('tipeA') : $request->input('ubahTipeA');
 
-        // }
-        // $tipeAData = $request->input('tipeA')?$request->input('tipeA'):$request->input('ubahTipeA');
-        // foreach ($tipeAData as $item) {
-        //      $id_parent = DB::table('jenis_temuans')->insertGetId([
-        //         'rekomendasi' => $item['rekomendasi'],
-        //         'keterangan' => $item['keterangan'],
-        //         'id_pengawasan' => $request->id_pengawasan,
-        //         'id_penugasan' => $request->id_penugasan,
-        //         'pengembalian' => str_replace('.', '', $item['pengembalian']),
-        //         'created_at' => now(),
-        //         'updated_at' => now(),
-        //     ]);
+            if (!$tipeAData || !is_array($tipeAData)) {
+                Log::error('Invalid tipeA data:', ['tipeA' => $tipeAData]);
+                return back()->with('error', 'Data rekomendasi tidak valid!');
+            }
 
-        //     DB::table('jenis_temuans')
-        //         ->where('id', $id_parent)
-        //         ->update(['id_parent' => $id_parent]);
+            Log::info('Processing tipeA data:', ['count' => count($tipeAData)]);
 
-        //     if (isset($item['sub']) && is_array($item['sub'])) {
-        //         foreach ($item['sub'] as $subItem) {
-        //             $id_child = DB::table('jenis_temuans')->insertGetId([
-        //                 'id_parent' => $id_parent,
-        //                 'rekomendasi' => $subItem['rekomendasi'],
-        //                 'keterangan' => $subItem['keterangan'],
-        //                 'id_pengawasan' => $request->id_pengawasan,
-        //                 'id_penugasan' => $request->id_penugasan,
-        //                 'pengembalian' => str_replace('.', '', $subItem['pengembalian']),
-        //                 'created_at' => now(),
-        //                 'updated_at' => now(),
-        //             ]);
+            foreach ($tipeAData as $item) {
+                // Insert parent recommendation
+                $id_parent = DB::table('jenis_temuans')->insertGetId([
+                    'rekomendasi' => $item['rekomendasi'],
+                    'keterangan' => $item['keterangan'],
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'id_penugasan' => $request->id_penugasan,
+                    'pengembalian' => str_replace('.', '', $item['pengembalian']),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
-        //             if (isset($subItem['sub']) && is_array($subItem['sub'])) {
-        //                 foreach ($subItem['sub'] as $nestedSubItem) {
-        //                     DB::table('jenis_temuans')->insert([
-        //                         'id_parent' => $id_child,
-        //                         'rekomendasi' => $nestedSubItem['rekomendasi'],
-        //                         'keterangan' => $nestedSubItem['keterangan'],
-        //                         'id_pengawasan' => $request->id_pengawasan,
-        //                         'id_penugasan' => $request->id_penugasan,
-        //                         'pengembalian' => str_replace('.', '', $nestedSubItem['pengembalian']),
-        //                         'created_at' => now(),
-        //                         'updated_at' => now(),
-        //                     ]);
-        //                 }
-        //             }
-        //         }
-        //     }
+                // Update parent to reference itself
+                DB::table('jenis_temuans')
+                    ->where('id', $id_parent)
+                    ->update(['id_parent' => $id_parent]);
 
-        //     // return response()->json(['message' => 'Data berhasil disimpan.']);
-        // }
-        return back()->with('success', 'Data berhasil disimpan!');
+                // Insert sub-recommendations if they exist
+                if (isset($item['sub']) && is_array($item['sub'])) {
+                    foreach ($item['sub'] as $subItem) {
+                        $id_child = DB::table('jenis_temuans')->insertGetId([
+                            'id_parent' => $id_parent,
+                            'rekomendasi' => $subItem['rekomendasi'],
+                            'keterangan' => $subItem['keterangan'],
+                            'id_pengawasan' => $request->id_pengawasan,
+                            'id_penugasan' => $request->id_penugasan,
+                            'pengembalian' => str_replace('.', '', $subItem['pengembalian']),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        // Insert nested sub-recommendations if they exist
+                        if (isset($subItem['sub']) && is_array($subItem['sub'])) {
+                            foreach ($subItem['sub'] as $nestedSubItem) {
+                                DB::table('jenis_temuans')->insert([
+                                    'id_parent' => $id_child,
+                                    'rekomendasi' => $nestedSubItem['rekomendasi'],
+                                    'keterangan' => $nestedSubItem['keterangan'],
+                                    'id_pengawasan' => $request->id_pengawasan,
+                                    'id_penugasan' => $request->id_penugasan,
+                                    'pengembalian' => str_replace('.', '', $nestedSubItem['pengembalian']),
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Log::info('rekomStore completed successfully');
+            return back()->with('success', 'Data berhasil disimpan!');
+
+        } catch (\Exception $e) {
+            Log::error('Error storing rekomendasi:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
+            return back()->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
+        }
 
     }
 
@@ -698,7 +715,7 @@ class DashboardAminTLController extends Controller
         // Get uploaded files from database
         $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
 
-         try {
+        try {
             $getparent = DB::table('jenis_temuans')
                 ->where('id_parent', DB::raw('id'))
                 ->where('id_pengawasan', $id)
@@ -717,11 +734,11 @@ class DashboardAminTLController extends Controller
                         ->get();
                 }
             }
-             return view('AdminTL.datadukungrekom_upload', [
-            'pengawasan' => $pengawasan,
-            'uploadedFiles' => $uploadedFiles,
-            'data' => $getparent
-        ]);
+            return view('AdminTL.datadukungrekom_upload', [
+                'pengawasan' => $pengawasan,
+                'uploadedFiles' => $uploadedFiles,
+                'data' => $getparent
+            ]);
         } catch (\Exception $e) {
             dd($e->getMessage());
         }
@@ -784,10 +801,10 @@ class DashboardAminTLController extends Controller
                 'id_pengawasan' => $id
             ]);
 
-             return view('AdminTL.datadukungtemuan_upload', [
+            return view('AdminTL.datadukungtemuan_upload', [
                 'pengawasan' => $pengawasan,
                 'existingData' => collect([]),
-                 'uploadedFiles' => $uploadedFiles
+                'uploadedFiles' => $uploadedFiles
             ]);
         }
 
@@ -917,6 +934,71 @@ class DashboardAminTLController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add new sub-recommendation
+     */
+    public function addSubRekomendasi(Request $request)
+    {
+        try {
+            $request->validate([
+                'parent_id' => 'required|integer|exists:jenis_temuans,id',
+                'rekomendasi' => 'required|string|max:1000',
+                'keterangan' => 'nullable|string|max:500',
+                'pengembalian' => 'nullable|numeric|min:0',
+                'id_pengawasan' => 'required|integer',
+                'id_penugasan' => 'required|integer'
+            ]);
+
+            // Check if parent exists
+            $parent = DB::table('jenis_temuans')->where('id', $request->parent_id)->first();
+            if (!$parent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Parent rekomendasi tidak ditemukan'
+                ], 404);
+            }
+
+            // Insert new sub-recommendation
+            $newId = DB::table('jenis_temuans')->insertGetId([
+                'id_parent' => $request->parent_id,
+                'rekomendasi' => $request->rekomendasi,
+                'keterangan' => $request->keterangan,
+                'pengembalian' => $request->pengembalian ?: 0,
+                'id_pengawasan' => $request->id_pengawasan,
+                'id_penugasan' => $request->id_penugasan,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            if ($newId) {
+                // Get the newly created record for response
+                $newRecord = DB::table('jenis_temuans')->where('id', $newId)->first();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Sub-rekomendasi berhasil ditambahkan',
+                    'data' => $newRecord
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan sub-rekomendasi'
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error adding sub-rekomendasi:', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }
