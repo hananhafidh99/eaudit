@@ -333,91 +333,112 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- Display all recommendations for this main rekomendasi --}}
+                                {{-- Display main parent recommendation --}}
                                 @php
-                                    $rekomCounter = 1;
-                                    $subCounters = [$parentIndex + 1 => 1];
-
-                                    // Function to render hierarchical recommendations
-                                    $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0) use (&$renderRecommendations, &$rekomCounter, &$subCounters, $parentIndex) {
-                                        foreach ($recommendations as $rekom) {
-                                            $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
-                                            $levelClass = $level > 0 ? 'sub-level-' . min($level, 3) : '';
-
-                                            // Determine numbering
-                                            if ($level === 0) {
-                                                $number = $rekomCounter;
-                                                $displayNumber = '<strong>' . $number . '</strong>';
-                                            } else {
-                                                $parentNum = $parentIndex + 1;
-                                                if (!isset($subCounters[$parentNum])) {
-                                                    $subCounters[$parentNum] = 1;
-                                                }
-                                                $subNum = $subCounters[$parentNum];
-                                                $displayNumber = '↳ ' . $parentNum . '.' . $subNum;
-                                                $subCounters[$parentNum]++;
-                                            }
-
-                                            echo '<tr class="' . $levelClass . '">';
-                                            echo '<td>' . $displayNumber . '</td>';
-
-                                            $rekomStyle = $level > 0 ? 'margin-left: ' . ($level * 20) . 'px; font-style: italic;' : 'font-weight: bold;';
-                                            echo '<td><span style="' . $rekomStyle . '">' . ($rekom->rekomendasi ?? '-') . '</span></td>';
-                                            echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
-                                            echo '<td>';
-
-                                            if ($rekom->pengembalian && $rekom->pengembalian > 0) {
-                                                echo '<span class="text-success fw-bold">Rp ' . number_format($rekom->pengembalian, 0, ',', '.') . '</span>';
-                                            } else {
-                                                echo '<span class="text-muted">-</span>';
-                                            }
-
-                                            echo '</td>';
-                                            echo '<td>';
-                                            echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
-                                            echo 'data-id="' . $rekom->id . '" ';
-                                            echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
-                                            echo 'data-keterangan="' . htmlspecialchars($rekom->keterangan ?? '') . '" ';
-                                            echo 'data-pengembalian="' . ($rekom->pengembalian ?? 0) . '" ';
-                                            echo 'title="Edit Rekomendasi">';
-                                            echo '<i class="fas fa-edit"></i>';
-                                            echo '</button> ';
-                                            echo '<button type="button" class="btn btn-danger btn-sm delete-rekom-btn" ';
-                                            echo 'data-id="' . $rekom->id . '" ';
-                                            echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
-                                            echo 'title="Hapus Rekomendasi">';
-                                            echo '<i class="fas fa-trash"></i>';
-                                            echo '</button>';
-                                            echo '</td>';
-                                            echo '</tr>';
-
-                                            // Increment counter only for root level
-                                            if ($level === 0) {
-                                                $rekomCounter++;
-                                            }
-
-                                            // Recursive call for nested children
-                                            if (isset($rekom->sub) && is_array($rekom->sub) && count($rekom->sub) > 0) {
-                                                $renderRecommendations($rekom->sub, $number, $level + 1);
-                                            }
-                                        }
-                                    };
-
-                                    // Create array with parent as first item, then all sub-recommendations
-                                    $allRecommendations = [$parent];
-
-                                    // Add sub-recommendations at same level if they exist
-                                    if (isset($parent->sub) && is_array($parent->sub) && count($parent->sub) > 0) {
-                                        foreach ($parent->sub as $subRekom) {
-                                            if (is_object($subRekom) && isset($subRekom->rekomendasi)) {
-                                                $allRecommendations[] = $subRekom;
-                                            }
-                                        }
-                                    }
-
-                                    $renderRecommendations($allRecommendations, '', 0);
+                                    $mainNumber = $parentIndex + 1;
                                 @endphp
+                                <tr>
+                                    <td><strong>{{ $mainNumber }}</strong></td>
+                                    <td><strong>{{ $parent->rekomendasi ?? '-' }}</strong></td>
+                                    <td>{{ $parent->keterangan ?? '-' }}</td>
+                                    <td>
+                                        @if($parent->pengembalian && $parent->pengembalian > 0)
+                                            <span class="text-success fw-bold">Rp {{ number_format($parent->pengembalian, 0, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-warning btn-sm edit-rekom-btn"
+                                                data-id="{{ $parent->id }}"
+                                                data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}"
+                                                data-keterangan="{{ htmlspecialchars($parent->keterangan ?? '') }}"
+                                                data-pengembalian="{{ $parent->pengembalian ?? 0 }}"
+                                                title="Edit Rekomendasi">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm delete-rekom-btn"
+                                                data-id="{{ $parent->id }}"
+                                                data-rekomendasi="{{ htmlspecialchars($parent->rekomendasi ?? '') }}"
+                                                title="Hapus Rekomendasi">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
 
+                                {{-- Display sub-recommendations (level 1) --}}
+                                @if(isset($parent->sub) && is_array($parent->sub) && count($parent->sub) > 0)
+                                    @foreach($parent->sub as $subIndex => $subRekom)
+                                        @php
+                                            $subNumber = $mainNumber . '.' . ($subIndex + 1);
+                                        @endphp
+                                        <tr class="sub-level-1">
+                                            <td>{{ $subNumber }}</td>
+                                            <td><span style="margin-left: 20px; font-style: italic;">{{ $subRekom->rekomendasi ?? '-' }}</span></td>
+                                            <td>{{ $subRekom->keterangan ?? '-' }}</td>
+                                            <td>
+                                                @if($subRekom->pengembalian && $subRekom->pengembalian > 0)
+                                                    <span class="text-success fw-bold">Rp {{ number_format($subRekom->pengembalian, 0, ',', '.') }}</span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-warning btn-sm edit-rekom-btn"
+                                                        data-id="{{ $subRekom->id }}"
+                                                        data-rekomendasi="{{ htmlspecialchars($subRekom->rekomendasi ?? '') }}"
+                                                        data-keterangan="{{ htmlspecialchars($subRekom->keterangan ?? '') }}"
+                                                        data-pengembalian="{{ $subRekom->pengembalian ?? 0 }}"
+                                                        title="Edit Rekomendasi">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-sm delete-rekom-btn"
+                                                        data-id="{{ $subRekom->id }}"
+                                                        data-rekomendasi="{{ htmlspecialchars($subRekom->rekomendasi ?? '') }}"
+                                                        title="Hapus Rekomendasi">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        {{-- Display sub-sub-recommendations (level 2) --}}
+                                        @if(isset($subRekom->sub) && is_array($subRekom->sub) && count($subRekom->sub) > 0)
+                                            @foreach($subRekom->sub as $subSubIndex => $subSubRekom)
+                                                @php
+                                                    $subSubNumber = $subNumber . '.' . ($subSubIndex + 1);
+                                                @endphp
+                                                <tr class="sub-level-2">
+                                                    <td>{{ $subSubNumber }}</td>
+                                                    <td><span style="margin-left: 40px; font-style: italic; font-size: 0.9em;">{{ $subSubRekom->rekomendasi ?? '-' }}</span></td>
+                                                    <td>{{ $subSubRekom->keterangan ?? '-' }}</td>
+                                                    <td>
+                                                        @if($subSubRekom->pengembalian && $subSubRekom->pengembalian > 0)
+                                                            <span class="text-success fw-bold">Rp {{ number_format($subSubRekom->pengembalian, 0, ',', '.') }}</span>
+                                                        @else
+                                                            <span class="text-muted">-</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-warning btn-sm edit-rekom-btn"
+                                                                data-id="{{ $subSubRekom->id }}"
+                                                                data-rekomendasi="{{ htmlspecialchars($subSubRekom->rekomendasi ?? '') }}"
+                                                                data-keterangan="{{ htmlspecialchars($subSubRekom->keterangan ?? '') }}"
+                                                                data-pengembalian="{{ $subSubRekom->pengembalian ?? 0 }}"
+                                                                title="Edit Rekomendasi">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-danger btn-sm delete-rekom-btn"
+                                                                data-id="{{ $subSubRekom->id }}"
+                                                                data-rekomendasi="{{ htmlspecialchars($subSubRekom->rekomendasi ?? '') }}"
+                                                                title="Hapus Rekomendasi">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>
