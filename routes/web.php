@@ -38,6 +38,7 @@ Route::get('adminTL/pkpt_edit/{id}/edit', [DashboardAminTLController::class, 'pk
 Route::put('adminTL/pkpt/{id}', [DashboardAminTLController::class, 'pkptupdate']);
 Route::get('adminTL/rekom_edit/{id}/edit', [DashboardAminTLController::class, 'rekomEdit']);
 Route::post('adminTL/rekom', [DashboardAminTLController::class, 'rekomStore']);
+Route::post('adminTL/rekom/replace-all', [DashboardAminTLController::class, 'replaceAllRekomendasi']);
 Route::post('adminTL/temuan', [DashboardAminTLController::class, 'temuanStore']);
 Route::get('adminTL/temuan_rekom_edit/{id}/edit', [DashboardAminTLController::class, 'temuanrekomEdit']);
 // Routes for rekomendasi CRUD

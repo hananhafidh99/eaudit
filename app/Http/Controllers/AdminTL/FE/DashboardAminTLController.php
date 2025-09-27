@@ -212,10 +212,6 @@ class DashboardAminTLController extends Controller
         try {
             Log::info('rekomStore called with data:', $request->all());
 
-            // Delete existing recommendations for this pengawasan
-            $deletedRows = DB::table('jenis_temuans')->where('id_pengawasan', $request->id_pengawasan)->delete();
-            Log::info('Deleted existing rows:', ['count' => $deletedRows]);
-
             // Get the tipeA data (could be 'tipeA' for new submissions or 'ubahTipeA' for updates)
             $tipeAData = $request->input('tipeA') ? $request->input('tipeA') : $request->input('ubahTipeA');
 
@@ -288,7 +284,91 @@ class DashboardAminTLController extends Controller
 
             return back()->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
         }
+    }
 
+    /**
+     * Replace all recommendations for a pengawasan (for bulk operations)
+     */
+    public function replaceAllRekomendasi(Request $request)
+    {
+        try {
+            Log::info('replaceAllRekomendasi called with data:', $request->all());
+
+            // Delete existing recommendations for this pengawasan (only for bulk replace)
+            $deletedRows = DB::table('jenis_temuans')->where('id_pengawasan', $request->id_pengawasan)->delete();
+            Log::info('Deleted existing rows for bulk replace:', ['count' => $deletedRows]);
+
+            // Get the tipeA data (could be 'tipeA' for new submissions or 'ubahTipeA' for updates)
+            $tipeAData = $request->input('tipeA') ? $request->input('tipeA') : $request->input('ubahTipeA');
+
+            if (!$tipeAData || !is_array($tipeAData)) {
+                Log::error('Invalid tipeA data for bulk replace:', ['tipeA' => $tipeAData]);
+                return back()->with('error', 'Data rekomendasi tidak valid!');
+            }
+
+            Log::info('Processing tipeA data for bulk replace:', ['count' => count($tipeAData)]);
+
+            foreach ($tipeAData as $item) {
+                // Insert parent recommendation
+                $id_parent = DB::table('jenis_temuans')->insertGetId([
+                    'rekomendasi' => $item['rekomendasi'],
+                    'keterangan' => $item['keterangan'],
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'id_penugasan' => $request->id_penugasan,
+                    'pengembalian' => str_replace('.', '', $item['pengembalian']),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Update parent to reference itself
+                DB::table('jenis_temuans')
+                    ->where('id', $id_parent)
+                    ->update(['id_parent' => $id_parent]);
+
+                // Insert sub-recommendations if they exist
+                if (isset($item['sub']) && is_array($item['sub'])) {
+                    foreach ($item['sub'] as $subItem) {
+                        $id_child = DB::table('jenis_temuans')->insertGetId([
+                            'id_parent' => $id_parent,
+                            'rekomendasi' => $subItem['rekomendasi'],
+                            'keterangan' => $subItem['keterangan'],
+                            'id_pengawasan' => $request->id_pengawasan,
+                            'id_penugasan' => $request->id_penugasan,
+                            'pengembalian' => str_replace('.', '', $subItem['pengembalian']),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        // Insert nested sub-recommendations if they exist
+                        if (isset($subItem['sub']) && is_array($subItem['sub'])) {
+                            foreach ($subItem['sub'] as $nestedSubItem) {
+                                DB::table('jenis_temuans')->insert([
+                                    'id_parent' => $id_child,
+                                    'rekomendasi' => $nestedSubItem['rekomendasi'],
+                                    'keterangan' => $nestedSubItem['keterangan'],
+                                    'id_pengawasan' => $request->id_pengawasan,
+                                    'id_penugasan' => $request->id_penugasan,
+                                    'pengembalian' => str_replace('.', '', $nestedSubItem['pengembalian']),
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return back()->with('success', 'Semua rekomendasi berhasil diganti!');
+
+        } catch (\Exception $e) {
+            Log::error('Error replacing all rekomendasi:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
+            return back()->with('error', 'Terjadi kesalahan saat mengganti data: ' . $e->getMessage());
+        }
     }
 
     public function temurekom()
