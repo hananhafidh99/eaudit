@@ -367,7 +367,12 @@
                                 </tr>
 
                                 {{-- Display sub-recommendations (level 1) --}}
-                                @if(isset($parent->sub) && is_array($parent->sub) && count($parent->sub) > 0)
+                                {{-- Debug info --}}
+                                @if(isset($parent->sub))
+                                    <!-- DEBUG: Sub exists, type: {{ gettype($parent->sub) }}, count: {{ is_countable($parent->sub) ? count($parent->sub) : 'not countable' }} -->
+                                @endif
+
+                                @if(isset($parent->sub) && (is_array($parent->sub) || is_object($parent->sub)) && count($parent->sub) > 0)
                                     @foreach($parent->sub as $subIndex => $subRekom)
                                         @php
                                             $subNumber = $mainNumber . '.' . ($subIndex + 1);
@@ -402,7 +407,11 @@
                                         </tr>
 
                                         {{-- Display sub-sub-recommendations (level 2) --}}
-                                        @if(isset($subRekom->sub) && is_array($subRekom->sub) && count($subRekom->sub) > 0)
+                                        @if(isset($subRekom->sub))
+                                            <!-- DEBUG SUB-SUB: type: {{ gettype($subRekom->sub) }}, count: {{ is_countable($subRekom->sub) ? count($subRekom->sub) : 'not countable' }} -->
+                                        @endif
+
+                                        @if(isset($subRekom->sub) && (is_array($subRekom->sub) || is_object($subRekom->sub)) && count($subRekom->sub) > 0)
                                             @foreach($subRekom->sub as $subSubIndex => $subSubRekom)
                                                 @php
                                                     $subSubNumber = $subNumber . '.' . ($subSubIndex + 1);
