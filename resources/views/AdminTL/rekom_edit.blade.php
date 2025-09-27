@@ -872,6 +872,8 @@ $(document).ready(function () {
             rekomendasi: $('#add-sub-rekomendasi').val(),
             keterangan: $('#add-sub-keterangan').val(),
             pengembalian: $('#add-sub-pengembalian').val().replace(/[^0-9]/g, ''), // Remove formatting
+            id_pengawasan: '{{ $pengawasan["id"] }}',
+            id_penugasan: '{{ $pengawasan["id_penugasan"] }}',
             _token: $('meta[name="csrf-token"]').attr('content')
         };
 
