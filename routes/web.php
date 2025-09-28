@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
+use App\Http\Controllers\AdminTL\UserControlController;
 use App\Http\Controllers\FE\DashboardTLController;
 use App\Http\Controllers\Login\Fe\UserController as FeUserController;
 use App\Http\Controllers\OPD\Fe\DashboardOPD;
@@ -58,6 +59,19 @@ Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, '
 
 Route::get('adminTL/datadukung/temuan', [DashboardAminTLController::class, 'indexdatadukungtemuan']);
 Route::get('adminTL/datadukung/temuan/{id}', [DashboardAminTLController::class, 'datadukungtemuanEdit']);
+
+// User Control Routes - List User menu
+Route::get('/adminTL/user-control/list-user', [UserControlController::class, 'listUser'])->name('admin.user-control.list-user');
+Route::get('/adminTL/user-control/create-user', [UserControlController::class, 'createUser'])->name('admin.user-control.create-user');
+Route::post('/adminTL/user-control/store-user', [UserControlController::class, 'storeUser'])->name('admin.user-control.store-user');
+Route::get('/adminTL/user-control/edit-user/{id}', [UserControlController::class, 'editUser'])->name('admin.user-control.edit-user');
+Route::put('/adminTL/user-control/update-user/{id}', [UserControlController::class, 'updateUser'])->name('admin.user-control.update-user');
+Route::delete('/adminTL/user-control/delete-user/{id}', [UserControlController::class, 'deleteUser'])->name('admin.user-control.delete-user');
+
+// User Control Routes - User Data menu
+Route::get('/adminTL/user-control/user-data', [UserControlController::class, 'userData'])->name('admin.user-control.user-data');
+Route::post('/adminTL/user-control/update-user-data-access', [UserControlController::class, 'updateUserDataAccess'])->name('admin.user-control.update-user-data-access');
+Route::post('/adminTL/user-control/toggle-user-access/{userId}', [UserControlController::class, 'toggleUserAccess'])->name('admin.user-control.toggle-user-access');
 // Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
 // Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
 
@@ -114,3 +128,42 @@ Route::post('OPD/rekom/delete-file', [DashboardOPD::class, 'deleteFile']);
 Route::get('OPD/temuan_rekom/{id}', [DashboardOPD::class, 'temuanrekomEdit']);
 Route::get('/OPD/datadukung/rekom', [DashboardOPD::class, 'indexdatadukungrekom']);
 Route::get('OPD/datadukung/rekom/{id}', [DashboardOPD::class, 'datadukungrekomEdit']);
+
+// Debug user data access for hanan
+Route::get('/debug/user-access/{userId}', function($userId) {
+    $user = \App\Models\User::with(['userDataAccess'])->find($userId);
+    
+    if (!$user) {
+        return response()->json(['error' => 'User not found']);
+    }
+    
+    $result = [
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+        ],
+        'access_data' => $user->userDataAccess ? [
+            'id' => $user->userDataAccess->id,
+            'access_type' => $user->userDataAccess->access_type,
+            'jenis_temuan_ids' => $user->userDataAccess->jenis_temuan_ids,
+            'jenis_temuan_ids_type' => gettype($user->userDataAccess->jenis_temuan_ids),
+            'is_active' => $user->userDataAccess->is_active,
+            'parsed_ids' => is_array($user->userDataAccess->jenis_temuan_ids) 
+                ? $user->userDataAccess->jenis_temuan_ids 
+                : json_decode($user->userDataAccess->jenis_temuan_ids, true),
+            'count' => is_array($user->userDataAccess->jenis_temuan_ids)
+                ? count($user->userDataAccess->jenis_temuan_ids)
+                : count(json_decode($user->userDataAccess->jenis_temuan_ids, true) ?? [])
+        ] : null
+    ];
+    
+    return response()->json($result);
+});
+
+
+
+
+
+
+

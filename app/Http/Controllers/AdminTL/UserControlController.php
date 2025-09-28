@@ -172,9 +172,26 @@ class UserControlController extends Controller
                 ->orderBy('name', 'asc')
                 ->get();
 
-            $jenisTemuans = Jenis_temuan::orderBy('nama_temuan', 'asc')->get();
+            // Get all jenis temuan and build multi-level hierarchical structure
+            $jenisTemuans = Jenis_temuan::orderBy('id_parent')->orderBy('id')->get();
 
-            return view('AdminTL.user-control.user-data', compact('users', 'jenisTemuans'));
+            // Build multi-level hierarchical structure
+            $jenisTemuansHierarchy = [];
+
+            foreach ($jenisTemuans as $item) {
+                if ($item->id == $item->id_parent) {
+                    // This is a root item
+                    $jenisTemuansHierarchy[$item->id] = [
+                        'parent' => $item,
+                        'children' => $this->buildChildrenTree($jenisTemuans, $item->id, 0)
+                    ];
+                }
+            }
+
+            // Keep the flat version for compatibility
+            $jenisTemuansGrouped = $jenisTemuans->groupBy('id_parent');
+
+            return view('AdminTL.user-control.user-data', compact('users', 'jenisTemuans', 'jenisTemuansGrouped', 'jenisTemuansHierarchy'));
         } catch (\Exception $e) {
             Log::error('Error loading user data access: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat data akses pengguna.');
@@ -268,5 +285,47 @@ class UserControlController extends Controller
                 'message' => 'Terjadi kesalahan saat mengubah status akses.'
             ]);
         }
+    }
+
+    /**
+     * Build children tree recursively for multi-level hierarchy
+     */
+    private function buildChildrenTree($jenisTemuans, $parentId, $level = 0, $maxLevel = 3)
+    {
+        if ($level >= $maxLevel) {
+            return collect(); // Prevent infinite recursion
+        }
+
+        $children = collect();
+        $directChildren = $jenisTemuans->where('id_parent', $parentId)->where('id', '!=', $parentId);
+
+        foreach ($directChildren as $child) {
+            // Create child object with its own children
+            $childData = (object) [
+                'id' => $child->id,
+                'id_parent' => $child->id_parent,
+                'nama_temuan' => $child->nama_temuan,
+                'kode_temuan' => $child->kode_temuan,
+                'rekomendasi' => $child->rekomendasi,
+                'level' => $level + 1,
+                'children' => $this->buildChildrenTree($jenisTemuans, $child->id, $level + 1, $maxLevel)
+            ];
+
+            $children->push($childData);
+        }
+
+        return $children;
+    }
+
+    /**
+     * Count all descendants recursively
+     */
+    private function countAllDescendants($children)
+    {
+        $count = $children->count();
+        foreach ($children as $child) {
+            $count += $this->countAllDescendants($child->children);
+        }
+        return $count;
     }
 }
