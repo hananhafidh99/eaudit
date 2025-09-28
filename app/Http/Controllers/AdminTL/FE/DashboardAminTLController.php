@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Pengawasan;
 use App\Models\Jenis_temuan;
 use App\Models\DataDukung;
+use App\Models\User;
+use App\Models\UserDataAccess;
 
 class DashboardAminTLController extends Controller
 {
@@ -388,16 +390,81 @@ class DashboardAminTLController extends Controller
 
     public function temurekom()
     {
-        $client = new Client();
-        $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/temuan?token=" . $token;
-        $response = $client->request('GET', $url);
-        $content = $response->getBody()->getContents();
-        $contentArray = json_decode($content, true);
-        $data = $contentArray['data'];
-        $data['data'] = $data;
+        try {
+            // Get current user's data access configuration
+            $currentUser = auth()->user();
+            $userDataAccess = UserDataAccess::where('user_id', $currentUser->id)->first();
 
-        return view('AdminTL.temuan_rekom', ['data' => $data]);
+            // Get data from API
+            $client = new Client();
+            $token = session('ctoken');
+            $url = "http://127.0.0.1:8000/api/temuan?token=" . $token;
+            $response = $client->request('GET', $url);
+            $content = $response->getBody()->getContents();
+            $contentArray = json_decode($content, true);
+            $data = $contentArray['data'];
+
+            // Apply data access filtering if user has restrictions
+            if ($userDataAccess && $userDataAccess->is_active) {
+                if ($userDataAccess->access_type === 'specific') {
+                    // User has restricted access - filter data
+                    $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+
+                    if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                        // Filter the data to only show allowed jenis_temuan
+                        $filteredData = [];
+
+                        foreach ($data as $item) {
+                            // Check if this item's related jenis_temuan is in the allowed list
+                            // We need to check if there are any jenis_temuan records for this pengawasan
+                            // that match the user's allowed IDs
+                            $hasAllowedJenisTemuan = DB::table('jenis_temuans')
+                                ->where('id_pengawasan', $item['id'] ?? 0)
+                                ->whereIn('id', $allowedJenisTemuanIds)
+                                ->exists();
+
+                            if ($hasAllowedJenisTemuan) {
+                                $filteredData[] = $item;
+                            }
+                        }
+
+                        $data = $filteredData;
+
+                        Log::info('Data filtered for user access', [
+                            'user_id' => $currentUser->id,
+                            'allowed_ids' => $allowedJenisTemuanIds,
+                            'original_count' => count($contentArray['data']),
+                            'filtered_count' => count($data)
+                        ]);
+                    } else {
+                        // No allowed IDs specified - show empty result
+                        $data = [];
+                        Log::info('No data shown - user has no allowed jenis temuan IDs', [
+                            'user_id' => $currentUser->id
+                        ]);
+                    }
+                }
+                // If access_type is 'all', show all data (no filtering)
+            } else {
+                // User has no data access configuration or inactive - restrict all access
+                $data = [];
+                Log::info('No data shown - user has no active data access configuration', [
+                    'user_id' => $currentUser->id
+                ]);
+            }
+
+            $data['data'] = $data;
+            return view('AdminTL.temuan_rekom', ['data' => $data]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in temurekom with data access filtering:', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            // In case of error, show empty data for security
+            return view('AdminTL.temuan_rekom', ['data' => ['data' => []]]);
+        }
     }
 
     public function temuanStore(Request $request)
@@ -694,12 +761,47 @@ class DashboardAminTLController extends Controller
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
         try {
-            // Ambil semua data dan kelompokkan berdasarkan kode_temuan dan nama_temuan
-            $allData = DB::table('jenis_temuans')
+            // Get current user's data access configuration
+            $currentUser = auth()->user();
+            $userDataAccess = UserDataAccess::where('user_id', $currentUser->id)->first();
+
+            // Start with base query
+            $query = DB::table('jenis_temuans')
                 ->where('id_pengawasan', $id)
                 ->orderBy('kode_temuan')
-                ->orderBy('id')
-                ->get();
+                ->orderBy('id');
+
+            // Apply data access filtering if user has restrictions
+            if ($userDataAccess && $userDataAccess->is_active) {
+                if ($userDataAccess->access_type === 'specific') {
+                    // User has restricted access - filter by allowed jenis_temuan IDs
+                    $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+
+                    if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                        $query->whereIn('id', $allowedJenisTemuanIds);
+
+                        Log::info('Filtering temuan edit data for user access', [
+                            'user_id' => $currentUser->id,
+                            'allowed_ids' => $allowedJenisTemuanIds,
+                            'pengawasan_id' => $id
+                        ]);
+                    } else {
+                        // No allowed IDs - return empty result
+                        $query->whereRaw('1=0'); // Force empty result
+                    }
+                }
+                // If access_type is 'all', no additional filtering needed
+            } else {
+                // User has no active data access configuration - restrict all access
+                $query->whereRaw('1=0'); // Force empty result
+
+                Log::info('Restricting all temuan edit data - no active data access', [
+                    'user_id' => $currentUser->id,
+                    'pengawasan_id' => $id
+                ]);
+            }
+
+            $allData = $query->get();
 
             // Kelompokkan berdasarkan kombinasi kode_temuan + nama_temuan
             $groupedData = [];

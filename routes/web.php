@@ -161,6 +161,53 @@ Route::get('/debug/user-access/{userId}', function ($userId) {
     return response()->json($result);
 });
 
+// Debug route untuk test data filtering
+Route::get('/debug/data-access-filter/{userId}', function ($userId) {
+    $user = App\Models\User::with('userDataAccess')->find($userId);
+    if (!$user) {
+        return response()->json(['error' => 'User not found']);
+    }
+
+    $userDataAccess = $user->userDataAccess;
+
+    // Simulate the filtering logic used in temuanrekom
+    $result = [
+        'user_id' => $userId,
+        'user_name' => $user->name,
+        'access_config' => $userDataAccess ? [
+            'access_type' => $userDataAccess->access_type,
+            'jenis_temuan_ids' => $userDataAccess->jenis_temuan_ids,
+            'is_active' => $userDataAccess->is_active
+        ] : null,
+        'filter_applied' => false,
+        'allowed_data_count' => 0
+    ];
+
+    if ($userDataAccess && $userDataAccess->is_active) {
+        if ($userDataAccess->access_type === 'specific') {
+            $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+            $result['filter_applied'] = true;
+            $result['allowed_jenis_temuan_ids'] = $allowedJenisTemuanIds;
+
+            // Count how many pengawasan have allowed jenis_temuan
+            if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                $result['allowed_data_count'] = DB::table('jenis_temuans')
+                    ->whereIn('id', $allowedJenisTemuanIds)
+                    ->distinct('id_pengawasan')
+                    ->count('id_pengawasan');
+            }
+        } else {
+            $result['filter_applied'] = false;
+            $result['access_note'] = 'User has access to all data';
+        }
+    } else {
+        $result['filter_applied'] = true;
+        $result['access_note'] = 'User has no active data access configuration';
+    }
+
+    return response()->json($result);
+});
+
 
 
 
