@@ -138,6 +138,22 @@
             </div>
           </li>
 
+                      <li class="nav-item menu-items">
+            <a class="nav-link" data-toggle="collapse" href="#data-dukung" aria-expanded="false" aria-controls="data-dukung">
+              <span class="menu-icon">
+                <i class="mdi mdi-laptop"></i>
+              </span>
+              <span class="menu-title">Riwayat TL</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="data-dukung">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="{{ url('OPD/riwayatRekom') }}">Rekomendasi</a></li>
+                <li class="nav-item"> <a class="nav-link" href="{{ url('OPD/riwayatTemuan') }}">Temuan dan Rekom</a></li>
+              </ul>
+            </div>
+          </li>
+
           <li class="nav-item menu-items">
             <a class="nav-link" data-toggle="collapse" href="#user-control" aria-expanded="false" aria-controls="user-control">
               <span class="menu-icon">
