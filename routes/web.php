@@ -210,15 +210,16 @@ Route::get('/debug/data-access-filter/{userId}', function ($userId) {
 });
 
 // OpdTL Routes - Special Limited Access
-Route::group(['prefix' => 'opdTL', 'middleware' => ['auth']], function () {
+Route::group(['prefix' => 'opdTL'], function () {
     Route::get('/', [App\Http\Controllers\OpdTL\OpdTLController::class, 'index'])->name('opdTL.dashboard');
 
     // Menu A1 - Data Dukung Rekomendasi (Read Only)
     Route::get('/menu-a1', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA1'])->name('opdTL.menuA1');
     Route::get('/menu-a1/{id}', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA1Detail'])->name('opdTL.menuA1.detail');
 
-    // Menu A2 - Placeholder
+    // Menu A2 - Data Dukung Rekomendasi List
     Route::get('/menu-a2', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA2'])->name('opdTL.menuA2');
+    Route::get('/menu-a2/{id}', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA2Detail'])->name('opdTL.menuA2.detail');
 
     // File upload (only allowed action)
     Route::post('/upload-file', [App\Http\Controllers\OpdTL\OpdTLController::class, 'uploadFile'])->name('opdTL.uploadFile');
