@@ -173,11 +173,174 @@ class OpdTLController extends Controller
     }
 
     /**
-     * Display Menu A2 - Placeholder for future implementation
+     * Display Menu A2 - Data Dukung Rekomendasi List (Read Only)
      */
     public function menuA2()
     {
-        return view('OpdTL.menu_a2');
+        try {
+            // Get current user's data access configuration
+            $currentUser = auth()->user();
+            $userDataAccess = UserDataAccess::where('user_id', $currentUser->id)->first();
+
+            // Get data from API
+            $client = new Client();
+            $token = session('ctoken');
+            $url = "http://127.0.0.1:8000/api/rekom?token=" . $token;
+            $response = $client->request('GET', $url);
+            $content = $response->getBody()->getContents();
+            $contentArray = json_decode($content, true);
+            $data = $contentArray['data'];
+
+            // Apply data access filtering
+            if ($userDataAccess && $userDataAccess->is_active) {
+                if ($userDataAccess->access_type === 'specific') {
+                    $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+
+                    if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                        $filteredData = [];
+
+                        foreach ($data as $item) {
+                            // Check if this pengawasan has any jenis_temuan that user has access to
+                            $hasAllowedJenisTemuan = DB::table('jenis_temuans')
+                                ->where('id_pengawasan', $item['id'] ?? 0)
+                                ->whereIn('id', $allowedJenisTemuanIds)
+                                ->exists();
+
+                            if ($hasAllowedJenisTemuan) {
+                                $filteredData[] = $item;
+                            }
+                        }
+
+                        $data = $filteredData;
+                    } else {
+                        $data = [];
+                    }
+                }
+            } else {
+                $data = [];
+            }
+
+            Log::info('OpdTL Menu A2 accessed', [
+                'user_id' => auth()->id(),
+                'data_count' => count($data)
+            ]);
+
+            return view('OpdTL.menu_a2', ['data' => $data]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in OpdTL menuA2:', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return view('OpdTL.menu_a2', ['data' => []]);
+        }
+    }
+
+    /**
+     * Display Menu A2 Detail - Read Only Detail View
+     */
+    public function menuA2Detail($id)
+    {
+        try {
+            // Get current user's data access configuration
+            $currentUser = auth()->user();
+            $userDataAccess = UserDataAccess::where('user_id', $currentUser->id)->first();
+
+            // Check if user has access to this specific data
+            if ($userDataAccess && $userDataAccess->is_active && $userDataAccess->access_type === 'specific') {
+                $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+
+                if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                    $hasAccess = DB::table('jenis_temuans')
+                        ->where('id_pengawasan', $id)
+                        ->whereIn('id', $allowedJenisTemuanIds)
+                        ->exists();
+
+                    if (!$hasAccess) {
+                        return redirect()->route('opdTL.menuA2')->with('error', 'Anda tidak memiliki akses untuk melihat data ini.');
+                    }
+                } else {
+                    return redirect()->route('opdTL.menuA2')->with('error', 'Anda tidak memiliki akses untuk melihat data ini.');
+                }
+            }
+
+            $token = session('ctoken');
+            $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
+
+            // Get uploaded files from database
+            $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
+
+            // Start with base query for allowed data only
+            $query = DB::table('jenis_temuans')
+                ->where('id_parent', DB::raw('id'))
+                ->where('id_pengawasan', $id);
+
+            // Apply data access filtering
+            if ($userDataAccess && $userDataAccess->is_active && $userDataAccess->access_type === 'specific') {
+                $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+                if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                    $query->whereIn('id', $allowedJenisTemuanIds);
+                } else {
+                    $query->whereRaw('1=0'); // Force empty result
+                }
+            }
+
+            $getparent = $query->get();
+
+            // Build hierarchy for allowed data only
+            foreach ($getparent as $key => $value) {
+                $subQuery = DB::table('jenis_temuans')
+                    ->where('id_parent', $value->id)
+                    ->where('id', '!=', $value->id);
+
+                // Apply same filtering to sub-items
+                if ($userDataAccess && $userDataAccess->is_active && $userDataAccess->access_type === 'specific') {
+                    $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+                    if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                        $subQuery->whereIn('id', $allowedJenisTemuanIds);
+                    }
+                }
+
+                $value->sub = $subQuery->get();
+
+                // Build nested hierarchy for sub-items
+                foreach ($value->sub as $subKey => $subValue) {
+                    $nestedQuery = DB::table('jenis_temuans')
+                        ->where('id_parent', $subValue->id)
+                        ->where('id', '!=', $subValue->id);
+
+                    if ($userDataAccess && $userDataAccess->is_active && $userDataAccess->access_type === 'specific') {
+                        $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+                        if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                            $nestedQuery->whereIn('id', $allowedJenisTemuanIds);
+                        }
+                    }
+
+                    $subValue->sub = $nestedQuery->get();
+                }
+            }
+
+            Log::info('OpdTL Menu A2 Detail accessed', [
+                'user_id' => auth()->id(),
+                'pengawasan_id' => $id
+            ]);
+
+            return view('OpdTL.menu_a2_detail', [
+                'pengawasan' => $pengawasan,
+                'uploadedFiles' => $uploadedFiles,
+                'data' => $getparent
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in OpdTL menuA2Detail:', [
+                'error' => $e->getMessage(),
+                'id' => $id,
+                'user_id' => auth()->id()
+            ]);
+
+            return redirect()->route('opdTL.menuA2')->with('error', 'Terjadi kesalahan saat memuat data');
+        }
     }
 
     /**
