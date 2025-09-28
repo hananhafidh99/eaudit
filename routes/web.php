@@ -25,9 +25,9 @@ use App\Http\Controllers\Login\Fe\UserController as FeUserController;
 
 Route::get('/', function () {
     return view('login');
-});
+})->name('login');
 // Route::get('/', [UserController::class, 'index']);
-Route::post('login', [FeUserController::class, 'login']);
+Route::post('login', [FeUserController::class, 'login'])->name('login.post');
 Route::get('/logout', [FeUserController::class, 'logout']);
 Route::get('/adminTL', [DashboardAminTLController::class, 'index']);
 Route::get('/adminTL/pkpt', [DashboardAminTLController::class, 'pkpt']);
@@ -209,9 +209,17 @@ Route::get('/debug/data-access-filter/{userId}', function ($userId) {
     return response()->json($result);
 });
 
+// OpdTL Routes - Special Limited Access
+Route::group(['prefix' => 'opdTL', 'middleware' => ['auth']], function () {
+    Route::get('/', [App\Http\Controllers\OpdTL\OpdTLController::class, 'index'])->name('opdTL.dashboard');
 
+    // Menu A1 - Data Dukung Rekomendasi (Read Only)
+    Route::get('/menu-a1', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA1'])->name('opdTL.menuA1');
+    Route::get('/menu-a1/{id}', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA1Detail'])->name('opdTL.menuA1.detail');
 
+    // Menu A2 - Placeholder
+    Route::get('/menu-a2', [App\Http\Controllers\OpdTL\OpdTLController::class, 'menuA2'])->name('opdTL.menuA2');
 
-
-
-
+    // File upload (only allowed action)
+    Route::post('/upload-file', [App\Http\Controllers\OpdTL\OpdTLController::class, 'uploadFile'])->name('opdTL.uploadFile');
+});

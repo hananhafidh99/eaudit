@@ -90,89 +90,105 @@
           <li class="nav-item nav-category">
             <span class="nav-link">Navigation</span>
           </li>
-          <li class="nav-item menu-items">
-            <a class="nav-link" href="index.html">
-              <span class="menu-icon">
-                <i class="mdi mdi-speedometer"></i>
-              </span>
-              <span class="menu-title">Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item menu-items">
-            <a class="nav-link" href="{{ url('adminTL/pkpt') }}">
-              <span class="menu-icon">
-                <i class="mdi mdi-playlist-play"></i>
-              </span>
-              <span class="menu-title">Pengawasan</span>
-            </a>
-          </li>
-          <li class="nav-item menu-items">
-            <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
-              <span class="menu-icon">
-                <i class="mdi mdi-laptop"></i>
-              </span>
-              <span class="menu-title">Kategori TL</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-basic">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/rekom') }}">Rekomendasi</a></li>
-                <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/temuanrekom') }}">Temuan dan Rekom</a></li>
-              </ul>
-            </div>
-          </li>
+
+          @if(auth()->check() && auth()->user()->role === 'OpdTL')
+            {{-- Special Navigation for OpdTL Role --}}
+            <li class="nav-item menu-items">
+              <a class="nav-link" href="{{ route('opdTL.dashboard') }}">
+                <span class="menu-icon">
+                  <i class="mdi mdi-speedometer"></i>
+                </span>
+                <span class="menu-title">Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item menu-items">
+              <a class="nav-link" href="{{ route('opdTL.menuA1') }}">
+                <span class="menu-icon">
+                  <i class="mdi mdi-file-document"></i>
+                </span>
+                <span class="menu-title">Menu A1</span>
+                <span class="badge badge-info badge-sm ml-2">Read Only</span>
+              </a>
+            </li>
+            <li class="nav-item menu-items">
+              <a class="nav-link" href="{{ route('opdTL.menuA2') }}">
+                <span class="menu-icon">
+                  <i class="mdi mdi-bookmark-outline"></i>
+                </span>
+                <span class="menu-title">Menu A2</span>
+                <span class="badge badge-warning badge-sm ml-2">Coming Soon</span>
+              </a>
+            </li>
+          @else
+            {{-- Normal Navigation for Other Roles --}}
+            <li class="nav-item menu-items">
+              <a class="nav-link" href="index.html">
+                <span class="menu-icon">
+                  <i class="mdi mdi-speedometer"></i>
+                </span>
+                <span class="menu-title">Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item menu-items">
+              <a class="nav-link" href="{{ url('adminTL/pkpt') }}">
+                <span class="menu-icon">
+                  <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Pengawasan</span>
+              </a>
+            </li>
+            <li class="nav-item menu-items">
+              <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+                <span class="menu-icon">
+                  <i class="mdi mdi-laptop"></i>
+                </span>
+                <span class="menu-title">Kategori TL</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="ui-basic">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/rekom') }}">Rekomendasi</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/temuanrekom') }}">Temuan dan Rekom</a></li>
+                </ul>
+              </div>
+            </li>
 
             <li class="nav-item menu-items">
-            <a class="nav-link" data-toggle="collapse" href="#data-dukung" aria-expanded="false" aria-controls="data-dukung">
-              <span class="menu-icon">
-                <i class="mdi mdi-laptop"></i>
-              </span>
-              <span class="menu-title">Data Dukung TL</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="data-dukung">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/rekom') }}">Rekomendasi</a></li>
-                <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/temuan') }}">Temuan dan Rekom</a></li>
-              </ul>
-            </div>
-          </li>
+              <a class="nav-link" data-toggle="collapse" href="#data-dukung" aria-expanded="false" aria-controls="data-dukung">
+                <span class="menu-icon">
+                  <i class="mdi mdi-laptop"></i>
+                </span>
+                <span class="menu-title">Data Dukung TL</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="data-dukung">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/rekom') }}">Rekomendasi</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/temuan') }}">Temuan dan Rekom</a></li>
+                </ul>
+              </div>
+            </li>
 
-                      <li class="nav-item menu-items">
-            <a class="nav-link" data-toggle="collapse" href="#data-dukung" aria-expanded="false" aria-controls="data-dukung">
-              <span class="menu-icon">
-                <i class="mdi mdi-laptop"></i>
-              </span>
-              <span class="menu-title">Riwayat TL</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="data-dukung">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="{{ url('OPD/riwayatRekom') }}">Rekomendasi</a></li>
-                <li class="nav-item"> <a class="nav-link" href="{{ url('OPD/riwayatTemuan') }}">Temuan dan Rekom</a></li>
-              </ul>
-            </div>
-          </li>
-
-          <li class="nav-item menu-items">
-            <a class="nav-link" data-toggle="collapse" href="#user-control" aria-expanded="false" aria-controls="user-control">
-              <span class="menu-icon">
-                <i class="mdi mdi-account-settings"></i>
-              </span>
-              <span class="menu-title">User Control</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="user-control">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item">
-                  <a class="nav-link" href="{{ route('admin.user-control.list-user') }}">List User</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{{ route('admin.user-control.user-data') }}">User Data</a>
-                </li>
-              </ul>
-            </div>
-          </li>
+            <li class="nav-item menu-items">
+              <a class="nav-link" data-toggle="collapse" href="#user-control" aria-expanded="false" aria-controls="user-control">
+                <span class="menu-icon">
+                  <i class="mdi mdi-account-settings"></i>
+                </span>
+                <span class="menu-title">User Control</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="user-control">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.user-control.list-user') }}">List User</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.user-control.user-data') }}">User Data</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          @endif
         </ul>
       </nav>
       <!-- partial -->
