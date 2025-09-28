@@ -106,7 +106,7 @@
                 <span class="menu-icon">
                   <i class="mdi mdi-file-document"></i>
                 </span>
-                <span class="menu-title">Menu A1</span>
+                <span class="menu-title"> Rekomendasi</span>
                 <span class="badge badge-info badge-sm ml-2">Read Only</span>
               </a>
             </li>
@@ -115,8 +115,7 @@
                 <span class="menu-icon">
                   <i class="mdi mdi-bookmark-outline"></i>
                 </span>
-                <span class="menu-title">Menu A2</span>
-                <span class="badge badge-warning badge-sm ml-2">Coming Soon</span>
+                <span class="menu-title"> Temuan dan Rekom</span>
               </a>
             </li>
           @else
