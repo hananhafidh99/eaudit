@@ -17,7 +17,10 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name',
+        'username',
+        'password',
+        'role',
     ];
 
     /**
@@ -26,7 +29,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -37,4 +41,57 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Get the user data access configuration
+     */
+    public function userDataAccess()
+    {
+        return $this->hasOne('App\Models\UserDataAccess', 'user_id');
+    }
+
+    /**
+     * Check if user has access to specific jenis temuan
+     */
+    public function hasAccessToJenisTemuan($jenisTemuanId)
+    {
+        $access = $this->userDataAccess;
+
+        if (!$access || !$access->is_active) {
+            return false;
+        }
+
+        if ($access->access_type === 'all') {
+            return true;
+        }
+
+        if ($access->access_type === 'specific') {
+            $allowedIds = json_decode($access->jenis_temuan_ids ?? '[]', true);
+            return in_array($jenisTemuanId, $allowedIds);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get accessible jenis temuan IDs for this user
+     */
+    public function getAccessibleJenisTemuanIds()
+    {
+        $access = $this->userDataAccess;
+
+        if (!$access || !$access->is_active) {
+            return [];
+        }
+
+        if ($access->access_type === 'all') {
+            return \App\Models\Jenis_temuan::pluck('id')->toArray();
+        }
+
+        if ($access->access_type === 'specific') {
+            return json_decode($access->jenis_temuan_ids ?? '[]', true);
+        }
+
+        return [];
+    }
 }
