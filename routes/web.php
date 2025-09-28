@@ -1,15 +1,16 @@
 <?php
 
-use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
-use App\Http\Controllers\AdminTL\UserControlController;
-use App\Http\Controllers\FE\DashboardTLController;
-use App\Http\Controllers\Login\Fe\UserController as FeUserController;
-use App\Http\Controllers\OPD\Fe\DashboardOPD;
-use App\Http\Controllers\Pemeriksa\Fe\DashboardPemeriksa;
-// use App\Http\Controllers\ObrikTL\DashboardObrikTLController;
-// use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OPD\Fe\DashboardOPD;
+use App\Http\Controllers\FE\DashboardTLController;
+use App\Http\Controllers\AdminTL\UserControlController;
+// use App\Http\Controllers\ObrikTL\DashboardObrikTLController;
+// use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
+use App\Http\Controllers\Pemeriksa\Fe\DashboardPemeriksa;
+use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
+use App\Http\Controllers\Login\Fe\UserController as FeUserController;
 
 /*
 |--------------------------------------------------------------------------
