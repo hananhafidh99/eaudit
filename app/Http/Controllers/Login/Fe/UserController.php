@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Login\Fe;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -35,12 +36,20 @@ class UserController extends Controller
         $level = $response['user_data']['level'];
 
         $newsession=['ctoken' => $token, 'sdata' => date('Y'),'name'=>$name,'level'=>$level,'username'=>$username];
-        // dd($newsession);
         session($newsession);
 
+        // Find user in database and login to Laravel Auth system
+        $user = User::where('username', $username)->first();
+        if ($user) {
+            auth()->login($user);
+            
+            // Redirect based on user role
+            if ($user->role === 'OpdTL') {
+                return redirect()->route('opdTL.dashboard');
+            }
+        }
 
-        // session(['ctoken' => $token, 'sdata' => date('Y'), 'usernamebaru' => $usernamebaru, 'levelbaru' => $levelbaru] );
-
+        // Default redirect from API response
         return redirect(url($response['data']));
     }
 
