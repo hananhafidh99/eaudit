@@ -220,11 +220,6 @@ class OpdTLController extends Controller
                 $data = [];
             }
 
-            Log::info('OpdTL Menu A2 accessed', [
-                'user_id' => auth()->id(),
-                'data_count' => count($data)
-            ]);
-
             return view('OpdTL.menu_a2', ['data' => $data]);
 
         } catch (\Exception $e) {
@@ -320,11 +315,6 @@ class OpdTLController extends Controller
                     $subValue->sub = $nestedQuery->get();
                 }
             }
-
-            Log::info('OpdTL Menu A2 Detail accessed', [
-                'user_id' => auth()->id(),
-                'pengawasan_id' => $id
-            ]);
 
             return view('OpdTL.menu_a2_detail', [
                 'pengawasan' => $pengawasan,
