@@ -130,13 +130,13 @@ Route::get('/OPD/datadukung/rekom', [DashboardOPD::class, 'indexdatadukungrekom'
 Route::get('OPD/datadukung/rekom/{id}', [DashboardOPD::class, 'datadukungrekomEdit']);
 
 // Debug user data access for hanan
-Route::get('/debug/user-access/{userId}', function($userId) {
+Route::get('/debug/user-access/{userId}', function ($userId) {
     $user = \App\Models\User::with(['userDataAccess'])->find($userId);
-    
+
     if (!$user) {
         return response()->json(['error' => 'User not found']);
     }
-    
+
     $result = [
         'user' => [
             'id' => $user->id,
@@ -149,15 +149,15 @@ Route::get('/debug/user-access/{userId}', function($userId) {
             'jenis_temuan_ids' => $user->userDataAccess->jenis_temuan_ids,
             'jenis_temuan_ids_type' => gettype($user->userDataAccess->jenis_temuan_ids),
             'is_active' => $user->userDataAccess->is_active,
-            'parsed_ids' => is_array($user->userDataAccess->jenis_temuan_ids) 
-                ? $user->userDataAccess->jenis_temuan_ids 
+            'parsed_ids' => is_array($user->userDataAccess->jenis_temuan_ids)
+                ? $user->userDataAccess->jenis_temuan_ids
                 : json_decode($user->userDataAccess->jenis_temuan_ids, true),
             'count' => is_array($user->userDataAccess->jenis_temuan_ids)
                 ? count($user->userDataAccess->jenis_temuan_ids)
                 : count(json_decode($user->userDataAccess->jenis_temuan_ids, true) ?? [])
         ] : null
     ];
-    
+
     return response()->json($result);
 });
 
