@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
+use App\Http\Controllers\AdminTL\UserControlController;
 use App\Http\Controllers\FE\DashboardTLController;
 use App\Http\Controllers\Login\Fe\UserController as FeUserController;
 use App\Http\Controllers\OPD\Fe\DashboardOPD;
@@ -58,6 +59,19 @@ Route::get('adminTL/datadukung/rekom/{id}', [DashboardAminTLController::class, '
 
 Route::get('adminTL/datadukung/temuan', [DashboardAminTLController::class, 'indexdatadukungtemuan']);
 Route::get('adminTL/datadukung/temuan/{id}', [DashboardAminTLController::class, 'datadukungtemuanEdit']);
+
+// User Control Routes - List User menu
+Route::get('/adminTL/user-control/list-user', [UserControlController::class, 'listUser'])->name('admin.user-control.list-user');
+Route::get('/adminTL/user-control/create-user', [UserControlController::class, 'createUser'])->name('admin.user-control.create-user');
+Route::post('/adminTL/user-control/store-user', [UserControlController::class, 'storeUser'])->name('admin.user-control.store-user');
+Route::get('/adminTL/user-control/edit-user/{id}', [UserControlController::class, 'editUser'])->name('admin.user-control.edit-user');
+Route::put('/adminTL/user-control/update-user/{id}', [UserControlController::class, 'updateUser'])->name('admin.user-control.update-user');
+Route::delete('/adminTL/user-control/delete-user/{id}', [UserControlController::class, 'deleteUser'])->name('admin.user-control.delete-user');
+
+// User Control Routes - User Data menu
+Route::get('/adminTL/user-control/user-data', [UserControlController::class, 'userData'])->name('admin.user-control.user-data');
+Route::post('/adminTL/user-control/update-user-data-access', [UserControlController::class, 'updateUserDataAccess'])->name('admin.user-control.update-user-data-access');
+Route::post('/adminTL/user-control/toggle-user-access/{userId}', [UserControlController::class, 'toggleUserAccess'])->name('admin.user-control.toggle-user-access');
 // Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
 // Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
 
@@ -114,3 +128,89 @@ Route::post('OPD/rekom/delete-file', [DashboardOPD::class, 'deleteFile']);
 Route::get('OPD/temuan_rekom/{id}', [DashboardOPD::class, 'temuanrekomEdit']);
 Route::get('/OPD/datadukung/rekom', [DashboardOPD::class, 'indexdatadukungrekom']);
 Route::get('OPD/datadukung/rekom/{id}', [DashboardOPD::class, 'datadukungrekomEdit']);
+
+// Debug user data access for hanan
+Route::get('/debug/user-access/{userId}', function ($userId) {
+    $user = \App\Models\User::with(['userDataAccess'])->find($userId);
+
+    if (!$user) {
+        return response()->json(['error' => 'User not found']);
+    }
+
+    $result = [
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+        ],
+        'access_data' => $user->userDataAccess ? [
+            'id' => $user->userDataAccess->id,
+            'access_type' => $user->userDataAccess->access_type,
+            'jenis_temuan_ids' => $user->userDataAccess->jenis_temuan_ids,
+            'jenis_temuan_ids_type' => gettype($user->userDataAccess->jenis_temuan_ids),
+            'is_active' => $user->userDataAccess->is_active,
+            'parsed_ids' => is_array($user->userDataAccess->jenis_temuan_ids)
+                ? $user->userDataAccess->jenis_temuan_ids
+                : json_decode($user->userDataAccess->jenis_temuan_ids, true),
+            'count' => is_array($user->userDataAccess->jenis_temuan_ids)
+                ? count($user->userDataAccess->jenis_temuan_ids)
+                : count(json_decode($user->userDataAccess->jenis_temuan_ids, true) ?? [])
+        ] : null
+    ];
+
+    return response()->json($result);
+});
+
+// Debug route untuk test data filtering
+Route::get('/debug/data-access-filter/{userId}', function ($userId) {
+    $user = App\Models\User::with('userDataAccess')->find($userId);
+    if (!$user) {
+        return response()->json(['error' => 'User not found']);
+    }
+
+    $userDataAccess = $user->userDataAccess;
+
+    // Simulate the filtering logic used in temuanrekom
+    $result = [
+        'user_id' => $userId,
+        'user_name' => $user->name,
+        'access_config' => $userDataAccess ? [
+            'access_type' => $userDataAccess->access_type,
+            'jenis_temuan_ids' => $userDataAccess->jenis_temuan_ids,
+            'is_active' => $userDataAccess->is_active
+        ] : null,
+        'filter_applied' => false,
+        'allowed_data_count' => 0
+    ];
+
+    if ($userDataAccess && $userDataAccess->is_active) {
+        if ($userDataAccess->access_type === 'specific') {
+            $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+            $result['filter_applied'] = true;
+            $result['allowed_jenis_temuan_ids'] = $allowedJenisTemuanIds;
+
+            // Count how many pengawasan have allowed jenis_temuan
+            if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
+                $result['allowed_data_count'] = DB::table('jenis_temuans')
+                    ->whereIn('id', $allowedJenisTemuanIds)
+                    ->distinct('id_pengawasan')
+                    ->count('id_pengawasan');
+            }
+        } else {
+            $result['filter_applied'] = false;
+            $result['access_note'] = 'User has access to all data';
+        }
+    } else {
+        $result['filter_applied'] = true;
+        $result['access_note'] = 'User has no active data access configuration';
+    }
+
+    return response()->json($result);
+});
+
+
+
+
+
+
+

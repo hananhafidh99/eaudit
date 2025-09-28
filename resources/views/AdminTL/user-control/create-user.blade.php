@@ -133,24 +133,3 @@ Tambah User - User Control
     </div>
 </div>
 @endsection
-
-@section('script')
-<script>
-$(document).ready(function() {
-    // Password visibility toggle
-    $('#togglePassword').on('click', function() {
-        const password = $('#password');
-        const type = password.attr('type') === 'password' ? 'text' : 'password';
-        password.attr('type', type);
-        $(this).find('i').toggleClass('fa-eye fa-eye-slash');
-    });
-
-    $('#togglePasswordConfirmation').on('click', function() {
-        const password = $('#password_confirmation');
-        const type = password.attr('type') === 'password' ? 'text' : 'password';
-        password.attr('type', type);
-        $(this).find('i').toggleClass('fa-eye fa-eye-slash');
-    });
-});
-</script>
-@endsection

@@ -4,7 +4,8 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Corona Admin</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Corona Admin')</title>
     <!-- plugins:css -->
     <link rel="stylesheet" href="{{ asset('corona/template/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('corona/template/assets/vendors/css/vendor.bundle.base.css') }}">
@@ -19,6 +20,10 @@
     <!-- endinject -->
     <!-- Layout styles -->
     <link rel="stylesheet" href="{{ asset('corona/template/assets/css/style.css') }}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- End layout styles -->
     <link rel="shortcut icon" href="{{ asset('corona/template/assets/images/favicon.png') }}" />
   </head>
@@ -118,17 +123,37 @@
           </li>
 
             <li class="nav-item menu-items">
-            <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+            <a class="nav-link" data-toggle="collapse" href="#data-dukung" aria-expanded="false" aria-controls="data-dukung">
               <span class="menu-icon">
                 <i class="mdi mdi-laptop"></i>
               </span>
               <span class="menu-title">Data Dukung TL</span>
               <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-basic">
+            <div class="collapse" id="data-dukung">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/rekom') }}">Rekomendasi</a></li>
                 <li class="nav-item"> <a class="nav-link" href="{{ url('adminTL/datadukung/temuan') }}">Temuan dan Rekom</a></li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="nav-item menu-items">
+            <a class="nav-link" data-toggle="collapse" href="#user-control" aria-expanded="false" aria-controls="user-control">
+              <span class="menu-icon">
+                <i class="mdi mdi-account-settings"></i>
+              </span>
+              <span class="menu-title">User Control</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="user-control">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ route('admin.user-control.list-user') }}">List User</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ route('admin.user-control.user-data') }}">User Data</a>
+                </li>
               </ul>
             </div>
           </li>
@@ -347,6 +372,10 @@
     <!-- container-scroller -->
     <!-- plugins:js -->
     <script src="{{ asset('corona/template/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <!-- jQuery fallback if not loaded -->
+    <script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.6.0.min.js"><\/script>')</script>
+    <!-- Bootstrap JS fallback -->
+    <script>window.jQuery && window.jQuery.fn.modal || document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"><\/script>')</script>
     <!-- endinject -->
     <!-- Plugin js for this page -->
     <script src="{{ asset('corona/template/assets/vendors/chart.js/Chart.min.js') }}"></script>
@@ -364,6 +393,21 @@
     <!-- endinject -->
     <!-- Custom js for this page -->
     <script src="{{ asset('corona/template/assets/js/dashboard.js') }}"></script>
+    <!-- DataTables JavaScript -->
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Setup CSRF for AJAX -->
+    <script>
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    </script>
+
+    <!-- Page specific scripts -->
+    @yield('script')
     <!-- End custom js for this page -->
   </body>
 </html>
