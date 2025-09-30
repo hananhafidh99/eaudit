@@ -511,19 +511,19 @@ User Data - User Control
                                                 <div>
                                                     <strong>
                                                         <i class="fas fa-folder-open mr-2"></i>
-                                                        @if($hierarchy['parent']->rekomendasi)
-                                                            {{ strtoupper($hierarchy['parent']->rekomendasi) }}
-                                                        @else
+                                                        @if($hierarchy['parent']->rekomendasi AND $hierarchy['parent']->kode_temuan)
                                                             {{ strtoupper($hierarchy['parent']->nama_temuan) }}
+                                                            ({{ strtoupper($hierarchy['parent']->rekomendasi) }})
+                                                            <span class="badge badge-light ml-2">{{ $hierarchy['parent']->kode_temuan }}</span>
+                                                            <small class="ml-2">Temuan dan Rekom</small>
+                                                        @endif
+                                                        @if ($hierarchy['parent']->rekomendasi AND $hierarchy['parent']->kode_temuan == NULL)
+                                                            {{ strtoupper($hierarchy['parent']->rekomendasi) }}
                                                         @endif
                                                     </strong>
-                                                    @if($hierarchy['parent']->kode_temuan)
-                                                        <span class="badge badge-light ml-2">{{ $hierarchy['parent']->kode_temuan }}</span>
-                                                    @endif
-                                                    <small class="ml-2">(ID: {{ $hierarchy['parent']->id }})</small>
                                                 </div>
                                             </div>
-                                            @if(count($hierarchy['children']) > 0)
+                                            {{-- @if(count($hierarchy['children']) > 0)
                                             <div>
                                                 <span class="badge badge-light">
                                                     <i class="fas fa-sitemap mr-1"></i>
@@ -531,7 +531,8 @@ User Data - User Control
                                                 </span>
                                             </div>
                                             @endif
-                                        </div>
+                                        </div> --}}
+
                                     </div>
 
                                     <!-- Children Section -->

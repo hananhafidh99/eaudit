@@ -239,6 +239,8 @@ class DashboardAminTLController extends Controller
 
             Log::info('Processing tipeA data:', ['count' => count($tipeAData)]);
 
+
+
             foreach ($tipeAData as $item) {
                 // Insert parent recommendation
                 $id_parent = DB::table('jenis_temuans')->insertGetId([
