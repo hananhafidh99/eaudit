@@ -72,7 +72,7 @@ class OpdTLController extends Controller
             }
 
             $data['data'] = $data;
-            dd($data);
+            // dd($data);
             return view('OpdTL.menu_a1', ['data' => $data]);
 
         } catch (\Exception $e) {
@@ -156,6 +156,7 @@ class OpdTLController extends Controller
                 }
             }
 
+            dd($getparent);
             return view('OpdTL.menu_a1_detail', [
                 'pengawasan' => $pengawasan,
                 'uploadedFiles' => $uploadedFiles,
