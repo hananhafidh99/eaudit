@@ -156,7 +156,7 @@ class OpdTLController extends Controller
                 }
             }
 
-            dd($getparent);
+            // dd($getparent);
             return view('OpdTL.menu_a1_detail', [
                 'pengawasan' => $pengawasan,
                 'uploadedFiles' => $uploadedFiles,
