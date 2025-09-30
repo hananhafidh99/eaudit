@@ -304,7 +304,7 @@
                                             </td>
                                             <td>{{ $file->created_at ? $file->created_at->format('d/m/Y H:i') : '-' }}</td>
                                             <td>
-                                                <a href="{{ url($file->nama_file) }}" target="_blank" 
+                                                <a href="{{ url($file->nama_file) }}" target="_blank"
                                                    class="btn btn-sm btn-success btn-rounded">
                                                     <i class="mdi mdi-download"></i> Unduh
                                                 </a>
@@ -332,10 +332,99 @@
 $(document).ready(function() {
     // Initialize tooltips
     $('[data-bs-toggle="tooltip"]').tooltip();
-    
+
     // Auto-collapse accordion items except first one
     $('.accordion .collapse:first').addClass('show');
 });
 </script>
 @endpush
+
+<style>
+    .info-item {
+        transition: all 0.3s ease !important;
+    }
+
+    .info-item:hover {
+        transform: translateY(-2px) !important;
+    }
+
+    .info-item label i {
+        font-size: 1.1em !important;
+    }
+
+    .info-item div {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .info-item:hover div {
+        box-shadow: 0 6px 25px rgba(0,0,0,0.5) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Enhanced table styling */
+    .table-responsive {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%) !important;
+        border-radius: 10px !important;
+        border: none !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
+        overflow: hidden !important;
+    }
+
+    .table-dark {
+        background: transparent !important;
+        color: #ffffff !important;
+    }
+
+    .table-dark tbody tr {
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .table-dark tbody tr:hover {
+        background: rgba(66, 153, 225, 0.1) !important;
+        transform: translateX(5px) !important;
+    }
+
+    /* Parent row styling */
+    .parent-row {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+        color: white !important;
+        font-weight: 700 !important;
+    }
+
+    .parent-row:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+    }
+
+    /* Sub row styling */
+    .sub-row {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    .sub-row:hover {
+        background: linear-gradient(135deg, #048c5c 0%, #065f46 100%) !important;
+    }
+
+    /* Nested row styling */
+    .nested-row {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+        color: white !important;
+        font-weight: 500 !important;
+    }
+
+    .nested-row:hover {
+        background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+    }
+
+    /* Badge improvements */
+    .badge {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        font-size: 0.75em !important;
+    }
+</style>
 @endsection
