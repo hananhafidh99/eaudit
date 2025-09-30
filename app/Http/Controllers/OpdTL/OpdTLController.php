@@ -72,6 +72,7 @@ class OpdTLController extends Controller
             }
 
             $data['data'] = $data;
+            dd($data);
             return view('OpdTL.menu_a1', ['data' => $data]);
 
         } catch (\Exception $e) {
