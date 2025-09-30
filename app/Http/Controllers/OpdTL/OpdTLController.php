@@ -187,11 +187,13 @@ class OpdTLController extends Controller
             // Get data from API
             $client = new Client();
             $token = session('ctoken');
-            $url = "http://127.0.0.1:8000/api/rekom?token=" . $token;
+            $url = "http://127.0.0.1:8000/api/temuan?token=" . $token;
             $response = $client->request('GET', $url);
             $content = $response->getBody()->getContents();
             $contentArray = json_decode($content, true);
             $data = $contentArray['data'];
+
+            // dd($data);
 
             // Apply data access filtering
             if ($userDataAccess && $userDataAccess->is_active) {
@@ -221,6 +223,8 @@ class OpdTLController extends Controller
             } else {
                 $data = [];
             }
+
+            // dd($data);
 
             return view('OpdTL.menu_a2', ['data' => $data]);
 
