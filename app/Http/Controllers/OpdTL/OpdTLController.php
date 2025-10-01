@@ -72,6 +72,7 @@ class OpdTLController extends Controller
             }
 
             $data['data'] = $data;
+            // dd($data);
             return view('OpdTL.menu_a1', ['data' => $data]);
 
         } catch (\Exception $e) {
@@ -155,6 +156,7 @@ class OpdTLController extends Controller
                 }
             }
 
+            // dd($getparent);
             return view('OpdTL.menu_a1_detail', [
                 'pengawasan' => $pengawasan,
                 'uploadedFiles' => $uploadedFiles,
@@ -185,11 +187,13 @@ class OpdTLController extends Controller
             // Get data from API
             $client = new Client();
             $token = session('ctoken');
-            $url = "http://127.0.0.1:8000/api/rekom?token=" . $token;
+            $url = "http://127.0.0.1:8000/api/temuan?token=" . $token;
             $response = $client->request('GET', $url);
             $content = $response->getBody()->getContents();
             $contentArray = json_decode($content, true);
             $data = $contentArray['data'];
+
+            // dd($data);
 
             // Apply data access filtering
             if ($userDataAccess && $userDataAccess->is_active) {
@@ -220,10 +224,7 @@ class OpdTLController extends Controller
                 $data = [];
             }
 
-            Log::info('OpdTL Menu A2 accessed', [
-                'user_id' => auth()->id(),
-                'data_count' => count($data)
-            ]);
+            // dd($data);
 
             return view('OpdTL.menu_a2', ['data' => $data]);
 
@@ -320,11 +321,6 @@ class OpdTLController extends Controller
                     $subValue->sub = $nestedQuery->get();
                 }
             }
-
-            Log::info('OpdTL Menu A2 Detail accessed', [
-                'user_id' => auth()->id(),
-                'pengawasan_id' => $id
-            ]);
 
             return view('OpdTL.menu_a2_detail', [
                 'pengawasan' => $pengawasan,

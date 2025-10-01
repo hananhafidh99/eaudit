@@ -169,27 +169,31 @@ class UserControlController extends Controller
     {
         try {
             $users = User::with(['userDataAccess'])
+                // ->join('user_data_access', 'users.id', '=', 'user_data_access.user_id')
                 ->orderBy('name', 'asc')
                 ->get();
+            // dd($users);
 
             // Get all jenis temuan and build multi-level hierarchical structure
             $jenisTemuans = Jenis_temuan::orderBy('id_parent')->orderBy('id')->get();
-
-            // Build multi-level hierarchical structure
+            // $jenisTemuans = DB::table('jenis_temuans')->orderBy('id_parent')->orderBy('id')->get();
             $jenisTemuansHierarchy = [];
-
             foreach ($jenisTemuans as $item) {
                 if ($item->id == $item->id_parent) {
-                    // This is a root item
-                    $jenisTemuansHierarchy[$item->id] = [
+                    $jenisTemuansHierarchy[$item->id_pengawasan][$item->id] = [
                         'parent' => $item,
-                        'children' => $this->buildChildrenTree($jenisTemuans, $item->id, 0)
+                        'children' => [],
+                        'nama_temuan' => $item->nama_temuan
                     ];
+                } else {
+                    $jenisTemuansHierarchy[$item->id_pengawasan][$item->id_parent]['children'][$item->id] = $item;
                 }
             }
 
             // Keep the flat version for compatibility
             $jenisTemuansGrouped = $jenisTemuans->groupBy('id_parent');
+
+            // dd($jenisTemuansHierarchy);
 
             return view('AdminTL.user-control.user-data', compact('users', 'jenisTemuans', 'jenisTemuansGrouped', 'jenisTemuansHierarchy'));
         } catch (\Exception $e) {
