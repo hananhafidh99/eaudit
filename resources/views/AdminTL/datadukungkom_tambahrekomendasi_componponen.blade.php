@@ -633,15 +633,16 @@
                                         </div>
                                     </td>
                                     <td class="action-cell">
-                                        <button type="button" data-level1="0" class="btn btn-purple btn-sm add-sub" id="add_sub_0">
+                                        <button type="button" data-level1="0" data-parentid="" class="btn btn-purple btn-sm add-sub" id="add_sub_0" title="Tambah Sub Rekomendasi">
                                             <i class="fas fa-indent"></i>
                                         </button>
-                                        <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn_default">
+                                        <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn_default" title="Tambah Rekomendasi Baru">
                                             <i class="fa-solid fa-plus"></i>
                                         </button>
                                     </td>
                                 </tr>
                             </table>
+                            <div class="sub-items-container"></div>
                         </div>
                     @endif
                 </div>
@@ -778,10 +779,19 @@
     }
 
     function addSubItem(level1) {
+        console.log('Adding sub item for level1:', level1);
         const parentItem = document.querySelector(`.hierarchy-item[data-level="0"][data-index="${level1}"]`);
-        if (!parentItem) return;
+        if (!parentItem) {
+            console.log('Parent item not found for level1:', level1);
+            return;
+        }
 
         const subContainer = parentItem.querySelector('.sub-items-container');
+        if (!subContainer) {
+            console.log('Sub container not found');
+            return;
+        }
+
         const newSubIndex = subItemCounters[level1] || 0;
 
         // Initialize sub-sub counter for new sub item
@@ -794,6 +804,7 @@
         subItemCounters[level1] = (subItemCounters[level1] || 0) + 1;
         updateNumbering();
         ensureButtonsVisible();
+        console.log('Sub item added successfully');
     }
 
     function addSubSubItem(level1, level2) {
