@@ -263,6 +263,31 @@
         padding: 0.2rem 0.4rem;
     }
 
+    /* Custom button colors untuk sub dan sub-sub */
+    .btn-purple {
+        background-color: #8B5CF6;
+        border-color: #8B5CF6;
+        color: white;
+    }
+
+    .btn-purple:hover {
+        background-color: #7C3AED;
+        border-color: #7C3AED;
+        color: white;
+    }
+
+    .btn-pink {
+        background-color: #EC4899;
+        border-color: #EC4899;
+        color: white;
+    }
+
+    .btn-pink:hover {
+        background-color: #DB2777;
+        border-color: #DB2777;
+        color: white;
+    }
+
     /* Dark theme specific styles */
     @media (prefers-color-scheme: dark) {
         #card {
@@ -412,6 +437,49 @@
         color: #ffffff;
         outline-color: #0d6efd;
     }
+
+    /* Dark theme support untuk custom buttons */
+    @media (prefers-color-scheme: dark) {
+        .btn-purple {
+            background-color: #A855F7;
+            border-color: #A855F7;
+        }
+
+        .btn-purple:hover {
+            background-color: #9333EA;
+            border-color: #9333EA;
+        }
+
+        .btn-pink {
+            background-color: #F472B6;
+            border-color: #F472B6;
+        }
+
+        .btn-pink:hover {
+            background-color: #EC4899;
+            border-color: #EC4899;
+        }
+    }
+
+    [data-bs-theme="dark"] .btn-purple {
+        background-color: #A855F7;
+        border-color: #A855F7;
+    }
+
+    [data-bs-theme="dark"] .btn-purple:hover {
+        background-color: #9333EA;
+        border-color: #9333EA;
+    }
+
+    [data-bs-theme="dark"] .btn-pink {
+        background-color: #F472B6;
+        border-color: #F472B6;
+    }
+
+    [data-bs-theme="dark"] .btn-pink:hover {
+        background-color: #EC4899;
+        border-color: #EC4899;
+    }
 </style>
 
 <div class="card mb-4" id="card" style="width: 100%; margin-top: 0;">
@@ -452,8 +520,8 @@
                                         </div>
                                     </td>
                                     <td class="action-cell">
-                                        <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-success btn-sm add-sub" id="add_sub_{{ $key }}">
-                                            <i class="fa-solid fa-plus"></i>
+                                        <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-purple btn-sm add-sub" id="add_sub_{{ $key }}">
+                                            <i class="fas fa-indent"></i>
                                         </button>
                                         @if($key == 0)
                                             <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn">
@@ -490,8 +558,8 @@
                                                         </div>
                                                     </td>
                                                     <td class="action-cell">
-                                                        <button type="button" data-level1="{{ $key }}" data-level2="{{ $subKey }}" data-parentid="{{ $subItem->id }}" class="btn btn-success btn-sm add-sub" id="add_sub_{{ $key }}_{{ $subKey }}">
-                                                            <i class="fa-solid fa-plus"></i>
+                                                        <button type="button" data-level1="{{ $key }}" data-level2="{{ $subKey }}" data-parentid="{{ $subItem->id }}" class="btn btn-pink btn-sm add-sub" id="add_sub_{{ $key }}_{{ $subKey }}">
+                                                            <i class="fas fa-indent"></i>
                                                         </button>
                                                         <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}">
                                                             <i class="fa-solid fa-minus"></i>
@@ -565,8 +633,8 @@
                                         </div>
                                     </td>
                                     <td class="action-cell">
-                                        <button type="button" data-level1="0" class="btn btn-success btn-sm add-sub" id="add_sub_0">
-                                            <i class="fa-solid fa-plus"></i>
+                                        <button type="button" data-level1="0" class="btn btn-purple btn-sm add-sub" id="add_sub_0">
+                                            <i class="fas fa-indent"></i>
                                         </button>
                                         <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn_default">
                                             <i class="fa-solid fa-plus"></i>
@@ -788,8 +856,8 @@
                             </div>
                         </td>
                         <td class="action-cell">
-                            <button type="button" data-level1="${index}" class="btn btn-success btn-sm add-sub" title="Tambah Sub Item">
-                                <i class="fa-solid fa-plus"></i>
+                            <button type="button" data-level1="${index}" class="btn btn-purple btn-sm add-sub" title="Tambah Sub Item">
+                                <i class="fas fa-indent"></i>
                             </button>
                             <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Item">
                                 <i class="fa-solid fa-minus"></i>
@@ -825,8 +893,8 @@
                             </div>
                         </td>
                         <td class="action-cell">
-                            <button type="button" data-level1="${level1}" data-level2="${level2}" class="btn btn-success btn-sm add-sub" title="Tambah Sub-Sub Item">
-                                <i class="fa-solid fa-plus"></i>
+                            <button type="button" data-level1="${level1}" data-level2="${level2}" class="btn btn-pink btn-sm add-sub" title="Tambah Sub-Sub Item">
+                                <i class="fas fa-indent"></i>
                             </button>
                             <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub Item">
                                 <i class="fa-solid fa-minus"></i>
@@ -979,6 +1047,7 @@
     // Form validation and submission handling
     document.addEventListener('submit', function(e) {
         if (e.target.id === 'recommendationForm') {
+            console.log('Hierarchy component form submit detected');
             e.preventDefault();
 
             // Show loading state
@@ -1043,6 +1112,8 @@
 
             // Submit the form
             try {
+                console.log('Submitting hierarchy component form to:', e.target.action);
+                console.log('Form method:', e.target.method);
                 e.target.submit();
             } catch (error) {
                 console.error('Submission error:', error);

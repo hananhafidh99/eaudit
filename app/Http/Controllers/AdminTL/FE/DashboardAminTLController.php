@@ -210,7 +210,8 @@ class DashboardAminTLController extends Controller
     }
 
     /**
-     * Helper function to clean rupiah formatting
+     * Helper function to clean rupiah formatting (kept for backwards compatibility)
+     * @deprecated Use cleanPengembalianValue instead
      */
     private function cleanRupiahFormat($value)
     {
@@ -229,6 +230,12 @@ class DashboardAminTLController extends Controller
         try {
             Log::info('rekomStore called with data:', $request->all());
 
+            // Validate required fields
+            $request->validate([
+                'id_pengawasan' => 'required',
+                'id_penugasan' => 'required',
+            ]);
+
             // Get the tipeA data (could be 'tipeA' for new submissions or 'ubahTipeA' for updates)
             $tipeAData = $request->input('tipeA') ? $request->input('tipeA') : $request->input('ubahTipeA');
 
@@ -239,16 +246,33 @@ class DashboardAminTLController extends Controller
 
             Log::info('Processing tipeA data:', ['count' => count($tipeAData)]);
 
+            // IMPORTANT: Delete existing rekomendasi data first to prevent duplicates
+            // Only delete data for this specific pengawasan to avoid affecting other data
+            Log::info('Deleting existing rekomendasi data', [
+                'id_pengawasan' => $request->id_pengawasan,
+                'id_penugasan' => $request->id_penugasan
+            ]);
 
+            $deletedCount = DB::table('jenis_temuans')
+                ->where('id_pengawasan', $request->id_pengawasan)
+                ->where('id_penugasan', $request->id_penugasan)
+                ->delete();
+
+            Log::info('Existing rekomendasi data deleted', ['count' => $deletedCount]);
 
             foreach ($tipeAData as $item) {
+                // Skip empty items
+                if (empty(trim($item['rekomendasi'] ?? ''))) {
+                    continue;
+                }
+
                 // Insert parent recommendation
                 $id_parent = DB::table('jenis_temuans')->insertGetId([
-                    'rekomendasi' => $item['rekomendasi'],
-                    'keterangan' => $item['keterangan'],
+                    'rekomendasi' => trim($item['rekomendasi']),
+                    'keterangan' => trim($item['keterangan'] ?? ''),
                     'id_pengawasan' => $request->id_pengawasan,
                     'id_penugasan' => $request->id_penugasan,
-                    'pengembalian' => str_replace('.', '', $item['pengembalian']),
+                    'pengembalian' => $this->cleanPengembalianValue($item['pengembalian'] ?? '0'),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -261,13 +285,17 @@ class DashboardAminTLController extends Controller
                 // Insert sub-recommendations if they exist
                 if (isset($item['sub']) && is_array($item['sub'])) {
                     foreach ($item['sub'] as $subItem) {
+                        if (empty(trim($subItem['rekomendasi'] ?? ''))) {
+                            continue;
+                        }
+
                         $id_child = DB::table('jenis_temuans')->insertGetId([
                             'id_parent' => $id_parent,
-                            'rekomendasi' => $subItem['rekomendasi'],
-                            'keterangan' => $subItem['keterangan'],
+                            'rekomendasi' => trim($subItem['rekomendasi']),
+                            'keterangan' => trim($subItem['keterangan'] ?? ''),
                             'id_pengawasan' => $request->id_pengawasan,
                             'id_penugasan' => $request->id_penugasan,
-                            'pengembalian' => str_replace('.', '', $subItem['pengembalian']),
+                            'pengembalian' => $this->cleanPengembalianValue($subItem['pengembalian'] ?? '0'),
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
@@ -275,13 +303,17 @@ class DashboardAminTLController extends Controller
                         // Insert nested sub-recommendations if they exist
                         if (isset($subItem['sub']) && is_array($subItem['sub'])) {
                             foreach ($subItem['sub'] as $nestedSubItem) {
+                                if (empty(trim($nestedSubItem['rekomendasi'] ?? ''))) {
+                                    continue;
+                                }
+
                                 DB::table('jenis_temuans')->insert([
                                     'id_parent' => $id_child,
-                                    'rekomendasi' => $nestedSubItem['rekomendasi'],
-                                    'keterangan' => $nestedSubItem['keterangan'],
+                                    'rekomendasi' => trim($nestedSubItem['rekomendasi']),
+                                    'keterangan' => trim($nestedSubItem['keterangan'] ?? ''),
                                     'id_pengawasan' => $request->id_pengawasan,
                                     'id_penugasan' => $request->id_penugasan,
-                                    'pengembalian' => str_replace('.', '', $nestedSubItem['pengembalian']),
+                                    'pengembalian' => $this->cleanPengembalianValue($nestedSubItem['pengembalian'] ?? '0'),
                                     'created_at' => now(),
                                     'updated_at' => now(),
                                 ]);
@@ -486,54 +518,62 @@ class DashboardAminTLController extends Controller
 
         Log::info('Processing regular form submission');
 
-        // Validate request for regular form submission
-        $request->validate([
-            'id_pengawasan' => 'required',
-            'id_penugasan' => 'required',
-            'temuan' => 'required|array|min:1',
-            'temuan.*.kode_temuan' => 'required|string|max:255',
-            'temuan.*.nama_temuan' => 'required|string|max:255',
-            'temuan.*.rekomendasi' => 'required|array|min:1',
-            'temuan.*.rekomendasi.*.rekomendasi' => 'required|string',
-        ], [
-            'temuan.required' => 'Data temuan harus diisi',
-            'temuan.*.kode_temuan.required' => 'Kode temuan harus diisi',
-            'temuan.*.nama_temuan.required' => 'Nama temuan harus diisi',
-            'temuan.*.rekomendasi.required' => 'Rekomendasi harus diisi',
-            'temuan.*.rekomendasi.*.rekomendasi.required' => 'Isi rekomendasi harus diisi',
-        ]);
-
         $data = $request->all();
-
 
         // Debug: Log request data (only in development)
         if (config('app.debug')) {
             Log::info('Temuan Store Request Data:', $data);
         }
 
+        // Get temuan data from either 'tipeB' (hierarchy component) or 'temuan' (old format)
+        $temuanData = null;
+        if (isset($data['tipeB']) && is_array($data['tipeB'])) {
+            $temuanData = $data['tipeB'];
+            Log::info('Using tipeB data format');
+        } elseif (isset($data['temuan']) && is_array($data['temuan'])) {
+            $temuanData = $data['temuan'];
+            Log::info('Using temuan data format');
+        } else {
+            return redirect()->back()->with('error', 'Format data temuan tidak valid!');
+        }
+
+        // Validate required fields
+        $request->validate([
+            'id_pengawasan' => 'required',
+            'id_penugasan' => 'required',
+        ], [
+            'id_pengawasan.required' => 'ID pengawasan harus diisi',
+            'id_penugasan.required' => 'ID penugasan harus diisi',
+        ]);
+
         try {
+            // IMPORTANT: Delete existing data first to prevent duplicates
+            // Only delete data for this specific pengawasan to avoid affecting other data
+            Log::info('Deleting existing temuan data', [
+                'id_pengawasan' => $data['id_pengawasan'],
+                'id_penugasan' => $data['id_penugasan']
+            ]);
+
+            $deletedCount = DB::table('jenis_temuans')
+                ->where('id_pengawasan', $data['id_pengawasan'])
+                ->where('id_penugasan', $data['id_penugasan'])
+                ->delete();
+
+            Log::info('Existing data deleted', ['count' => $deletedCount]);
+
             $savedCount = 0;
 
-            foreach ($data['temuan'] as $temuanIndex => $temuan) {
+            foreach ($temuanData as $temuanIndex => $temuan) {
                 // Skip completely empty temuan entries
                 if (empty(trim($temuan['nama_temuan'] ?? '')) && empty(trim($temuan['kode_temuan'] ?? ''))) {
                     continue;
                 }
 
-                // Check if temuan has recommendations
-                if (!isset($temuan['rekomendasi']) || !is_array($temuan['rekomendasi'])) {
-                    return redirect()->back()->with('error', "Temuan ke-" . ($temuanIndex + 1) . ": Harus memiliki minimal satu rekomendasi!");
-                }
-
-                // Process recommendations recursively (including nested sub-recommendations)
-                $savedCount += $this->processRekomendasi(
-                    $temuan['rekomendasi'],
+                // Process main temuan item
+                $savedCount += $this->processTemuanItem(
+                    $temuan,
                     $data['id_pengawasan'],
-                    $data['id_penugasan'],
-                    $temuan['nama_temuan'],
-                    $temuan['kode_temuan'],
-                    null, // parent_id for main recommendations
-                    $data
+                    $data['id_penugasan']
                 );
             }
 
@@ -541,7 +581,7 @@ class DashboardAminTLController extends Controller
                 return redirect()->back()->with('error', 'Tidak ada data yang disimpan. Pastikan semua field terisi dengan benar!');
             }
 
-            return redirect()->back()->with('success', "Data temuan berhasil disimpan! ($savedCount rekomendasi tersimpan)");
+            return redirect()->back()->with('success', "Data temuan berhasil disimpan! ($savedCount item tersimpan)");
 
         } catch (\Exception $e) {
             Log::error('Temuan Store Error:', [
@@ -692,6 +732,128 @@ class DashboardAminTLController extends Controller
     }
 
     /**
+     * Process temuan item from hierarchy component format (tipeB)
+     */
+    private function processTemuanItem($temuan, $id_pengawasan, $id_penugasan)
+    {
+        $count = 0;
+
+        // Extract basic temuan data
+        $kode_temuan = trim($temuan['kode_temuan'] ?? '');
+        $nama_temuan = trim($temuan['nama_temuan'] ?? '');
+        $rekomendasi = trim($temuan['rekomendasi'] ?? '');
+        $keterangan = trim($temuan['keterangan'] ?? '');
+        $pengembalian = $this->cleanPengembalianValue($temuan['pengembalian'] ?? '0');
+
+        // If there's no kode_temuan or nama_temuan, skip this item
+        if (empty($kode_temuan) || empty($nama_temuan)) {
+            return 0;
+        }
+
+        // Create main temuan record with its rekomendasi
+        if (!empty($rekomendasi)) {
+            $mainId = DB::table('jenis_temuans')->insertGetId([
+                'id_pengawasan' => $id_pengawasan,
+                'id_penugasan' => $id_penugasan,
+                'nama_temuan' => $nama_temuan,
+                'kode_temuan' => $kode_temuan,
+                'rekomendasi' => $rekomendasi,
+                'keterangan' => $keterangan,
+                'pengembalian' => $pengembalian,
+                'id_parent' => null, // Will be updated to self
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Update id_parent to point to itself (main record)
+            DB::table('jenis_temuans')
+                ->where('id', $mainId)
+                ->update(['id_parent' => $mainId]);
+
+            $count++;
+
+            // Process sub-recommendations if they exist
+            if (isset($temuan['sub']) && is_array($temuan['sub'])) {
+                foreach ($temuan['sub'] as $subRekom) {
+                    $count += $this->processSubRekomendasi(
+                        $subRekom,
+                        $id_pengawasan,
+                        $id_penugasan,
+                        $nama_temuan,
+                        $kode_temuan,
+                        $mainId
+                    );
+                }
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Process sub-recommendation (hierarchy level 2 and 3)
+     */
+    private function processSubRekomendasi($subRekom, $id_pengawasan, $id_penugasan, $nama_temuan, $kode_temuan, $parent_id)
+    {
+        $count = 0;
+
+        $rekomendasi = trim($subRekom['rekomendasi'] ?? '');
+        $keterangan = trim($subRekom['keterangan'] ?? '');
+        $pengembalian = $this->cleanPengembalianValue($subRekom['pengembalian'] ?? '0');
+
+        // Skip empty sub-recommendations
+        if (empty($rekomendasi)) {
+            return 0;
+        }
+
+        // Create sub-recommendation record
+        $subId = DB::table('jenis_temuans')->insertGetId([
+            'id_pengawasan' => $id_pengawasan,
+            'id_penugasan' => $id_penugasan,
+            'nama_temuan' => $nama_temuan,
+            'kode_temuan' => $kode_temuan,
+            'rekomendasi' => $rekomendasi,
+            'keterangan' => $keterangan,
+            'pengembalian' => $pengembalian,
+            'id_parent' => $parent_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $count++;
+
+        // Process nested sub-sub-recommendations if they exist
+        if (isset($subRekom['sub']) && is_array($subRekom['sub'])) {
+            foreach ($subRekom['sub'] as $nestedRekom) {
+                $count += $this->processSubRekomendasi(
+                    $nestedRekom,
+                    $id_pengawasan,
+                    $id_penugasan,
+                    $nama_temuan,
+                    $kode_temuan,
+                    $subId // This sub becomes parent for nested sub-sub
+                );
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Clean and validate pengembalian value
+     */
+    private function cleanPengembalianValue($value)
+    {
+        if (empty($value)) {
+            return 0;
+        }
+
+        // Remove currency formatting: 1.000.000 -> 1000000
+        $cleaned = preg_replace('/[^0-9]/', '', $value);
+        return intval($cleaned ?: 0);
+    }
+
+    /**
      * Process recommendations recursively to handle nested sub-recommendations
      */
     private function processRekomendasi($rekomendasi, $id_pengawasan, $id_penugasan, $nama_temuan, $kode_temuan, $parent_id = null, $fullData = [])
@@ -705,13 +867,7 @@ class DashboardAminTLController extends Controller
             }
 
             // Clean and validate pengembalian value
-            $pengembalian = 0;
-            if (!empty($rekom['pengembalian'])) {
-                // Remove currency formatting: Rp. 1.000.000 -> 1000000
-                $cleanNumber = preg_replace('/[^0-9,.]/', '', $rekom['pengembalian']);
-                $cleanNumber = str_replace(['.', ','], ['', '.'], $cleanNumber);
-                $pengembalian = floatval($cleanNumber);
-            }
+            $pengembalian = $this->cleanPengembalianValue($rekom['pengembalian'] ?? '0');
 
             // Insert main recommendation first
             $rekomId = DB::table('jenis_temuans')->insertGetId([
