@@ -261,7 +261,7 @@
     </div>
 </div>
 
-<div class="card mb-4" style="width: 100%;">
+<div class="card mb-4" style="width: 100%;style:hidden;">
 <div class="card-header"> Jenis Rekomendasi</div>
     <div class="card-body">
         @if(session('success'))
@@ -457,10 +457,13 @@
         </div>
         @endif
 
+        {{-- Include Rekomendasi Hierarchy Component --}}
+        @include('AdminTL.datadukungkom_tambahrekomendasi_componponen', ['existingData' => isset($data) ? $data : [], 'pengawasan' => $pengawasan])
+
         {{-- Form for adding new data --}}
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Rekomendasi Baru</h5>
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Rekomendasi Baru (Mode Lama)</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info" role="alert">

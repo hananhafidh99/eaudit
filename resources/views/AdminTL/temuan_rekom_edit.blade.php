@@ -271,7 +271,7 @@
 
         {{-- Display existing data --}}
         @if(isset($existingData) && $existingData->count() > 0)
-        <div class="card mb-4">
+        <div class="card mb-4" style="display: none;">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0"><i class="fas fa-list"></i> Data Temuan & Rekomendasi yang Sudah Ada</h5>
             </div>
@@ -415,10 +415,13 @@
         </div>
         @endif
 
+        {{-- Include Temuan Hierarchy Component --}}
+        @include('AdminTL.datadukungkom_tambahtemuan_componponen', ['existingData' => isset($existingData) ? $existingData : [], 'pengawasan' => $pengawasan])
+
         {{-- Form for adding new data --}}
-        <div class="card mb-4">
+        <div class="card mb-4" style="display: none;">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Temuan & Rekomendasi Baru</h5>
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Temuan & Rekomendasi Baru (Mode Lama)</h5>
             </div>
             <div class="card-body">
         <form action="{{ url('adminTL/temuan/') }}" method="post" enctype="multipart/form-data">
@@ -426,7 +429,7 @@
            @csrf
            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
-    <table class="table">
+           <table class="table">
                <thead>
                    <tr>
                        <th scope="col">KODE TEMUAN <span class="text-danger">*</span></th>
