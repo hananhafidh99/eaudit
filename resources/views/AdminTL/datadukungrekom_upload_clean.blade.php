@@ -70,7 +70,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <!-- Button trigger modal -->
 
-
 <div class="card mb-4" style="width: 100%;">
     <div class="card-header">Data Penugasan</div>
     <div class="card-body">
@@ -180,7 +179,7 @@
 </div>
 
 @include('AdminTL.datadukungkom_tambahrekomendasi_componponen', [
-    'pengawasan' => $pengawasan,
+    'pengawasan' => $pengawasan, 
     'data' => $data
 ])
 
@@ -556,13 +555,6 @@
             xhr.open('POST', '{{ url("adminTL/rekom/delete-file") }}', true);
             xhr.send(formData);
         }
-
-
     </script>
-
-
-
-
-
 
 @endsection

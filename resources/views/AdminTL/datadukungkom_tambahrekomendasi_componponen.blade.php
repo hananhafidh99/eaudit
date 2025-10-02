@@ -1,0 +1,1204 @@
+<style>
+    /* Component Spacing and Layout */
+    #card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid var(--bs-border-color, #dee2e6);
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        background-color: var(--bs-body-bg, #ffffff);
+    }
+
+    #card .card-header {
+        background-color: var(--bs-primary, #0d6efd);
+        color: white;
+        border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+        padding: 1rem 1.25rem;
+    }
+
+    #card .card-body {
+        padding: 1.5rem 1.25rem;
+    }
+
+    /* Hierarchy Table Styles */
+    .hierarchy-container {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        width: 100%;
+        overflow-x: auto;
+        min-width: 900px;
+        position: relative;
+        background-color: var(--bs-body-bg, #ffffff);
+        margin-bottom: 1rem;
+    }
+
+    .hierarchy-container {
+        width: 100%;
+        font-family: Arial, Helvetica, sans-serif;
+        overflow-x: auto;
+        min-width: 900px;
+        position: relative;
+    }
+
+    .hierarchy-item {
+        margin-bottom: 2px;
+        position: relative;
+        clear: both;
+    }
+
+    .hierarchy-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        border: 2px solid var(--bs-border-color, #dee2e6);
+        background-color: var(--bs-body-bg, #ffffff);
+    }
+
+    .hierarchy-table td {
+        border: 2px solid var(--bs-border-color, #dee2e6);
+        padding: 8px;
+        vertical-align: top;
+        color: var(--bs-body-color, #212529);
+        position: relative;
+    }
+
+    .number-cell {
+        width: 80px;
+        min-width: 80px;
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--bs-secondary-bg, #f8f9fa);
+        vertical-align: middle;
+        color: var(--bs-body-color, #212529);
+    }
+
+    .content-cell {
+        padding: 0 !important;
+        background-color: var(--bs-body-bg, #ffffff);
+        width: auto;
+        max-width: calc(100% - 220px);
+    }
+
+    .action-cell {
+        width: 140px;
+        min-width: 140px;
+        max-width: 140px;
+        text-align: center;
+        vertical-align: middle;
+        background-color: var(--bs-secondary-bg, #f8f9fa);
+        position: relative;
+        padding: 8px !important;
+        box-sizing: border-box;
+        white-space: nowrap;
+        overflow: visible;
+    }
+
+    .field-group {
+        width: 100%;
+        background-color: var(--bs-body-bg, #ffffff);
+    }
+
+    .field-row {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+        min-height: 40px;
+        padding: 4px 8px;
+        background-color: var(--bs-body-bg, #ffffff);
+    }
+
+    .field-row:last-child {
+        border-bottom: none;
+    }
+
+    .field-row label {
+        min-width: 120px;
+        font-weight: normal;
+        margin: 0;
+        padding-right: 10px;
+        font-size: 14px;
+        text-align: left;
+        color: var(--bs-body-color, #212529);
+    }
+
+    .field-row .form-control {
+        flex: 1;
+        border: none;
+        background: var(--bs-body-bg, #ffffff);
+        resize: none;
+        min-height: 30px;
+        padding: 4px;
+        font-size: 14px;
+        color: var(--bs-body-color, #212529);
+    }
+
+    .field-row textarea.form-control {
+        resize: vertical;
+        min-height: 30px;
+    }
+
+    .field-row .form-control:focus {
+        box-shadow: none;
+        outline: 2px solid var(--bs-primary, #0d6efd);
+        background-color: var(--bs-body-bg, #ffffff);
+        color: var(--bs-body-color, #212529);
+    }
+
+    /* Level indentation - Prevent overlap */
+    .level-0 {
+        margin-left: 0;
+        z-index: 3;
+    }
+
+    .level-1 {
+        margin-left: 30px;
+        margin-top: 2px;
+        z-index: 2;
+        position: relative;
+    }
+
+    .level-2 {
+        margin-left: 60px;
+        margin-top: 2px;
+        z-index: 1;
+        position: relative;
+    }
+
+    /* Ensure proper stacking */
+    .hierarchy-item .hierarchy-table {
+        position: relative;
+        margin-bottom: 0;
+    }
+
+    /* Container styling to prevent overlap */
+    .sub-items-container,
+    .sub-sub-items-container {
+        width: 100%;
+        clear: both;
+        overflow: hidden;
+    }
+
+    .sub-items-container {
+        margin-top: 2px;
+    }
+
+    .sub-sub-items-container {
+        margin-top: 2px;
+        margin-left: 0; /* Reset margin since level-2 already has margin */
+    }
+
+    /* Fix width calculation for indented items */
+    .level-0 .hierarchy-table {
+        width: 100%;
+        min-width: 800px;
+    }
+
+    .level-1 .hierarchy-table {
+        width: calc(100% - 30px);
+        min-width: 750px;
+    }
+
+    .level-2 .hierarchy-table {
+        width: calc(100% - 60px);
+        min-width: 700px;
+    }
+
+    /* Responsive wrapper */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Specific styling for sub levels */
+    .level-1 .action-cell,
+    .level-2 .action-cell {
+        position: sticky;
+        right: 0;
+        z-index: 10;
+        box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+    }
+
+    .level-1 .content-cell {
+        max-width: calc(100% - 250px);
+    }
+
+    .level-2 .content-cell {
+        max-width: calc(100% - 280px);
+    }
+
+    /* Ensure buttons stack properly */
+    .level-1 .action-cell .btn,
+    .level-2 .action-cell .btn {
+        display: block !important;
+        margin: 2px auto !important;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        font-size: 0.8rem;
+    }
+
+    /* Prevent floating issues */
+    .hierarchy-item::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    /* Button styling */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        margin: 2px;
+        display: inline-block !important;
+        visibility: visible !important;
+    }
+
+    .add-sub, .remove-item, .add-main, #add_btn, #add_main_btn, #add_main_btn_default {
+        display: inline-block !important;
+        visibility: visible !important;
+    }
+
+    .action-cell .btn {
+        display: inline-block !important;
+        margin: 1px;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    /* Dark theme specific styles */
+    @media (prefers-color-scheme: dark) {
+        #card {
+            background-color: #212529;
+            border-color: #495057;
+            box-shadow: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.075);
+        }
+
+        #card .card-header {
+            background-color: #0d6efd;
+            border-bottom-color: #495057;
+            color: #ffffff;
+        }
+
+        #card .card-body {
+            background-color: #212529;
+        }
+
+        .hierarchy-container {
+            background-color: #212529;
+        }
+
+        .hierarchy-table {
+            border-color: #495057;
+            background-color: #212529;
+        }
+
+        .hierarchy-table td {
+            border-color: #495057;
+            color: #ffffff;
+        }
+
+        .number-cell {
+            background-color: #343a40;
+            color: #ffffff;
+        }
+
+        .content-cell {
+            background-color: #212529;
+        }
+
+        .action-cell {
+            background-color: #343a40;
+        }
+
+        .level-1 .action-cell,
+        .level-2 .action-cell {
+            background-color: #343a40 !important;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.3);
+        }
+
+        .field-group {
+            background-color: #212529;
+        }
+
+        .field-row {
+            border-bottom-color: #495057;
+            background-color: #212529;
+        }
+
+        .field-row label {
+            color: #ffffff;
+        }
+
+        .field-row .form-control {
+            background-color: #212529;
+            color: #ffffff;
+        }
+
+        .field-row .form-control:focus {
+            background-color: #212529;
+            color: #ffffff;
+            outline-color: #0d6efd;
+        }
+    }
+
+    /* Bootstrap dark theme class support */
+    [data-bs-theme="dark"] #card {
+        background-color: #212529;
+        border-color: #495057;
+        box-shadow: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.075);
+    }
+
+    [data-bs-theme="dark"] #card .card-header {
+        background-color: #0d6efd;
+        border-bottom-color: #495057;
+        color: #ffffff;
+    }
+
+    [data-bs-theme="dark"] #card .card-body {
+        background-color: #212529;
+    }
+
+    [data-bs-theme="dark"] .hierarchy-container {
+        background-color: #212529;
+    }
+
+    [data-bs-theme="dark"] .hierarchy-table {
+        border-color: #495057;
+        background-color: #212529;
+    }
+
+    [data-bs-theme="dark"] .hierarchy-table td {
+        border-color: #495057;
+        color: #ffffff;
+    }
+
+    [data-bs-theme="dark"] .number-cell {
+        background-color: #343a40;
+        color: #ffffff;
+    }
+
+    [data-bs-theme="dark"] .content-cell {
+        background-color: #212529;
+    }
+
+    [data-bs-theme="dark"] .action-cell {
+        background-color: #343a40;
+    }
+
+    [data-bs-theme="dark"] .level-1 .action-cell,
+    [data-bs-theme="dark"] .level-2 .action-cell {
+        background-color: #343a40 !important;
+        box-shadow: -2px 0 4px rgba(0,0,0,0.3);
+    }
+
+    [data-bs-theme="dark"] .field-group {
+        background-color: #212529;
+    }
+
+    [data-bs-theme="dark"] .field-row {
+        border-bottom-color: #495057;
+        background-color: #212529;
+    }
+
+    [data-bs-theme="dark"] .field-row label {
+        color: #ffffff;
+    }
+
+    [data-bs-theme="dark"] .field-row .form-control {
+        background-color: #212529;
+        color: #ffffff;
+    }
+
+    [data-bs-theme="dark"] .field-row .form-control:focus {
+        background-color: #212529;
+        color: #ffffff;
+        outline-color: #0d6efd;
+    }
+</style>
+
+<div class="card mb-4" id="card" style="width: 100%; margin-top: 0;">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fa-solid fa-list-check"></i> Tambah Rekomendasi
+        </h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url('adminTL/rekom') }}" method="post" enctype="multipart/form-data" id="recommendationForm">
+            @method('POST')
+            @csrf
+            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
+            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
+            <div class="table-responsive">
+                <div class="hierarchy-container">
+                    @if(isset($data) && count($data) > 0)
+                    @foreach($data as $key => $item)
+                        <!-- Main Item -->
+                        <div class="hierarchy-item level-0" data-level="0" data-index="{{ $key }}">
+                            <table class="hierarchy-table">
+                                <tr class="main-row">
+                                    <td class="number-cell">{{ $loop->iteration }}</td>
+                                    <td class="content-cell">
+                                        <div class="field-group">
+                                            <div class="field-row">
+                                                <label>rekomendasi</label>
+                                                <textarea class="form-control" name="tipeA[{{ $key }}][rekomendasi]">{{ $item->rekomendasi }}</textarea>
+                                            </div>
+                                            <div class="field-row">
+                                                <label>keterangan</label>
+                                                <textarea class="form-control" name="tipeA[{{ $key }}][keterangan]">{{ $item->keterangan }}</textarea>
+                                            </div>
+                                            <div class="field-row">
+                                                <label>pengembalian</label>
+                                                <input type="text" class="form-control tanparupiah" name="tipeA[{{ $key }}][pengembalian]" value="{{ number_format($item->pengembalian,0,',','.') }}">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="action-cell">
+                                        <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-success btn-sm add-sub" id="add_sub_{{ $key }}">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                        @if($key == 0)
+                                            <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Sub Items Container -->
+                            <div class="sub-items-container">
+                                @if(isset($item->sub))
+                                    @foreach($item->sub as $subKey => $subItem)
+                                        <!-- Sub Item -->
+                                        <div class="hierarchy-item level-1" data-level="1" data-parent="{{ $key }}" data-index="{{ $subKey }}">
+                                            <table class="hierarchy-table">
+                                                <tr>
+                                                    <td class="number-cell">{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
+                                                    <td class="content-cell">
+                                                        <div class="field-group">
+                                                            <div class="field-row">
+                                                                <label>rekomendasi</label>
+                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][rekomendasi]" value="{{ $subItem->rekomendasi }}">
+                                                            </div>
+                                                            <div class="field-row">
+                                                                <label>keterangan</label>
+                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][keterangan]" value="{{ $subItem->keterangan }}">
+                                                            </div>
+                                                            <div class="field-row">
+                                                                <label>pengembalian</label>
+                                                                <input type="text" class="form-control tanparupiah" name="tipeA[{{ $key }}][sub][{{ $subKey }}][pengembalian]" value="{{ number_format($subItem->pengembalian,0,',','.') }}">
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="action-cell">
+                                                        <button type="button" data-level1="{{ $key }}" data-level2="{{ $subKey }}" data-parentid="{{ $subItem->id }}" class="btn btn-success btn-sm add-sub" id="add_sub_{{ $key }}_{{ $subKey }}">
+                                                            <i class="fa-solid fa-plus"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}">
+                                                            <i class="fa-solid fa-minus"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <!-- Sub-Sub Items Container -->
+                                            <div class="sub-sub-items-container">
+                                                @if(isset($subItem->sub))
+                                                    @foreach($subItem->sub as $nestedKey => $nestedItem)
+                                                        <!-- Sub-Sub Item -->
+                                                        <div class="hierarchy-item level-2" data-level="2" data-parent="{{ $key }}-{{ $subKey }}" data-index="{{ $nestedKey }}">
+                                                            <table class="hierarchy-table">
+                                                                <tr>
+                                                                    <td class="number-cell">{{ $loop->parent->parent->iteration }}.{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
+                                                                    <td class="content-cell">
+                                                                        <div class="field-group">
+                                                                            <div class="field-row">
+                                                                                <label>rekomendasi</label>
+                                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][rekomendasi]" value="{{ $nestedItem->rekomendasi }}">
+                                                                            </div>
+                                                                            <div class="field-row">
+                                                                                <label>keterangan</label>
+                                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][keterangan]" value="{{ $nestedItem->keterangan }}">
+                                                                            </div>
+                                                                            <div class="field-row">
+                                                                                <label>pengembalian</label>
+                                                                                <input type="text" class="form-control tanparupiah" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][pengembalian]" value="{{ number_format($nestedItem->pengembalian,0,',','.') }}">
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="action-cell">
+                                                                        <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}_{{ $nestedKey }}">
+                                                                            <i class="fa-solid fa-minus"></i>
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                    @else
+                        <!-- Default empty item -->
+                        <div class="hierarchy-item level-0" data-level="0" data-index="0">
+                            <table class="hierarchy-table">
+                                <tr>
+                                    <td class="number-cell">1</td>
+                                    <td class="content-cell">
+                                        <div class="field-group">
+                                            <div class="field-row">
+                                                <label>rekomendasi</label>
+                                                <textarea class="form-control" name="tipeA[0][rekomendasi]"></textarea>
+                                            </div>
+                                            <div class="field-row">
+                                                <label>keterangan</label>
+                                                <textarea class="form-control" name="tipeA[0][keterangan]"></textarea>
+                                            </div>
+                                            <div class="field-row">
+                                                <label>pengembalian</label>
+                                                <textarea class="form-control tanparupiah" name="tipeA[0][pengembalian]"></textarea>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="action-cell">
+                                        <button type="button" data-level1="0" class="btn btn-success btn-sm add-sub" id="add_sub_0">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn_default">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            <div class="mt-4 mb-3 text-center border-top pt-3">
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <button type="submit" class="btn btn-success btn-lg px-4" id="submitBtn">
+                        <i class="fa-solid fa-save me-2"></i> Simpan Rekomendasi
+                    </button>
+                    <button type="button" class="btn btn-info btn-lg px-4" onclick="previewData()" id="previewBtn">
+                        <i class="fa-solid fa-eye me-2"></i> Preview Data
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-lg px-4" onclick="window.history.back()">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Kembali
+                    </button>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fa-solid fa-info-circle me-1"></i>
+                    Shortcut: Ctrl+S untuk simpan, Ctrl+P untuk preview
+                </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-check-circle"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-exclamation-triangle"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <!-- Validation Summary -->
+            <div id="validationSummary" class="alert alert-info" style="display: none;">
+                <h6><i class="fa-solid fa-info-circle"></i> Ringkasan Data:</h6>
+                <div id="validationContent"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let mainItemCounter = @if(isset($data) && count($data) > 0) {{ count($data) }} @else 1 @endif;
+    let subItemCounters = {};
+    let subSubItemCounters = {};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize counters based on existing data
+        initializeCounters();
+
+        // Make sure all buttons are visible
+        ensureButtonsVisible();
+
+        // Add event listeners using delegation
+        addEventListeners();
+
+        // Add mobile responsive styles
+        addMobileStyles();
+
+        // Initialize currency formatting
+        initializeCurrencyFormatting();
+    });
+
+    function initializeCounters() {
+        const mainItems = document.querySelectorAll('.hierarchy-item[data-level="0"]');
+        mainItems.forEach((item, index) => {
+            const level1 = item.getAttribute('data-index') || index;
+            subItemCounters[level1] = 0;
+            subSubItemCounters[level1] = {};
+
+            const subItems = item.querySelectorAll('.hierarchy-item[data-level="1"]');
+            subItems.forEach((subItem, subIndex) => {
+                subItemCounters[level1] = Math.max(subItemCounters[level1], subIndex + 1);
+                const level2 = subItem.getAttribute('data-index') || subIndex;
+                subSubItemCounters[level1][level2] = 0;
+
+                const subSubItems = subItem.querySelectorAll('.hierarchy-item[data-level="2"]');
+                subSubItems.forEach((subSubItem, subSubIndex) => {
+                    subSubItemCounters[level1][level2] = Math.max(subSubItemCounters[level1][level2], subSubIndex + 1);
+                });
+            });
+        });
+    }
+
+    function ensureButtonsVisible() {
+        const allButtons = document.querySelectorAll('.add-sub, .add-main, .remove-item');
+        allButtons.forEach(function(btn) {
+            btn.style.display = 'inline-block';
+            btn.style.visibility = 'visible';
+        });
+    }
+
+    function addEventListeners() {
+        // Use event delegation for dynamic buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.add-main')) {
+                addMainItem();
+            } else if (e.target.closest('.add-sub')) {
+                const button = e.target.closest('.add-sub');
+                const level1 = button.getAttribute('data-level1');
+                const level2 = button.getAttribute('data-level2');
+
+                if (level2) {
+                    addSubSubItem(level1, level2);
+                } else {
+                    addSubItem(level1);
+                }
+            } else if (e.target.closest('.remove-item')) {
+                const button = e.target.closest('.remove-item');
+                removeItem(button);
+            }
+        });
+    }
+
+    function addMainItem() {
+        const container = document.querySelector('.hierarchy-container');
+        const newIndex = mainItemCounter;
+
+        // Initialize counters for new main item
+        subItemCounters[newIndex] = 0;
+        subSubItemCounters[newIndex] = {};
+
+        const newMainItem = createMainItemHTML(newIndex);
+        container.insertAdjacentHTML('beforeend', newMainItem);
+
+        mainItemCounter++;
+        updateNumbering();
+        ensureButtonsVisible();
+    }
+
+    function addSubItem(level1) {
+        const parentItem = document.querySelector(`.hierarchy-item[data-level="0"][data-index="${level1}"]`);
+        if (!parentItem) return;
+
+        const subContainer = parentItem.querySelector('.sub-items-container');
+        const newSubIndex = subItemCounters[level1] || 0;
+
+        // Initialize sub-sub counter for new sub item
+        if (!subSubItemCounters[level1]) subSubItemCounters[level1] = {};
+        subSubItemCounters[level1][newSubIndex] = 0;
+
+        const newSubItem = createSubItemHTML(level1, newSubIndex);
+        subContainer.insertAdjacentHTML('beforeend', newSubItem);
+
+        subItemCounters[level1] = (subItemCounters[level1] || 0) + 1;
+        updateNumbering();
+        ensureButtonsVisible();
+    }
+
+    function addSubSubItem(level1, level2) {
+        const parentSubItem = document.querySelector(`.hierarchy-item[data-level="1"][data-parent="${level1}"][data-index="${level2}"]`);
+        if (!parentSubItem) return;
+
+        const subSubContainer = parentSubItem.querySelector('.sub-sub-items-container');
+        const newSubSubIndex = subSubItemCounters[level1][level2] || 0;
+
+        const newSubSubItem = createSubSubItemHTML(level1, level2, newSubSubIndex);
+        subSubContainer.insertAdjacentHTML('beforeend', newSubSubItem);
+
+        if (!subSubItemCounters[level1]) subSubItemCounters[level1] = {};
+        subSubItemCounters[level1][level2] = (subSubItemCounters[level1][level2] || 0) + 1;
+        updateNumbering();
+        ensureButtonsVisible();
+    }
+
+    function removeItem(button) {
+        const item = button.closest('.hierarchy-item');
+        if (!item) return;
+
+        const level = item.getAttribute('data-level');
+
+        // Don't allow removing the last main item
+        if (level === '0') {
+            const mainItems = document.querySelectorAll('.hierarchy-item[data-level="0"]');
+            if (mainItems.length <= 1) {
+                alert('Tidak dapat menghapus item utama terakhir');
+                return;
+            }
+        }
+
+        if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+            item.remove();
+            updateNumbering();
+        }
+    }
+
+    function createMainItemHTML(index) {
+        return `
+            <div class="hierarchy-item level-0" data-level="0" data-index="${index}">
+                <table class="hierarchy-table">
+                    <tr class="main-row">
+                        <td class="number-cell">${index + 1}</td>
+                        <td class="content-cell">
+                            <div class="field-group">
+                                <div class="field-row">
+                                    <label>rekomendasi</label>
+                                    <textarea class="form-control" name="tipeA[${index}][rekomendasi]" required></textarea>
+                                </div>
+                                <div class="field-row">
+                                    <label>keterangan</label>
+                                    <textarea class="form-control" name="tipeA[${index}][keterangan]"></textarea>
+                                </div>
+                                <div class="field-row">
+                                    <label>pengembalian</label>
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[${index}][pengembalian]" value="0">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="action-cell">
+                            <button type="button" data-level1="${index}" class="btn btn-success btn-sm add-sub" title="Tambah Sub Item">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Item">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="sub-items-container"></div>
+            </div>
+        `;
+    }
+
+    function createSubItemHTML(level1, level2) {
+        return `
+            <div class="hierarchy-item level-1" data-level="1" data-parent="${level1}" data-index="${level2}">
+                <table class="hierarchy-table">
+                    <tr>
+                        <td class="number-cell">${parseInt(level1) + 1}.${level2 + 1}</td>
+                        <td class="content-cell">
+                            <div class="field-group">
+                                <div class="field-row">
+                                    <label>rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][rekomendasi]" required>
+                                </div>
+                                <div class="field-row">
+                                    <label>keterangan</label>
+                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][keterangan]">
+                                </div>
+                                <div class="field-row">
+                                    <label>pengembalian</label>
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[${level1}][sub][${level2}][pengembalian]" value="0">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="action-cell">
+                            <button type="button" data-level1="${level1}" data-level2="${level2}" class="btn btn-success btn-sm add-sub" title="Tambah Sub-Sub Item">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub Item">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="sub-sub-items-container"></div>
+            </div>
+        `;
+    }
+
+    function createSubSubItemHTML(level1, level2, level3) {
+        return `
+            <div class="hierarchy-item level-2" data-level="2" data-parent="${level1}-${level2}" data-index="${level3}">
+                <table class="hierarchy-table">
+                    <tr>
+                        <td class="number-cell">${parseInt(level1) + 1}.${parseInt(level2) + 1}.${level3 + 1}</td>
+                        <td class="content-cell">
+                            <div class="field-group">
+                                <div class="field-row">
+                                    <label>rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][sub][${level3}][rekomendasi]" required>
+                                </div>
+                                <div class="field-row">
+                                    <label>keterangan</label>
+                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][sub][${level3}][keterangan]">
+                                </div>
+                                <div class="field-row">
+                                    <label>pengembalian</label>
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[${level1}][sub][${level2}][sub][${level3}][pengembalian]" value="0">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="action-cell">
+                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub-Sub Item">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+    }
+
+    function updateNumbering() {
+        // Update main item numbering
+        const mainItems = document.querySelectorAll('.hierarchy-item[data-level="0"]');
+        mainItems.forEach((item, index) => {
+            const numberCell = item.querySelector('.number-cell');
+            if (numberCell) {
+                numberCell.textContent = index + 1;
+            }
+
+            // Update sub item numbering
+            const subItems = item.querySelectorAll('.hierarchy-item[data-level="1"]');
+            subItems.forEach((subItem, subIndex) => {
+                const subNumberCell = subItem.querySelector('.number-cell');
+                if (subNumberCell) {
+                    subNumberCell.textContent = `${index + 1}.${subIndex + 1}`;
+                }
+
+                // Update sub-sub item numbering
+                const subSubItems = subItem.querySelectorAll('.hierarchy-item[data-level="2"]');
+                subSubItems.forEach((subSubItem, subSubIndex) => {
+                    const subSubNumberCell = subSubItem.querySelector('.number-cell');
+                    if (subSubNumberCell) {
+                        subSubNumberCell.textContent = `${index + 1}.${subIndex + 1}.${subSubIndex + 1}`;
+                    }
+                });
+            });
+        });
+    }
+
+    function initializeCurrencyFormatting() {
+        // Format existing currency fields
+        formatAllCurrencyFields();
+
+        // Add event listeners for new currency fields
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('tanparupiah')) {
+                formatCurrencyField(e.target);
+            }
+        });
+    }
+
+    function formatAllCurrencyFields() {
+        const currencyFields = document.querySelectorAll('.tanparupiah');
+        currencyFields.forEach(formatCurrencyField);
+    }
+
+    function formatCurrencyField(field) {
+        let value = field.value.replace(/[^0-9]/g, '');
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
+        }
+        field.value = value;
+    }
+
+    function addMobileStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            @media (max-width: 768px) {
+                .hierarchy-container {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+
+                .hierarchy-table {
+                    min-width: 700px;
+                }
+
+                .action-cell {
+                    position: sticky;
+                    right: 0;
+                    background-color: var(--bs-secondary-bg, #f8f9fa) !important;
+                    z-index: 10;
+                    box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+                }
+
+                .number-cell {
+                    position: sticky;
+                    left: 0;
+                    z-index: 10;
+                    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+                }
+
+                .btn {
+                    margin: 1px !important;
+                    font-size: 0.7rem !important;
+                    padding: 0.2rem 0.3rem !important;
+                }
+            }
+
+            /* Form submission preparation */
+            .hierarchy-container input[type="text"],
+            .hierarchy-container textarea {
+                border: 1px solid var(--bs-border-color, #dee2e6) !important;
+            }
+
+            .hierarchy-container input[type="text"]:focus,
+            .hierarchy-container textarea:focus {
+                border-color: var(--bs-primary, #0d6efd) !important;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Form validation and submission handling
+    document.addEventListener('submit', function(e) {
+        if (e.target.id === 'recommendationForm') {
+            e.preventDefault();
+
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+            submitBtn.disabled = true;
+
+            // Convert currency fields back to numeric format for submission
+            const currencyFields = document.querySelectorAll('.tanparupiah');
+            currencyFields.forEach(function(field) {
+                const numericValue = field.value.replace(/[^0-9]/g, '') || '0';
+                field.value = numericValue;
+            });
+
+            // Validate required fields
+            const requiredFields = document.querySelectorAll('textarea[name*="rekomendasi"], input[name*="rekomendasi"]');
+            let hasEmpty = false;
+            let emptyFields = [];
+
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    field.style.borderColor = 'red';
+                    field.style.backgroundColor = '#ffebee';
+                    hasEmpty = true;
+
+                    // Get field context for better error message
+                    const fieldContainer = field.closest('.hierarchy-item');
+                    const numberCell = fieldContainer ? fieldContainer.querySelector('.number-cell') : null;
+                    const itemNumber = numberCell ? numberCell.textContent : 'Unknown';
+                    emptyFields.push(`Item ${itemNumber}`);
+                } else {
+                    field.style.borderColor = '';
+                    field.style.backgroundColor = '';
+                }
+            });
+
+            if (hasEmpty) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+
+                // Restore currency formatting
+                currencyFields.forEach(formatCurrencyField);
+
+                alert(`Mohon isi field rekomendasi pada: ${emptyFields.join(', ')}`);
+
+                // Scroll to first empty field
+                const firstEmptyField = document.querySelector('textarea[name*="rekomendasi"][style*="red"], input[name*="rekomendasi"][style*="red"]');
+                if (firstEmptyField) {
+                    firstEmptyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstEmptyField.focus();
+                }
+                return false;
+            }
+
+            // Collect form data for debugging
+            console.log('Form data being submitted:');
+            const formData = new FormData(e.target);
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            // Submit the form
+            try {
+                e.target.submit();
+            } catch (error) {
+                console.error('Submission error:', error);
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+
+                // Restore currency formatting
+                currencyFields.forEach(formatCurrencyField);
+
+                alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+            }
+        }
+    });
+
+    // Add auto-save functionality (optional)
+    let autoSaveTimeout;
+    document.addEventListener('input', function(e) {
+        if (e.target.closest('#recommendationForm')) {
+            // Clear previous timeout
+            clearTimeout(autoSaveTimeout);
+
+            // Set new timeout for auto-save (5 seconds after last input)
+            autoSaveTimeout = setTimeout(function() {
+                console.log('Auto-save triggered');
+                // You can implement auto-save to localStorage here
+                saveToLocalStorage();
+            }, 5000);
+        }
+    });
+
+    function saveToLocalStorage() {
+        try {
+            const formData = {};
+            const form = document.getElementById('recommendationForm');
+            const inputs = form.querySelectorAll('input, textarea');
+
+            inputs.forEach(function(input) {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+
+            localStorage.setItem('recommendationForm_' + document.querySelector('input[name="id_pengawasan"]').value, JSON.stringify(formData));
+            console.log('Data saved to localStorage');
+        } catch (error) {
+            console.error('Auto-save error:', error);
+        }
+    }
+
+    function loadFromLocalStorage() {
+        try {
+            const savedData = localStorage.getItem('recommendationForm_' + document.querySelector('input[name="id_pengawasan"]').value);
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+
+                Object.keys(formData).forEach(function(fieldName) {
+                    const field = document.querySelector(`[name="${fieldName}"]`);
+                    if (field && !field.value) { // Only fill empty fields
+                        field.value = formData[fieldName];
+                        if (field.classList.contains('tanparupiah')) {
+                            formatCurrencyField(field);
+                        }
+                    }
+                });
+
+                console.log('Data loaded from localStorage');
+            }
+        } catch (error) {
+            console.error('Auto-load error:', error);
+        }
+    }
+
+    // Load saved data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(loadFromLocalStorage, 1000); // Delay to ensure form is fully rendered
+    });
+
+    // Clear localStorage after successful submission
+    window.addEventListener('beforeunload', function() {
+        // Only clear if form was submitted (you can add a flag for this)
+        if (document.getElementById('submitBtn').disabled) {
+            localStorage.removeItem('recommendationForm_' + document.querySelector('input[name="id_pengawasan"]').value);
+        }
+    });
+
+    // Preview function
+    function previewData() {
+        const form = document.getElementById('recommendationForm');
+        const formData = new FormData(form);
+        let summary = '<ul>';
+        let itemCount = 0;
+        let totalPengembalian = 0;
+
+        // Count items and calculate totals
+        const mainItems = document.querySelectorAll('.hierarchy-item[data-level="0"]');
+        mainItems.forEach((item, index) => {
+            const rekomendasi = item.querySelector('textarea[name*="rekomendasi"]').value;
+            if (rekomendasi.trim()) {
+                itemCount++;
+                const pengembalian = item.querySelector('input[name*="pengembalian"]').value.replace(/[^0-9]/g, '') || '0';
+                totalPengembalian += parseInt(pengembalian);
+                summary += `<li><strong>Item ${index + 1}:</strong> ${rekomendasi.substring(0, 50)}...</li>`;
+
+                // Check sub items
+                const subItems = item.querySelectorAll('.hierarchy-item[data-level="1"]');
+                subItems.forEach((subItem, subIndex) => {
+                    const subRekomendasi = subItem.querySelector('input[name*="rekomendasi"]').value;
+                    if (subRekomendasi.trim()) {
+                        itemCount++;
+                        const subPengembalian = subItem.querySelector('input[name*="pengembalian"]').value.replace(/[^0-9]/g, '') || '0';
+                        totalPengembalian += parseInt(subPengembalian);
+                        summary += `<li style="margin-left: 20px;"><strong>Sub ${index + 1}.${subIndex + 1}:</strong> ${subRekomendasi.substring(0, 40)}...</li>`;
+
+                        // Check sub-sub items
+                        const subSubItems = subItem.querySelectorAll('.hierarchy-item[data-level="2"]');
+                        subSubItems.forEach((subSubItem, subSubIndex) => {
+                            const subSubRekomendasi = subSubItem.querySelector('input[name*="rekomendasi"]').value;
+                            if (subSubRekomendasi.trim()) {
+                                itemCount++;
+                                const subSubPengembalian = subSubItem.querySelector('input[name*="pengembalian"]').value.replace(/[^0-9]/g, '') || '0';
+                                totalPengembalian += parseInt(subSubPengembalian);
+                                summary += `<li style="margin-left: 40px;"><strong>Sub ${index + 1}.${subIndex + 1}.${subSubIndex + 1}:</strong> ${subSubRekomendasi.substring(0, 30)}...</li>`;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        summary += '</ul>';
+
+        const validationContent = document.getElementById('validationContent');
+        validationContent.innerHTML = `
+            <p><strong>Total Items:</strong> ${itemCount}</p>
+            <p><strong>Total Pengembalian:</strong> ${totalPengembalian.toLocaleString('id-ID')}</p>
+            <div><strong>Daftar Rekomendasi:</strong></div>
+            ${summary}
+        `;
+
+        const validationSummary = document.getElementById('validationSummary');
+        validationSummary.style.display = 'block';
+        validationSummary.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + S to save
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            document.getElementById('submitBtn').click();
+        }
+
+        // Ctrl + P to preview
+        if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            previewData();
+        }
+    });
+</script>
