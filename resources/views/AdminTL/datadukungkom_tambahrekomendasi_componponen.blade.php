@@ -498,6 +498,44 @@
         background-color: #EC4899;
         border-color: #EC4899;
     }
+
+    /* Validation error styles */
+    .is-invalid {
+        border-color: #dc3545 !important;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+        20%, 40%, 60%, 80% { transform: translateX(3px); }
+    }
+
+    /* Error highlight animation */
+    @keyframes errorPulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+        50% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0.1); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .error-pulse {
+        animation: errorPulse 1s ease-out;
+    }
+
+    /* Success validation styles */
+    .is-valid {
+        border-color: #28a745 !important;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94-.94-.94L1.36 5.8z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
 </style>
 
 <div class="card mb-4" id="card" style="width: 100%; margin-top: 0;">
@@ -525,7 +563,7 @@
                                         <div class="field-group">
                                             <div class="field-row">
                                                 <label>rekomendasi</label>
-                                                <textarea class="form-control" name="tipeA[{{ $key }}][rekomendasi]">{{ $item->rekomendasi }}</textarea>
+                                                <textarea class="form-control" name="tipeA[{{ $key }}][rekomendasi]" required placeholder="Masukkan rekomendasi...">{{ $item->rekomendasi }}</textarea>
                                             </div>
                                             <div class="field-row">
                                                 <label>keterangan</label>
@@ -563,7 +601,7 @@
                                                         <div class="field-group">
                                                             <div class="field-row">
                                                                 <label>rekomendasi</label>
-                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][rekomendasi]" value="{{ $subItem->rekomendasi }}">
+                                                                <textarea class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][rekomendasi]" required placeholder="Masukkan sub rekomendasi...">{{ $subItem->rekomendasi }}</textarea>
                                                             </div>
                                                             <div class="field-row">
                                                                 <label>keterangan</label>
@@ -599,7 +637,7 @@
                                                                         <div class="field-group">
                                                                             <div class="field-row">
                                                                                 <label>rekomendasi</label>
-                                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][rekomendasi]" value="{{ $nestedItem->rekomendasi }}">
+                                                                                <textarea class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][rekomendasi]" required placeholder="Masukkan sub-sub rekomendasi...">{{ $nestedItem->rekomendasi }}</textarea>
                                                                             </div>
                                                                             <div class="field-row">
                                                                                 <label>keterangan</label>
@@ -638,7 +676,7 @@
                                         <div class="field-group">
                                             <div class="field-row">
                                                 <label>rekomendasi</label>
-                                                <textarea class="form-control" name="tipeA[0][rekomendasi]"></textarea>
+                                                <textarea class="form-control" name="tipeA[0][rekomendasi]" required placeholder="Masukkan rekomendasi..."></textarea>
                                             </div>
                                             <div class="field-row">
                                                 <label>keterangan</label>
@@ -905,7 +943,7 @@
                             <div class="field-group">
                                 <div class="field-row">
                                     <label>rekomendasi</label>
-                                    <textarea class="form-control" name="tipeA[${index}][rekomendasi]" required></textarea>
+                                    <textarea class="form-control" name="tipeA[${index}][rekomendasi]" required placeholder="Masukkan rekomendasi..."></textarea>
                                 </div>
                                 <div class="field-row">
                                     <label>keterangan</label>
@@ -942,7 +980,7 @@
                             <div class="field-group">
                                 <div class="field-row">
                                     <label>rekomendasi</label>
-                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][rekomendasi]" required>
+                                    <textarea class="form-control" name="tipeA[${level1}][sub][${level2}][rekomendasi]" required placeholder="Masukkan sub rekomendasi..."></textarea>
                                 </div>
                                 <div class="field-row">
                                     <label>keterangan</label>
@@ -979,7 +1017,7 @@
                             <div class="field-group">
                                 <div class="field-row">
                                     <label>rekomendasi</label>
-                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][sub][${level3}][rekomendasi]" required>
+                                    <textarea class="form-control" name="tipeA[${level1}][sub][${level2}][sub][${level3}][rekomendasi]" required placeholder="Masukkan sub-sub rekomendasi..."></textarea>
                                 </div>
                                 <div class="field-row">
                                     <label>keterangan</label>
@@ -1125,25 +1163,75 @@
                 field.value = numericValue;
             });
 
-            // Validate required fields
-            const requiredFields = document.querySelectorAll('textarea[name*="rekomendasi"], input[name*="rekomendasi"]');
+            // Validate required fields - specifically target rekomendasi fields within the form
+            const form = document.getElementById('recommendationForm');
+            const requiredFields = form.querySelectorAll('textarea[name*="rekomendasi"], input[name*="rekomendasi"]');
             let hasEmpty = false;
             let emptyFields = [];
 
-            requiredFields.forEach(function(field) {
+            console.log('Found', requiredFields.length, 'rekomendasi fields to validate');
+
+            requiredFields.forEach(function(field, index) {
+                console.log(`Checking field ${index + 1}:`, field.name, 'Value:', field.value.trim());
                 if (!field.value.trim()) {
-                    field.style.borderColor = 'red';
+                    field.style.borderColor = '#dc3545';
                     field.style.backgroundColor = '#ffebee';
+                    field.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+                    field.classList.add('is-invalid');
                     hasEmpty = true;
 
                     // Get field context for better error message
-                    const fieldContainer = field.closest('.hierarchy-item');
-                    const numberCell = fieldContainer ? fieldContainer.querySelector('.number-cell') : null;
-                    const itemNumber = numberCell ? numberCell.textContent : 'Unknown';
+                    let itemNumber = 'Unknown';
+                    const fieldName = field.getAttribute('name') || '';
+
+                    console.log('Validating field:', fieldName, 'Value:', field.value);
+
+                    // First try to parse from field name pattern (most reliable)
+                    const matches = fieldName.match(/tipeA\[(\d+)\](?:\[sub\]\[(\d+)\])?(?:\[sub\]\[(\d+)\])?/);
+                    if (matches) {
+                        const level1 = parseInt(matches[1]) + 1;
+                        const level2 = matches[2] ? parseInt(matches[2]) + 1 : null;
+                        const level3 = matches[3] ? parseInt(matches[3]) + 1 : null;
+
+                        if (level3) {
+                            itemNumber = `${level1}.${level2}.${level3}`;
+                        } else if (level2) {
+                            itemNumber = `${level1}.${level2}`;
+                        } else {
+                            itemNumber = `${level1}`;
+                        }
+                        console.log('Item number from field name:', itemNumber);
+                    } else {
+                        // Fallback to DOM traversal
+                        const fieldContainer = field.closest('.hierarchy-item');
+                        if (fieldContainer) {
+                            // Try to find the number cell in the same hierarchy item
+                            let numberCell = fieldContainer.querySelector('.number-cell');
+
+                            // If not found in direct container, look in the parent table row
+                            if (!numberCell) {
+                                const tableRow = field.closest('tr');
+                                if (tableRow) {
+                                    numberCell = tableRow.querySelector('.number-cell');
+                                }
+                            }
+
+                            if (numberCell) {
+                                itemNumber = numberCell.textContent.trim();
+                                console.log('Item number from DOM:', itemNumber);
+                            } else {
+                                console.log('Could not find number cell for field:', fieldName);
+                                itemNumber = fieldName; // Use field name as fallback
+                            }
+                        }
+                    }
+
                     emptyFields.push(`Item ${itemNumber}`);
                 } else {
                     field.style.borderColor = '';
                     field.style.backgroundColor = '';
+                    field.style.boxShadow = '';
+                    field.classList.remove('is-invalid');
                 }
             });
 
@@ -1154,13 +1242,33 @@
                 // Restore currency formatting
                 currencyFields.forEach(formatCurrencyField);
 
-                alert(`Mohon isi field rekomendasi pada: ${emptyFields.join(', ')}`);
+                // Create a more detailed error message
+                let errorMessage = 'Mohon isi field rekomendasi yang masih kosong:\n\n';
+                emptyFields.forEach((field, index) => {
+                    errorMessage += `${index + 1}. ${field}\n`;
+                });
+                errorMessage += '\nSemua field rekomendasi harus diisi sebelum menyimpan data.';
+
+                alert(errorMessage);
+
+                // Add pulse animation to all error fields
+                const errorFields = document.querySelectorAll('.is-invalid');
+                errorFields.forEach(field => {
+                    field.classList.add('error-pulse');
+                    setTimeout(() => field.classList.remove('error-pulse'), 1000);
+                });
 
                 // Scroll to first empty field
-                const firstEmptyField = document.querySelector('textarea[name*="rekomendasi"][style*="red"], input[name*="rekomendasi"][style*="red"]');
+                const firstEmptyField = document.querySelector('.is-invalid');
                 if (firstEmptyField) {
                     firstEmptyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstEmptyField.focus();
+                    setTimeout(() => {
+                        firstEmptyField.focus();
+                        // For textarea/input fields, select all content
+                        if (firstEmptyField.select) {
+                            firstEmptyField.select();
+                        }
+                    }, 300);
                 }
                 return false;
             }
@@ -1190,10 +1298,28 @@
         }
     });
 
-    // Add auto-save functionality (optional)
+    // Add auto-save functionality and real-time validation
     let autoSaveTimeout;
     document.addEventListener('input', function(e) {
         if (e.target.closest('#recommendationForm')) {
+            // Real-time validation for rekomendasi fields
+            if (e.target.name && e.target.name.includes('rekomendasi')) {
+                if (e.target.value.trim()) {
+                    // Field has content - mark as valid
+                    e.target.style.borderColor = '#28a745';
+                    e.target.style.backgroundColor = '#d4edda';
+                    e.target.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+                    e.target.classList.remove('is-invalid');
+                    e.target.classList.add('is-valid');
+                } else {
+                    // Field is empty - remove validation styles
+                    e.target.style.borderColor = '';
+                    e.target.style.backgroundColor = '';
+                    e.target.style.boxShadow = '';
+                    e.target.classList.remove('is-invalid', 'is-valid');
+                }
+            }
+
             // Clear previous timeout
             clearTimeout(autoSaveTimeout);
 
