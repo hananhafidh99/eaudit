@@ -665,9 +665,9 @@
                     <button type="submit" class="btn btn-success btn-lg px-4" id="temuanSubmitBtn">
                         <i class="fa-solid fa-save me-2"></i> Simpan Temuan
                     </button>
-                    <button type="button" class="btn btn-info btn-lg px-4" onclick="previewTemuanData()" id="temuanPreviewBtn">
+                    {{-- <button type="button" class="btn btn-info btn-lg px-4" onclick="previewTemuanData()" id="temuanPreviewBtn">
                         <i class="fa-solid fa-eye me-2"></i> Preview Data
-                    </button>
+                    </button> --}}
                     <button type="button" class="btn btn-secondary btn-lg px-4" onclick="window.history.back()">
                         <i class="fa-solid fa-arrow-left me-2"></i> Kembali
                     </button>
