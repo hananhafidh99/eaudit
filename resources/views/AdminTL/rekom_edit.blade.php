@@ -461,7 +461,7 @@
         @include('AdminTL.datadukungkom_tambahrekomendasi_componponen', ['existingData' => isset($data) ? $data : [], 'pengawasan' => $pengawasan])
 
         {{-- Form for adding new data --}}
-        <div class="card mb-4">
+        {{-- <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Rekomendasi Baru (Mode Lama)</h5>
             </div>
@@ -519,7 +519,7 @@
           </div>
         </form>
             </div>
-        </div>
+        </div> --}}
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
