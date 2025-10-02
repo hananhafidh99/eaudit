@@ -249,11 +249,14 @@
         margin: 2px;
         display: inline-block !important;
         visibility: visible !important;
+        opacity: 1 !important;
     }
 
-    .add-sub, .remove-item, .add-main, #add_btn, #add_main_btn, #add_main_btn_default {
+    .add-sub, .remove-item, .add-main, #add_btn, #add_main_btn, #add_main_btn_default, #add_sub_0 {
         display: inline-block !important;
         visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
 
     .action-cell .btn {
@@ -261,6 +264,21 @@
         margin: 1px;
         font-size: 0.75rem;
         padding: 0.2rem 0.4rem;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    /* Ensure buttons are always clickable */
+    button.add-sub:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    button.add-sub:not(:disabled) {
+        cursor: pointer;
+        pointer-events: auto;
     }
 
     /* Custom button colors untuk sub dan sub-sub */
@@ -628,20 +646,21 @@
                                             </div>
                                             <div class="field-row">
                                                 <label>pengembalian</label>
-                                                <textarea class="form-control tanparupiah" name="tipeA[0][pengembalian]"></textarea>
+                                                <input type="text" class="form-control tanparupiah" name="tipeA[0][pengembalian]" value="0">
                                             </div>
                                         </div>
                                     </td>
                                     <td class="action-cell">
-                                        <button type="button" data-level1="0" class="btn btn-purple btn-sm add-sub" id="add_sub_0">
+                                        <button type="button" data-level1="0" data-parentid="" class="btn btn-purple btn-sm add-sub" id="add_sub_0" title="Tambah Sub Rekomendasi">
                                             <i class="fas fa-indent"></i>
                                         </button>
-                                        <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn_default">
+                                        <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn_default" title="Tambah Rekomendasi Baru">
                                             <i class="fa-solid fa-plus"></i>
                                         </button>
                                     </td>
                                 </tr>
                             </table>
+                            <div class="sub-items-container"></div>
                         </div>
                     @endif
                 </div>
@@ -694,6 +713,8 @@
     let subSubItemCounters = {};
 
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded - Initializing hierarchy component');
+
         // Initialize counters based on existing data
         initializeCounters();
 
@@ -708,6 +729,23 @@
 
         // Initialize currency formatting
         initializeCurrencyFormatting();
+
+        // Debug: Check if buttons are properly set up
+        setTimeout(function() {
+            const addSubButtons = document.querySelectorAll('.add-sub');
+            console.log('Found', addSubButtons.length, 'add-sub buttons');
+            addSubButtons.forEach((btn, index) => {
+                console.log(`Button ${index}:`, {
+                    id: btn.id,
+                    level1: btn.getAttribute('data-level1'),
+                    level2: btn.getAttribute('data-level2'),
+                    parentid: btn.getAttribute('data-parentid'),
+                    disabled: btn.disabled,
+                    style: btn.style.display,
+                    visibility: btn.style.visibility
+                });
+            });
+        }, 500);
     });
 
     function initializeCounters() {
@@ -743,21 +781,35 @@
         // Use event delegation for dynamic buttons
         document.addEventListener('click', function(e) {
             if (e.target.closest('.add-main')) {
+                console.log('Add main button clicked');
                 addMainItem();
             } else if (e.target.closest('.add-sub')) {
                 const button = e.target.closest('.add-sub');
                 const level1 = button.getAttribute('data-level1');
                 const level2 = button.getAttribute('data-level2');
 
-                if (level2) {
+                console.log('Add sub button clicked - level1:', level1, 'level2:', level2);
+
+                if (level2 !== null && level2 !== undefined) {
+                    console.log('Adding sub-sub item');
                     addSubSubItem(level1, level2);
                 } else {
+                    console.log('Adding sub item');
                     addSubItem(level1);
                 }
             } else if (e.target.closest('.remove-item')) {
                 const button = e.target.closest('.remove-item');
+                console.log('Remove button clicked');
                 removeItem(button);
             }
+        });
+
+        // Also add specific handlers for the initial buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const addSubButtons = document.querySelectorAll('.add-sub');
+            addSubButtons.forEach(button => {
+                console.log('Found add-sub button with id:', button.id, 'level1:', button.getAttribute('data-level1'));
+            });
         });
     }
 
@@ -778,10 +830,19 @@
     }
 
     function addSubItem(level1) {
+        console.log('Adding sub item for level1:', level1);
         const parentItem = document.querySelector(`.hierarchy-item[data-level="0"][data-index="${level1}"]`);
-        if (!parentItem) return;
+        if (!parentItem) {
+            console.log('Parent item not found for level1:', level1);
+            return;
+        }
 
         const subContainer = parentItem.querySelector('.sub-items-container');
+        if (!subContainer) {
+            console.log('Sub container not found');
+            return;
+        }
+
         const newSubIndex = subItemCounters[level1] || 0;
 
         // Initialize sub-sub counter for new sub item
@@ -794,6 +855,7 @@
         subItemCounters[level1] = (subItemCounters[level1] || 0) + 1;
         updateNumbering();
         ensureButtonsVisible();
+        console.log('Sub item added successfully');
     }
 
     function addSubSubItem(level1, level2) {
