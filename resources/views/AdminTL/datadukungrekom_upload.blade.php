@@ -39,14 +39,194 @@
       color: white;
     }
 
-     table #baris1 .kolom1{
-        margin-left: 10px;
+     /* Rekomendasi Table Styles */
+    #rekomendasi-table {
+        border: 3px solid #000;
+        font-size: 0.9rem;
+        border-collapse: separate;
+        border-spacing: 0;
     }
-    table #baris .kolom{
-        margin-left: 15px;
+
+    #rekomendasi-table th {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        text-align: center;
+        vertical-align: middle;
+        font-weight: bold;
+        border: 2px solid #000;
+        padding: 15px 10px;
+        font-size: 0.95rem;
     }
-    table #baris2 .kolom2{
-        margin-left: 20px;
+
+    #rekomendasi-table td {
+        border: 2px solid #000;
+        padding: 10px 8px;
+        vertical-align: middle;
+    }
+
+    /* Temuan Header Row Styles */
+    .temuan-header {
+        background-color: #fff3cd !important;
+        border-left: 5px solid #ffc107 !important;
+        border-top: 3px solid #000 !important;
+    }
+
+    .temuan-header td:first-child {
+        font-weight: bold;
+        font-size: 1.3em;
+        background-color: #ffeaa7 !important;
+        text-align: center;
+        color: #721c24;
+        border-right: 3px solid #000;
+    }
+
+    .temuan-header td:nth-child(2) {
+        font-weight: bold;
+        background-color: #fff3cd !important;
+        color: #721c24;
+        font-size: 1.05em;
+        border-right: 3px solid #000;
+    }
+
+    /* Temuan Sub Row Styles */
+    .temuan-sub-row {
+        background-color: #f8f9fa !important;
+        border-left: 5px solid #6c757d !important;
+    }
+
+    .temuan-sub-row td {
+        background-color: #f8f9fa !important;
+        padding: 15px 12px;
+    }
+
+    /* Action Row Styles */
+    .action-row {
+        background-color: #e7f3ff !important;
+        border-left: 5px solid #007bff !important;
+        border-top: 2px solid #007bff !important;
+    }
+
+    .action-row td {
+        background-color: #e7f3ff !important;
+        padding: 15px;
+    }
+
+    /* Badge Styles */
+    .badge {
+        font-size: 0.85em;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.bg-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    }
+
+    .badge.bg-info {
+        background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    }
+
+    .badge.bg-secondary {
+        background: linear-gradient(135deg, #6c757d, #545b62) !important;
+    }
+
+    /* Form Controls */
+    .form-control {
+        font-size: 0.9rem;
+        border: 2px solid #ced4da;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.3rem rgba(0, 123, 255, 0.15);
+        background-color: #f8f9ff;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* Form Labels */
+    .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    /* Table Cell Padding */
+    #rekomendasi-table td {
+        padding: 15px 12px;
+        vertical-align: top;
+    }
+
+    /* Input styling for pengembalian */
+    input[type="text"].tanparupiah {
+        font-weight: 600;
+        text-align: right;
+        background-color: #fff8e1;
+    }
+
+    input[type="text"].tanparupiah:focus {
+        background-color: #fff3cd;
+    }
+
+    /* Button Styles */
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .text-center .btn {
+        margin: 2px;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        border: none;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #bd2130);
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+    }
+
+    /* Hover Effects */
+    .parent-row:hover {
+        background-color: #fff8d1 !important;
+    }
+
+    .sub-row:hover {
+        background-color: #c3e3ec !important;
+    }
+
+    .subsub-row:hover {
+        background-color: #f1f3f4 !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        #rekomendasi-table {
+            font-size: 0.8rem;
+        }
+
+        .form-control {
+            font-size: 0.8rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.4rem;
+            font-size: 0.75rem;
+        }
     }
 
     /* Upload Progress Styles */
@@ -227,108 +407,179 @@
 </div>
 
 <div class="card" id="card" style="width: 100%">
-<div class="card-header">Tambah Rekomendasi</div>
-<div class="card">
+<div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list-alt"></i> Tambah Rekomendasi</span>
+        <div class="text-end">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                Format: 1 Temuan = 3 Baris
+                <span class="badge bg-warning text-dark">Rekomendasi</span> +
+                <span class="badge bg-info">Sub 1</span> +
+                <span class="badge bg-secondary">Sub 2</span>
+            </small>
+        </div>
+    </div>
+</div>
+<div class="card-body">
          <form action="{{ url('adminTL/rekom/') }}" method="post" enctype="multipart/form-data">
            @method('POST')
            @csrf
            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
-           <table class="table" id="tabel1">
-            <thead>
+
+           <div class="table-responsive">
+           <table class="table table-bordered" id="rekomendasi-table">
+            <thead class="table-primary">
               <tr>
-                <th scope="col">Nomor</th>
-                <th scope="col">NAMA REKOMENDASI</th>
-                <th scope="col">KETERANGAN REKOMENDASI</th>
-                <th scope="col">PENGEMBALIAN KEUANGAN</th>
-                <th>Aksi</th>
+                <th style="width: 10%;">Kode Temuan</th>
+                <th style="width: 20%;">Nama Temuan</th>
+                <th style="width: 30%;">Field</th>
+                <th style="width: 40%;">Value</th>
               </tr>
             </thead>
-            <tbody class="body">
+            <tbody>
                 @if(isset($data) && count($data) > 0)
-                @foreach($data as $key => $item)
-                <tr class="sub{{ $key }}">
-                    <td>{{ $loop->iteration }}</td>
-                    <td><textarea class="form-control" name="tipeA[{{ $key }}][rekomendasi]">{{ $item->rekomendasi }}</textarea></td>
-                    <td><textarea class="form-control" name="tipeA[{{ $key }}][keterangan]">{{ $item->keterangan }}</textarea></td>
-                    <td><input type="text" class="form-control tanparupiah"
-                               name="tipeA[{{ $key }}][pengembalian]"
-                                value="{{ number_format($item->pengembalian,0,',','.') }}"></td>
-                    <td>
-                        <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-success" id="add_btnEdit">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
-                        @if($key == 0)
-                            <button type="button" class="btn btn-primary" id="add_btn">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        @endif
-                        {{-- <button type="button" class="btn btn-danger" id="remove">
-                            <i class="fa-solid fa-minus"></i>
-                        </button> --}}
-                    </td>
-                </tr>
+                    @foreach($data as $parentIndex => $parent)
+                        <!-- Temuan Header Row -->
+                        <tr class="temuan-header" style="background-color: #fff3cd; border-top: 3px solid #000;">
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #ffeaa7; border-right: 3px solid #000; font-weight: bold; font-size: 1.1em; vertical-align: middle;">
+                                {{ $parentIndex + 1 }}
+                            </td>
+                            <td rowspan="3" class="align-middle" style="background-color: #fff3cd; border-right: 3px solid #000; font-weight: bold; font-size: 1em; vertical-align: middle;">
+                                {{ $parent->nama_temuan ?? 'Temuan '.($parentIndex + 1) }}
+                            </td>
+                            <td style="background-color: #fff3cd;">
+                                <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][rekomendasi]" placeholder="Masukkan rekomendasi..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;">{{ $parent->rekomendasi }}</textarea>
+                            </td>
+                            <td style="background-color: #fff3cd;">
+                                <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][keterangan]" placeholder="Masukkan keterangan..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;">{{ $parent->keterangan }}</textarea>
+                            </td>
+                            <td style="background-color: #fff3cd;">
+                                <input type="text" class="form-control tanparupiah" name="tipeA[{{ $parentIndex }}][pengembalian]" value="{{ number_format($parent->pengembalian,0,',','.') }}" placeholder="0" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
+                            </td>
+                        </tr>
 
-                    @if(isset($item->sub))
-                        @foreach($item->sub as $subKey => $subItem)
-                            <tr id="baris1">
-                                <td></td>
-                                <td><input type="text" class="form-control kolom1"
-                                        name="tipeA[{{ $key }}][sub][{{ $subKey }}][rekomendasi]"
-                                        value="{{ $subItem->rekomendasi }}"></td>
-                                <td><input type="text" class="form-control kolom1"
-                                        name="tipeA[{{ $key }}][sub][{{ $subKey }}][keterangan]"
-                                        value="{{ $subItem->keterangan }}"></td>
-                                <td><input type="text" class="form-control kolom1 tanparupiah"
-                                        name="tipeA[{{ $key }}][sub][{{ $subKey }}][pengembalian]"
-                                        value="{{ number_format($subItem->pengembalian,0,',','.') }}"></td>
-                                <td>
-                                    <button type="button" data-level1="{{ $key }}" data-level2="{{ $subKey }}" data-parentid="{{ $subItem->id }}"
-                                            class="btn btn-success" id="add_btnEdit1">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button>
+                        <!-- Additional Sub Rows for each Temuan -->
+                        @if(isset($parent->sub) && $parent->sub->count() > 0)
+                            @foreach($parent->sub->take(2) as $subIndex => $sub)
+                                <tr class="temuan-sub-row" style="background-color: #f8f9fa;">
+                                    <td style="background-color: #f8f9fa;">
+                                        <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][{{ $subIndex }}][rekomendasi]" placeholder="Masukkan sub rekomendasi..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;">{{ $sub->rekomendasi }}</textarea>
+                                    </td>
+                                    <td style="background-color: #f8f9fa;">
+                                        <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][{{ $subIndex }}][keterangan]" placeholder="Masukkan keterangan sub..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;">{{ $sub->keterangan }}</textarea>
+                                    </td>
+                                    <td style="background-color: #f8f9fa;">
+                                        <input type="text" class="form-control tanparupiah" name="tipeA[{{ $parentIndex }}][sub][{{ $subIndex }}][pengembalian]" value="{{ number_format($sub->pengembalian,0,',','.') }}" placeholder="0" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <!-- Empty sub rows when no sub data exists -->
+                            <tr class="temuan-sub-row" style="background-color: #f8f9fa;">
+                                <td style="background-color: #f8f9fa;">
+                                    <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][0][rekomendasi]" placeholder="Masukkan sub rekomendasi..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                                </td>
+                                <td style="background-color: #f8f9fa;">
+                                    <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][0][keterangan]" placeholder="Masukkan keterangan sub..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                                </td>
+                                <td style="background-color: #f8f9fa;">
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[{{ $parentIndex }}][sub][0][pengembalian]" placeholder="0" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
                                 </td>
                             </tr>
-                            @if(isset($subItem->sub))
-                                @foreach($subItem->sub as $nestedKey => $nestedItem)
-                                    <tr id="baris2">
-                                        <td></td>
-                                        <td><input type="text" class="form-control kolom2"
-                                                name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][rekomendasi]"
-                                                value="{{ $nestedItem->rekomendasi }}"></td>
-                                        <td><input type="text" class="form-control kolom2"
-                                                name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][keterangan]"
-                                                value="{{ $nestedItem->keterangan }}"></td>
-                                        <td><input type="text" class="form-control kolom2 tanparupiah"
-                                                name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][pengembalian]"
-                                                value="{{ number_format($nestedItem->pengembalian,0,',','.') }}"></td>
-                                        <td>
-                                            <button type="button" class="btn btn-danger" id="remove"><i class="fa-solid fa-minus"></i></button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @endif
-                        @endforeach
-                    @endif
-                @endforeach
+                            <tr class="temuan-sub-row" style="background-color: #f8f9fa;">
+                                <td style="background-color: #f8f9fa;">
+                                    <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][1][rekomendasi]" placeholder="Masukkan sub rekomendasi..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                                </td>
+                                <td style="background-color: #f8f9fa;">
+                                    <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][1][keterangan]" placeholder="Masukkan keterangan sub..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                                </td>
+                                <td style="background-color: #f8f9fa;">
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[{{ $parentIndex }}][sub][1][pengembalian]" placeholder="0" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
+                                </td>
+                            </tr>
+                        @endif
+
+                        @if(count($parent->sub ?? []) == 1)
+                            <!-- Add second empty sub row if only one sub exists -->
+                            <tr class="temuan-sub-row" style="background-color: #f8f9fa;">
+                                <td style="background-color: #f8f9fa;">
+                                    <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][1][rekomendasi]" placeholder="Masukkan sub rekomendasi..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                                </td>
+                                <td style="background-color: #f8f9fa;">
+                                    <textarea class="form-control" rows="4" name="tipeA[{{ $parentIndex }}][sub][1][keterangan]" placeholder="Masukkan keterangan sub..." style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                                </td>
+                                <td style="background-color: #f8f9fa;">
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[{{ $parentIndex }}][sub][1][pengembalian]" placeholder="0" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
+                                </td>
+                            </tr>
+                        @endif
+
+                        <!-- Action Row -->
+                        <tr class="action-row" style="background-color: #e7f3ff;">
+                            <td colspan="5" class="text-center py-3" style="background-color: #e7f3ff; border-top: 2px solid #007bff;">
+                                <button type="button" class="btn btn-primary btn-sm me-2" onclick="addTemuan()" title="Tambah Temuan Baru">
+                                    <i class="fa-solid fa-plus"></i> Tambah Temuan
+                                </button>
+                                @if($parentIndex > 0 || count($data) > 1)
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeTemuan({{ $parentIndex }})" title="Hapus Temuan">
+                                    <i class="fa-solid fa-minus"></i> Hapus Temuan
+                                </button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
                 @else
-                <tr class="sub0" >
-                    <td>1</td>
-                    <td><textarea class="form-control" name="tipeA[0][rekomendasi]"></textarea></td>
-                    <td><textarea class="form-control" name="tipeA[0][keterangan]"></textarea></td>
-                    <td><textarea class="form-control tanparupiah" name="tipeA[0][pengembalian]"></textarea></td>
-                    <td>
-                        <button type="button" data-level1="0" class="btn btn-success" id="add_btn1"><i class="fa-solid fa-plus"></i></button>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-primary" id="add_btn"><i class="fa-solid fa-plus"></i></button>
-                    </td>
-                </tr>
+                    <!-- Default empty temuan when no data -->
+                    <tr class="temuan-row" data-temuan="0">
+                        <td rowspan="3" class="align-middle text-center" style="background-color: #007bff; color: white; font-weight: bold; font-size: 1.1em; border: 2px solid #000;">
+                            1
+                        </td>
+                        <td rowspan="3" class="align-middle" style="background-color: #007bff; color: white; font-weight: bold; font-size: 1em; border: 2px solid #000;">
+                            Temuan 1
+                        </td>
+                        <td style="background-color: #007bff; color: white; font-weight: bold; text-align: center; border: 2px solid #000; padding: 12px;">
+                            Rekomendasi
+                        </td>
+                        <td style="background-color: white; border: 2px solid #000; padding: 8px;">
+                            <textarea class="form-control" rows="3" name="tipeA[0][rekomendasi]" placeholder="value" style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                        </td>
+                    </tr>
+                    <tr class="temuan-row">
+                        <td style="background-color: #007bff; color: white; font-weight: bold; text-align: center; border: 2px solid #000; padding: 12px;">
+                            Keterangan
+                        </td>
+                        <td style="background-color: white; border: 2px solid #000; padding: 8px;">
+                            <textarea class="form-control" rows="3" name="tipeA[0][keterangan]" placeholder="value" style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                        </td>
+                    </tr>
+                    <tr class="temuan-row">
+                        <td style="background-color: #007bff; color: white; font-weight: bold; text-align: center; border: 2px solid #000; padding: 12px;">
+                            Pengembalian
+                        </td>
+                        <td style="background-color: white; border: 2px solid #000; padding: 8px;">
+                            <input type="text" class="form-control tanparupiah" name="tipeA[0][pengembalian]" placeholder="value" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
+                        </td>
+                    </tr>
+                    <!-- Action Row -->
+                    <tr class="action-row" style="background-color: #e7f3ff;">
+                        <td colspan="4" class="text-center py-3" style="background-color: #e7f3ff; border-top: 2px solid #007bff;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addTemuan()" title="Tambah Temuan Baru">
+                                <i class="fa-solid fa-plus"></i> Tambah Temuan
+                            </button>
+                        </td>
+                    </tr>
                 @endif
             </tbody>
           </table>
-<button class="btn btn-info">Submit</button>
+          </div>
+
+          <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Submit Rekomendasi
+            </button>
+          </div>
          </form>
 </div>
 </div>
@@ -416,6 +667,222 @@
 
     <script>
         let uploadedFiles = []; // Array to store uploaded file information
+        let parentCounter = 0;
+        let subCounter = {};
+        let subSubCounter = {};
+
+        // Initialize counters based on existing data
+        $(document).ready(function() {
+            // Count existing temuan (each temuan has 3 rows + 1 action row)
+            parentCounter = $('.temuan-row[data-temuan]').length;
+
+            // Initialize currency formatting
+            formatCurrency();
+        });        // Currency formatting function
+        function formatCurrency() {
+            $('.tanparupiah').on('input', function() {
+                let value = this.value.replace(/[^0-9]/g, '');
+                if (value) {
+                    this.value = parseInt(value).toLocaleString('id-ID');
+                } else {
+                    this.value = '';
+                }
+            });
+        }
+
+        // Add new temuan (3 rows in new format)
+        function addTemuan() {
+            const newTemuanIndex = parentCounter;
+
+            const newRows = `
+                <!-- Temuan Rekomendasi Row -->
+                <tr class="temuan-row" data-temuan="${newTemuanIndex}">
+                    <td rowspan="3" class="align-middle text-center" style="background-color: #007bff; color: white; font-weight: bold; font-size: 1.1em; border: 2px solid #000;">
+                        ${newTemuanIndex + 1}
+                    </td>
+                    <td rowspan="3" class="align-middle" style="background-color: #007bff; color: white; font-weight: bold; font-size: 1em; border: 2px solid #000;">
+                        Temuan ${newTemuanIndex + 1}
+                    </td>
+                    <td style="background-color: #007bff; color: white; font-weight: bold; text-align: center; border: 2px solid #000; padding: 12px;">
+                        Rekomendasi
+                    </td>
+                    <td style="background-color: white; border: 2px solid #000; padding: 8px;">
+                        <textarea class="form-control" rows="3" name="tipeA[${newTemuanIndex}][rekomendasi]" placeholder="value" style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                    </td>
+                </tr>
+                <tr class="temuan-row">
+                    <td style="background-color: #007bff; color: white; font-weight: bold; text-align: center; border: 2px solid #000; padding: 12px;">
+                        Keterangan
+                    </td>
+                    <td style="background-color: white; border: 2px solid #000; padding: 8px;">
+                        <textarea class="form-control" rows="3" name="tipeA[${newTemuanIndex}][keterangan]" placeholder="value" style="border: none; background-color: transparent; resize: none; font-size: 0.9rem;"></textarea>
+                    </td>
+                </tr>
+                <tr class="temuan-row">
+                    <td style="background-color: #007bff; color: white; font-weight: bold; text-align: center; border: 2px solid #000; padding: 12px;">
+                        Pengembalian
+                    </td>
+                    <td style="background-color: white; border: 2px solid #000; padding: 8px;">
+                        <input type="text" class="form-control tanparupiah" name="tipeA[${newTemuanIndex}][pengembalian]" placeholder="value" style="border: none; background-color: transparent; text-align: center; font-weight: bold;">
+                    </td>
+                </tr>
+                <!-- Action Row -->
+                <tr class="action-row" style="background-color: #e7f3ff;">
+                    <td colspan="4" class="text-center py-3" style="background-color: #e7f3ff; border-top: 2px solid #007bff;">
+                        <button type="button" class="btn btn-primary btn-sm me-2" onclick="addTemuan()" title="Tambah Temuan Baru">
+                            <i class="fa-solid fa-plus"></i> Tambah Temuan
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTemuan(${newTemuanIndex})" title="Hapus Temuan">
+                            <i class="fa-solid fa-minus"></i> Hapus Temuan
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            $('#rekomendasi-table tbody').append(newRows);
+
+            parentCounter++;
+
+            // Re-initialize currency formatting for new inputs
+            formatCurrency();
+        }
+
+        // Remove temuan (removes all 4 rows: 3 temuan rows + action row)
+        function removeTemuan(temuanIndex) {
+            if (confirm('Apakah Anda yakin ingin menghapus temuan ini beserta semua rekomendasinya?')) {
+                // Find the first row for this temuan
+                const temuanRow = $(`.temuan-row[data-temuan="${temuanIndex}"]`);
+                if (temuanRow.length) {
+                    // Remove the first temuan row and the next 3 rows (2 more temuan rows + action row)
+                    temuanRow.remove();
+                    temuanRow.next('.temuan-row').remove();
+                    temuanRow.next('.temuan-row').remove();
+                    temuanRow.next('.action-row').remove();
+                }
+            }
+        }
+
+        // Legacy functions (keeping for compatibility but they may not be used in new format)
+        function addSubRekomendasi(parentIndex) {
+        function addSubRekomendasi(parentIndex) {
+            const currentSubIndex = subCounter[parentIndex] || 0;
+
+            const newRow = `
+                <tr class="table-info sub-row" data-parent="${parentIndex}" data-sub="${currentSubIndex}" style="background-color: #d1ecf1;">
+                    <td class="align-middle" style="background-color: #bee5eb;">
+                        <span class="badge bg-info px-2 py-1" style="font-size: 0.85em;">Sub</span>
+                    </td>
+                    <td>
+                        <textarea class="form-control" rows="2" name="tipeA[${parentIndex}][sub][${currentSubIndex}][rekomendasi]" placeholder="Sub rekomendasi..."></textarea>
+                    </td>
+                    <td>
+                        <textarea class="form-control" rows="2" name="tipeA[${parentIndex}][sub][${currentSubIndex}][keterangan]" placeholder="Keterangan sub..."></textarea>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control tanparupiah" name="tipeA[${parentIndex}][sub][${currentSubIndex}][pengembalian]" placeholder="0">
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-success btn-sm" onclick="addSubSubRekomendasi(${parentIndex}, ${currentSubIndex})" title="Tambah Sub-Sub">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm mt-1" onclick="removeRow(this)" title="Hapus Sub">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            // Find the parent row and add the sub row after it (and any existing sub rows)
+            const parentRow = $(`.parent-row[data-parent="${parentIndex}"]`);
+            const lastSubRow = parentRow.nextAll(`.sub-row[data-parent="${parentIndex}"]:last, .subsub-row[data-parent="${parentIndex}"]:last`).last();
+
+            if (lastSubRow.length) {
+                lastSubRow.after(newRow);
+            } else {
+                parentRow.after(newRow);
+            }
+
+            // Initialize sub-sub counter for this sub
+            if (!subSubCounter[parentIndex]) {
+                subSubCounter[parentIndex] = {};
+            }
+            subSubCounter[parentIndex][currentSubIndex] = 0;
+
+            subCounter[parentIndex] = currentSubIndex + 1;
+
+            // Re-initialize currency formatting
+            formatCurrency();
+        }
+
+        // Add sub-sub rekomendasi
+        function addSubSubRekomendasi(parentIndex, subIndex) {
+            if (!subSubCounter[parentIndex]) {
+                subSubCounter[parentIndex] = {};
+            }
+            if (!subSubCounter[parentIndex][subIndex]) {
+                subSubCounter[parentIndex][subIndex] = 0;
+            }
+
+            const currentSubSubIndex = subSubCounter[parentIndex][subIndex];
+
+            const newRow = `
+                <tr class="table-light subsub-row" data-parent="${parentIndex}" data-sub="${subIndex}" data-subsub="${currentSubSubIndex}" style="background-color: #f8f9fa;">
+                    <td class="align-middle" style="background-color: #e9ecef;">
+                        <span class="badge bg-secondary px-2 py-1" style="font-size: 0.8em;">Sub1</span>
+                    </td>
+                    <td>
+                        <textarea class="form-control" rows="2" name="tipeA[${parentIndex}][sub][${subIndex}][sub][${currentSubSubIndex}][rekomendasi]" placeholder="Sub-sub rekomendasi..."></textarea>
+                    </td>
+                    <td>
+                        <textarea class="form-control" rows="2" name="tipeA[${parentIndex}][sub][${subIndex}][sub][${currentSubSubIndex}][keterangan]" placeholder="Keterangan sub-sub..."></textarea>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control tanparupiah" name="tipeA[${parentIndex}][sub][${subIndex}][sub][${currentSubSubIndex}][pengembalian]" placeholder="0">
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)" title="Hapus Sub-Sub">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            // Find the sub row and add the sub-sub row after it (and any existing sub-sub rows of the same sub)
+            const subRow = $(`.sub-row[data-parent="${parentIndex}"][data-sub="${subIndex}"]`);
+            const lastSubSubRow = subRow.nextAll(`.subsub-row[data-parent="${parentIndex}"][data-sub="${subIndex}"]:last`).last();
+
+            if (lastSubSubRow.length) {
+                lastSubSubRow.after(newRow);
+            } else {
+                subRow.after(newRow);
+            }
+
+            subSubCounter[parentIndex][subIndex] = currentSubSubIndex + 1;
+
+            // Re-initialize currency formatting
+            formatCurrency();
+        }
+
+        // Remove row (sub or sub-sub)
+        function removeRow(button) {
+            if (confirm('Apakah Anda yakin ingin menghapus baris ini?')) {
+                $(button).closest('tr').remove();
+            }
+        }
+
+        // Remove parent row and all its children
+        function removeParentRow(button) {
+            if (confirm('Apakah Anda yakin ingin menghapus rekomendasi utama ini beserta semua sub-rekomendasinya?')) {
+                const parentRow = $(button).closest('tr');
+                const parentIndex = parentRow.data('parent');
+
+                // Remove all related sub and sub-sub rows
+                $(`.sub-row[data-parent="${parentIndex}"], .subsub-row[data-parent="${parentIndex}"]`).remove();
+
+                // Remove the parent row
+                parentRow.remove();
+            }
+        }
 
         function uploadFiles() {
             var fileInput = document.getElementById('fileUpload');
