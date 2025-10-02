@@ -377,6 +377,9 @@
     </div>
 </div>
 
+{{-- Include Temuan Component --}}
+@include('AdminTL.datadukungkom_tambahtemuan_componponen', ['existingData' => isset($existingData) ? $existingData : [], 'pengawasan' => $pengawasan])
+
 <div class="card mt-3" style="width: 100%; ">
     <div class="card-header">Upload Data Dukung</div>
     <div class="card-body">

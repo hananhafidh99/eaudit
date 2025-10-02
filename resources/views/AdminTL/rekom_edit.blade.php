@@ -291,7 +291,7 @@
 
         {{-- Display existing data --}}
         @if(isset($data) && count($data) > 0)
-        <div class="card mb-4">
+        <div class="card mb-4" style="display: none;">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0"><i class="fas fa-list"></i> Data Rekomendasi yang Sudah Ada</h5>
             </div>
@@ -457,10 +457,13 @@
         </div>
         @endif
 
+        {{-- Include Rekomendasi Hierarchy Component --}}
+        @include('AdminTL.datadukungkom_tambahrekomendasi_componponen', ['existingData' => isset($data) ? $data : [], 'pengawasan' => $pengawasan])
+
         {{-- Form for adding new data --}}
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Rekomendasi Baru</h5>
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Tambah Rekomendasi Baru (Mode Lama)</h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-info" role="alert">
@@ -469,7 +472,7 @@
                     Anda dapat menambah rekomendasi baru dengan menekan tombol <strong>"Tambah Rekomendasi Lain"</strong>
                     dan menambah sub-rekomendasi dengan tombol <strong>"Sub"</strong>.
                 </div>
-        <form action="{{ url('adminTL/rekom/') }}" method="post" enctype="multipart/form-data">
+        <form action="{{ url('adminTL/rekom/') }}" method="post" enctype="multipart/form-data" id="legacyRekomForm">
            @method('POST')
            @csrf
            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
@@ -715,8 +718,8 @@ $(document).ready(function () {
         // This is now handled by the generic add_subsub_btn handler
     });
 
-    // Form validation and data cleaning before submit
-    $('form').on('submit', function(e) {
+    // Form validation and data cleaning before submit - ONLY for legacy form (NOT hierarchy component)
+    $('#legacyRekomForm').on('submit', function(e) {
         var hasError = false;
         var errorMessages = [];
 
