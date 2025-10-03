@@ -534,7 +534,13 @@ class DashboardAminTLController extends Controller
             $temuanData = $data['temuan'];
             Log::info('Using temuan data format');
         } else {
-            return redirect()->back()->with('error', 'Format data temuan tidak valid!');
+            // Use proper URL for redirect - fallback to back() if id_pengawasan is not available
+            if (isset($data['id_pengawasan'])) {
+                $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                return redirect()->to($redirectUrl)->with('error', 'Format data temuan tidak valid!');
+            } else {
+                return redirect()->back()->with('error', 'Format data temuan tidak valid!');
+            }
         }
 
         // Validate required fields
@@ -547,41 +553,69 @@ class DashboardAminTLController extends Controller
         ]);
 
         try {
-            // IMPORTANT: Delete existing data first to prevent duplicates
-            // Only delete data for this specific pengawasan to avoid affecting other data
-            Log::info('Deleting existing temuan data', [
-                'id_pengawasan' => $data['id_pengawasan'],
-                'id_penugasan' => $data['id_penugasan']
-            ]);
+            // Use database transaction to ensure data integrity
+            // If any error occurs, all changes will be rolled back
+            Log::info('Starting database transaction for temuan data save');
 
-            $deletedCount = DB::table('jenis_temuans')
-                ->where('id_pengawasan', $data['id_pengawasan'])
-                ->where('id_penugasan', $data['id_penugasan'])
-                ->delete();
+            $savedCount = DB::transaction(function () use ($data, $temuanData) {
+                // IMPORTANT: Delete existing data first to prevent duplicates
+                // Only delete data for this specific pengawasan to avoid affecting other data
+                Log::info('Deleting existing temuan data', [
+                    'id_pengawasan' => $data['id_pengawasan'],
+                    'id_penugasan' => $data['id_penugasan']
+                ]);
 
-            Log::info('Existing data deleted', ['count' => $deletedCount]);
+                $deletedCount = DB::table('jenis_temuans')
+                    ->where('id_pengawasan', $data['id_pengawasan'])
+                    ->where('id_penugasan', $data['id_penugasan'])
+                    ->delete();
 
-            $savedCount = 0;
+                Log::info('Existing data deleted', ['count' => $deletedCount]);
 
-            foreach ($temuanData as $temuanIndex => $temuan) {
-                // Skip completely empty temuan entries
-                if (empty(trim($temuan['nama_temuan'] ?? '')) && empty(trim($temuan['kode_temuan'] ?? ''))) {
-                    continue;
+                $savedCount = 0;
+
+                foreach ($temuanData as $temuanIndex => $temuan) {
+                    // Skip completely empty temuan entries
+                    if (empty(trim($temuan['nama_temuan'] ?? '')) && empty(trim($temuan['kode_temuan'] ?? ''))) {
+                        continue;
+                    }
+
+                    // Process main temuan item
+                    $processedCount = $this->processTemuanItem(
+                        $temuan,
+                        $data['id_pengawasan'],
+                        $data['id_penugasan']
+                    );
+
+                    $savedCount += $processedCount;
+
+                    Log::info('Processed temuan item', [
+                        'index' => $temuanIndex,
+                        'kode_temuan' => $temuan['kode_temuan'] ?? '',
+                        'processed_count' => $processedCount
+                    ]);
                 }
 
-                // Process main temuan item
-                $savedCount += $this->processTemuanItem(
-                    $temuan,
-                    $data['id_pengawasan'],
-                    $data['id_penugasan']
-                );
-            }
+                Log::info('Transaction completed successfully', ['total_saved' => $savedCount]);
+                return $savedCount;
+            });
 
             if ($savedCount === 0) {
-                return redirect()->back()->with('error', 'Tidak ada data yang disimpan. Pastikan semua field terisi dengan benar!');
+                if (isset($data['id_pengawasan'])) {
+                    $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                    return redirect()->to($redirectUrl)->with('error', 'Tidak ada data yang disimpan. Pastikan semua field terisi dengan benar!');
+                } else {
+                    return redirect()->back()->with('error', 'Tidak ada data yang disimpan. Pastikan semua field terisi dengan benar!');
+                }
             }
 
-            return redirect()->back()->with('success', "Data temuan berhasil disimpan! ($savedCount item tersimpan)");
+            // Ensure redirect stays on the same route with proper URL
+            if (isset($data['id_pengawasan'])) {
+                $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                return redirect()->to($redirectUrl)->with('success', "Data temuan berhasil disimpan! ($savedCount item tersimpan)");
+            } else {
+                return redirect()->back()->with('success', "Data temuan berhasil disimpan! ($savedCount item tersimpan)");
+            }
 
         } catch (\Exception $e) {
             Log::error('Temuan Store Error:', [
@@ -589,7 +623,13 @@ class DashboardAminTLController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $data ?? null
             ]);
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            // Ensure redirect stays on the same route even for errors
+            if (isset($data['id_pengawasan'])) {
+                $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                return redirect()->to($redirectUrl)->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            } else {
+                return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            }
         }
     }
 
@@ -639,55 +679,87 @@ class DashboardAminTLController extends Controller
             }
 
             if (empty($namaTemuan)) {
-                return redirect()->back()->with('error', 'Data temuan tidak ditemukan!');
+                if (isset($data['id_pengawasan'])) {
+                    $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                    return redirect()->to($redirectUrl)->with('error', 'Data temuan tidak ditemukan!');
+                } else {
+                    return redirect()->back()->with('error', 'Data temuan tidak ditemukan!');
+                }
             }
 
-            // Process each record from modal
-            foreach ($data['records'] as $recordIndex => $record) {
-                // Skip empty records
-                if (empty(trim($record['rekomendasi'] ?? ''))) {
-                    continue;
-                }
+            // Use database transaction to ensure data integrity for modal records
+            Log::info('Starting database transaction for modal record save');
 
-                // Save main recommendation
-                $mainRekom = $this->saveRekomendasi(
-                    $record,
-                    $data['id_pengawasan'],
-                    $data['id_penugasan'],
-                    $namaTemuan,
-                    $kodeTemuan,
-                    null // no parent
-                );
+            $savedCount = DB::transaction(function () use ($data, $namaTemuan, $kodeTemuan) {
+                $savedCount = 0;
 
-                if ($mainRekom) {
-                    $savedCount++;
+                // Process each record from modal
+                foreach ($data['records'] as $recordIndex => $record) {
+                    // Skip empty records
+                    if (empty(trim($record['rekomendasi'] ?? ''))) {
+                        continue;
+                    }
 
-                    // Process sub-recommendations if any
-                    if (isset($record['sub']) && is_array($record['sub'])) {
-                        foreach ($record['sub'] as $subRecord) {
-                            if (!empty(trim($subRecord['rekomendasi'] ?? ''))) {
-                                $subRekom = $this->saveRekomendasi(
-                                    $subRecord,
-                                    $data['id_pengawasan'],
-                                    $data['id_penugasan'],
-                                    $namaTemuan,
-                                    $kodeTemuan,
-                                    $mainRekom->id
-                                );
-                                if ($subRekom) {
-                                    $savedCount++;
+                    // Save main recommendation
+                    $mainRekom = $this->saveRekomendasi(
+                        $record,
+                        $data['id_pengawasan'],
+                        $data['id_penugasan'],
+                        $namaTemuan,
+                        $kodeTemuan,
+                        null // no parent
+                    );
+
+                    if ($mainRekom) {
+                        $savedCount++;
+                        Log::info('Modal record saved', ['record_index' => $recordIndex, 'main_id' => $mainRekom->id]);
+
+                        // Process sub-recommendations if any
+                        if (isset($record['sub']) && is_array($record['sub'])) {
+                            foreach ($record['sub'] as $subIndex => $subRecord) {
+                                if (!empty(trim($subRecord['rekomendasi'] ?? ''))) {
+                                    $subRekom = $this->saveRekomendasi(
+                                        $subRecord,
+                                        $data['id_pengawasan'],
+                                        $data['id_penugasan'],
+                                        $namaTemuan,
+                                        $kodeTemuan,
+                                        $mainRekom->id
+                                    );
+                                    if ($subRekom) {
+                                        $savedCount++;
+                                        Log::info('Modal sub-record saved', [
+                                            'sub_index' => $subIndex,
+                                            'sub_id' => $subRekom->id,
+                                            'parent_id' => $mainRekom->id
+                                        ]);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
+
+                Log::info('Modal transaction completed successfully', ['total_saved' => $savedCount]);
+                return $savedCount;
+            });
 
             if ($savedCount === 0) {
-                return redirect()->back()->with('error', 'Tidak ada data yang disimpan. Pastikan ada rekomendasi yang diisi!');
+                if (isset($data['id_pengawasan'])) {
+                    $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                    return redirect()->to($redirectUrl)->with('error', 'Tidak ada data yang disimpan. Pastikan ada rekomendasi yang diisi!');
+                } else {
+                    return redirect()->back()->with('error', 'Tidak ada data yang disimpan. Pastikan ada rekomendasi yang diisi!');
+                }
             }
 
-            return redirect()->back()->with('success', "Data rekomendasi berhasil ditambahkan! ($savedCount rekomendasi tersimpan)");
+            // Ensure redirect stays on the same route with proper URL
+            if (isset($data['id_pengawasan'])) {
+                $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                return redirect()->to($redirectUrl)->with('success', "Data rekomendasi berhasil ditambahkan! ($savedCount rekomendasi tersimpan)");
+            } else {
+                return redirect()->back()->with('success', "Data rekomendasi berhasil ditambahkan! ($savedCount rekomendasi tersimpan)");
+            }
 
         } catch (\Exception $e) {
             Log::error('Modal Add Record Error:', [
@@ -695,7 +767,13 @@ class DashboardAminTLController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $request->all()
             ]);
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            // Ensure redirect stays on the same route even for errors
+            if (isset($data['id_pengawasan'])) {
+                $redirectUrl = url("adminTL/temuan_rekom_edit/{$data['id_pengawasan']}/edit");
+                return redirect()->to($redirectUrl)->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            } else {
+                return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            }
         }
     }
 
@@ -919,75 +997,65 @@ class DashboardAminTLController extends Controller
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
         try {
-            // Get current user's data access configuration
-            $currentUser = auth()->user();
-            $userDataAccess = UserDataAccess::where('user_id', $currentUser->id)->first();
-
-            // Start with base query
-            $query = DB::table('jenis_temuans')
+            // Use the same approach as datadukungrekomEdit method
+            $getparent = DB::table('jenis_temuans')
+                ->where('id_parent', DB::raw('id'))
                 ->where('id_pengawasan', $id)
-                ->orderBy('kode_temuan')
-                ->orderBy('id');
+                ->get();
 
-            // Apply data access filtering if user has restrictions
-            if ($userDataAccess && $userDataAccess->is_active) {
-                if ($userDataAccess->access_type === 'specific') {
-                    // User has restricted access - filter by allowed jenis_temuan IDs
-                    $allowedJenisTemuanIds = $userDataAccess->jenis_temuan_ids ?? [];
+            foreach ($getparent as $key => $value) {
+                $value->sub = DB::table('jenis_temuans')
+                    ->where('id_parent', $value->id)
+                    ->where('id', '!=', $value->id)
+                    ->get();
 
-                    if (!empty($allowedJenisTemuanIds) && is_array($allowedJenisTemuanIds)) {
-                        $query->whereIn('id', $allowedJenisTemuanIds);
+                foreach ($value->sub as $subKey => $subValue) {
+                    $subValue->sub = DB::table('jenis_temuans')
+                        ->where('id_parent', $subValue->id)
+                        ->where('id', '!=', $subValue->id)
+                        ->get();
+                }
+            }
 
-                        Log::info('Filtering temuan edit data for user access', [
-                            'user_id' => $currentUser->id,
-                            'allowed_ids' => $allowedJenisTemuanIds,
-                            'pengawasan_id' => $id
-                        ]);
-                    } else {
-                        // No allowed IDs - return empty result
-                        $query->whereRaw('1=0'); // Force empty result
+            // Convert to format expected by the temuan component
+            $formattedData = [];
+            foreach ($getparent as $parentItem) {
+                $children = array();
+
+                if (isset($parentItem->sub)) {
+                    foreach ($parentItem->sub as $subItem) {
+                        $subChildren = array();
+                        if (isset($subItem->sub)) {
+                            foreach ($subItem->sub as $nestedItem) {
+                                $subChildren[] = (object) array(
+                                    'id' => $nestedItem->id,
+                                    'rekomendasi' => $nestedItem->rekomendasi,
+                                    'keterangan' => $nestedItem->keterangan,
+                                    'pengembalian' => $nestedItem->pengembalian,
+                                    'children' => array()
+                                );
+                            }
+                        }
+
+                        $children[] = (object) array(
+                            'id' => $subItem->id,
+                            'rekomendasi' => $subItem->rekomendasi,
+                            'keterangan' => $subItem->keterangan,
+                            'pengembalian' => $subItem->pengembalian,
+                            'children' => $subChildren
+                        );
                     }
                 }
-                // If access_type is 'all', no additional filtering needed
-            } else {
-                // User has no active data access configuration - restrict all access
-                $query->whereRaw('1=0'); // Force empty result
 
-                Log::info('Restricting all temuan edit data - no active data access', [
-                    'user_id' => $currentUser->id,
-                    'pengawasan_id' => $id
-                ]);
-            }
-
-            $allData = $query->get();
-
-            // Kelompokkan berdasarkan kombinasi kode_temuan + nama_temuan
-            $groupedData = [];
-
-            foreach ($allData as $item) {
-                $key = $item->kode_temuan . '|' . $item->nama_temuan;
-
-                if (!isset($groupedData[$key])) {
-                    $groupedData[$key] = [
-                        'kode_temuan' => $item->kode_temuan,
-                        'nama_temuan' => $item->nama_temuan,
-                        'recommendations' => []
-                    ];
-                }
-
-                // Tambahkan item sebagai rekomendasi
-                $groupedData[$key]['recommendations'][] = $item;
-            }
-
-            // Convert ke format yang dibutuhkan view dan build hierarchy
-            $formattedData = [];
-            foreach ($groupedData as $group) {
-                $temuan = (object) [
-                    'kode_temuan' => $group['kode_temuan'],
-                    'nama_temuan' => $group['nama_temuan'],
-                    'recommendations' => $this->buildRecommendationHierarchy($group['recommendations'])
-                ];
-                $formattedData[] = $temuan;
+                $formattedData[] = (object) array(
+                    'id' => $parentItem->id,
+                    'kode_temuan' => $parentItem->kode_temuan,
+                    'nama_temuan' => $parentItem->nama_temuan,
+                    'rekomendasi' => $parentItem->rekomendasi,
+                    'keterangan' => $parentItem->keterangan,
+                    'pengembalian' => $parentItem->pengembalian,
+                    'recommendations' => $children
+                );
             }
 
             return view('AdminTL.temuan_rekom_edit', [
