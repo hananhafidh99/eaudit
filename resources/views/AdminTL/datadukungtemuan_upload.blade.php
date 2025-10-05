@@ -282,8 +282,9 @@
                                     <th width="5%" style="color: white">No</th>
                                     <th width="8%" style="color: white">Kode Temuan</th>
                                     <th width="12%" style="color: white">Nama Temuan</th>
-                                    <th width="30%" style="color: white">Rekomendasi</th>
-                                    <th width="20%" style="color: white">Keterangan</th>
+                                    <th width="8%" style="color: white">Kode Rekomendasi</th>
+                                    <th width="25%" style="color: white">Rekomendasi</th>
+                                    <th width="17%" style="color: white">Keterangan</th>
                                     <th width="15%" style="color: white">Pengembalian</th>
                                     <th width="10%" style="color: white">Aksi</th>
                                 </tr>
@@ -321,6 +322,13 @@
                                                     echo '<td>' . $indent . '<small class="text-muted">' . ($parent->nama_temuan ?? '-') . '</small></td>';
                                                 }
 
+                                                // Kode Rekomendasi
+                                                if ($level == 0) {
+                                                    echo '<td><span class="badge bg-success">' . ($rekom->kode_rekomendasi ?? '-') . '</span></td>';
+                                                } else {
+                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($rekom->kode_rekomendasi ?? '-') . '</small></td>';
+                                                }
+
                                                 $rekomStyle = $level > 0 ? '' : 'font-weight: bold;';
                                                 echo '<td style="' . $rekomStyle . '">' . $indent . ($rekom->rekomendasi ?? '-') . '</td>';
                                                 echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
@@ -336,6 +344,7 @@
                                                 echo '<td>';
                                                 echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
                                                 echo 'data-id="' . $rekom->id . '" ';
+                                                echo 'data-kode-rekomendasi="' . htmlspecialchars($rekom->kode_rekomendasi ?? '') . '" ';
                                                 echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
                                                 echo 'data-keterangan="' . htmlspecialchars($rekom->keterangan ?? '') . '" ';
                                                 echo 'data-pengembalian="' . ($rekom->pengembalian ?? 0) . '" ';
@@ -363,7 +372,7 @@
                                     @endphp
                                 @else
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Tidak ada rekomendasi</td>
+                                        <td colspan="8" class="text-center text-muted">Tidak ada rekomendasi</td>
                                     </tr>
                                 @endif
                             </tbody>

@@ -314,8 +314,9 @@
                                     <th width="5%">No</th>
                                     <th width="8%">Kode Temuan</th>
                                     <th width="12%">Nama Temuan</th>
-                                    <th width="30%">Rekomendasi</th>
-                                    <th width="20%">Keterangan</th>
+                                    <th width="8%">Kode Rekomendasi</th>
+                                    <th width="25%">Rekomendasi</th>
+                                    <th width="17%">Keterangan</th>
                                     <th width="15%">Pengembalian</th>
                                     <th width="10%">Aksi</th>
                                 </tr>
@@ -353,6 +354,13 @@
                                                     echo '<td>' . $indent . '<small class="text-muted">' . ($parent->nama_temuan ?? '-') . '</small></td>';
                                                 }
 
+                                                // Kode Rekomendasi
+                                                if ($level == 0) {
+                                                    echo '<td><span class="badge bg-success">' . ($rekom->kode_rekomendasi ?? '-') . '</span></td>';
+                                                } else {
+                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($rekom->kode_rekomendasi ?? '-') . '</small></td>';
+                                                }
+
                                                 $rekomStyle = $level > 0 ? '' : 'font-weight: bold;';
                                                 echo '<td style="' . $rekomStyle . '">' . $indent . ($rekom->rekomendasi ?? '-') . '</td>';
                                                 echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
@@ -368,6 +376,7 @@
                                                 echo '<td>';
                                                 echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
                                                 echo 'data-id="' . $rekom->id . '" ';
+                                                echo 'data-kode-rekomendasi="' . htmlspecialchars($rekom->kode_rekomendasi ?? '') . '" ';
                                                 echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
                                                 echo 'data-keterangan="' . htmlspecialchars($rekom->keterangan ?? '') . '" ';
                                                 echo 'data-pengembalian="' . ($rekom->pengembalian ?? 0) . '" ';
@@ -1012,6 +1021,7 @@ $(document).ready(function() {
     // Edit recommendation functionality
     $(document).on('click', '.edit-rekom-btn', function() {
         var id = $(this).data('id');
+        var kodeRekomendasi = $(this).data('kode-rekomendasi');
         var rekomendasi = $(this).data('rekomendasi');
         var keterangan = $(this).data('keterangan');
         var pengembalian = $(this).data('pengembalian');
@@ -1020,6 +1030,7 @@ $(document).ready(function() {
 
         // Populate modal with data
         $('#edit-id').val(id);
+        $('#edit-kode-rekomendasi').val(kodeRekomendasi);
         $('#edit-rekomendasi').val(rekomendasi);
         $('#edit-keterangan').val(keterangan);
         $('#edit-pengembalian').val(pengembalian > 0 ? formatRupiah(pengembalian.toString()) : '');
@@ -1450,6 +1461,11 @@ $(document).ready(function() {
                                 <span id="edit-nama-temuan"></span>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit-kode-rekomendasi" class="form-label">Kode Rekomendasi</label>
+                        <input type="text" class="form-control" id="edit-kode-rekomendasi" placeholder="Contoh: REC-001">
                     </div>
 
                     <div class="mb-3">
