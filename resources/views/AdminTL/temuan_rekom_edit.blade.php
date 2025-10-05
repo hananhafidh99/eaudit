@@ -1111,6 +1111,7 @@ $(document).ready(function() {
 
         var formData = {
             id: $('#edit-id').val(),
+            kode_rekomendasi: $('#edit-kode-rekomendasi').val(),
             rekomendasi: $('#edit-rekomendasi').val(),
             keterangan: $('#edit-keterangan').val(),
             pengembalian: $('#edit-pengembalian').val().replace(/[^0-9]/g, ''), // Remove formatting
