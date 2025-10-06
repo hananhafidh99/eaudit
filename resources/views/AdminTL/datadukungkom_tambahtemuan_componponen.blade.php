@@ -506,6 +506,10 @@
                                                 <textarea class="form-control" name="tipeB[{{ $key }}][nama_temuan]">{{ $item->nama_temuan ?? '' }}</textarea>
                                             </div>
                                             <div class="temuan-field-row">
+                                                <label>Kode Rekomendasi</label>
+                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][kode_rekomendasi]" value="{{ $item->kode_rekomendasi ?? '' }}" placeholder="Contoh: REC-001">
+                                            </div>
+                                            <div class="temuan-field-row">
                                                 <label>Rekomendasi</label>
                                                 <textarea class="form-control" name="tipeB[{{ $key }}][rekomendasi]">{{ $item->rekomendasi ?? '' }}</textarea>
                                             </div>
@@ -549,6 +553,10 @@
                                                     <td class="temuan-content-cell">
                                                         <div class="temuan-field-group">
                                                             <div class="temuan-field-row">
+                                                                <label>Kode Rekomendasi</label>
+                                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][kode_rekomendasi]" value="{{ $subItem->kode_rekomendasi ?? '' }}" placeholder="Contoh: REC-001.1">
+                                                            </div>
+                                                            <div class="temuan-field-row">
                                                                 <label>Rekomendasi</label>
                                                                 <textarea class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][rekomendasi]">{{ $subItem->rekomendasi ?? '' }}</textarea>
                                                             </div>
@@ -584,6 +592,10 @@
                                                                     <td class="temuan-number-cell">{{ $loop->parent->parent->iteration }}.{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
                                                                     <td class="temuan-content-cell">
                                                                         <div class="temuan-field-group">
+                                                                            <div class="temuan-field-row">
+                                                                                <label>Kode Rekomendasi</label>
+                                                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][kode_rekomendasi]" value="{{ $nestedItem->kode_rekomendasi ?? '' }}" placeholder="Contoh: REC-001.1.1">
+                                                                            </div>
                                                                             <div class="temuan-field-row">
                                                                                 <label>Rekomendasi</label>
                                                                                 <textarea class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][rekomendasi]">{{ $nestedItem->rekomendasi ?? '' }}</textarea>
@@ -630,6 +642,10 @@
                                             <div class="temuan-field-row">
                                                 <label>Nama Temuan</label>
                                                 <textarea class="form-control" name="tipeB[0][nama_temuan]" required></textarea>
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Kode Rekomendasi</label>
+                                                <input type="text" class="form-control" name="tipeB[0][kode_rekomendasi]" placeholder="Contoh: REC-001">
                                             </div>
                                             <div class="temuan-field-row">
                                                 <label>Rekomendasi</label>
@@ -864,6 +880,10 @@
                                     <textarea class="form-control" name="tipeB[${index}][nama_temuan]" required></textarea>
                                 </div>
                                 <div class="temuan-field-row">
+                                    <label>Kode Rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeB[${index}][kode_rekomendasi]" placeholder="Contoh: REC-001">
+                                </div>
+                                <div class="temuan-field-row">
                                     <label>Rekomendasi</label>
                                     <textarea class="form-control" name="tipeB[${index}][rekomendasi]"></textarea>
                                 </div>
@@ -901,6 +921,10 @@
                         <td class="temuan-content-cell">
                             <div class="temuan-field-group">
                                 <div class="temuan-field-row">
+                                    <label>Kode Rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeB[${level1}][sub][${level2}][kode_rekomendasi]" placeholder="Contoh: REC-001.1">
+                                </div>
+                                <div class="temuan-field-row">
                                     <label>Rekomendasi</label>
                                     <textarea class="form-control" name="tipeB[${level1}][sub][${level2}][rekomendasi]"></textarea>
                                 </div>
@@ -937,6 +961,10 @@
                         <td class="temuan-number-cell">${parseInt(level1) + 1}.${parseInt(level2) + 1}.${level3 + 1}</td>
                         <td class="temuan-content-cell">
                             <div class="temuan-field-group">
+                                <div class="temuan-field-row">
+                                    <label>Kode Rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeB[${level1}][sub][${level2}][sub][${level3}][kode_rekomendasi]" placeholder="Contoh: REC-001.1.1">
+                                </div>
                                 <div class="temuan-field-row">
                                     <label>Rekomendasi</label>
                                     <textarea class="form-control" name="tipeB[${level1}][sub][${level2}][sub][${level3}][rekomendasi]"></textarea>

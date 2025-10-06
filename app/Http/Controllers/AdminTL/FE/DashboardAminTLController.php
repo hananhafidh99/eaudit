@@ -819,9 +819,18 @@ class DashboardAminTLController extends Controller
         // Extract basic temuan data
         $kode_temuan = trim($temuan['kode_temuan'] ?? '');
         $nama_temuan = trim($temuan['nama_temuan'] ?? '');
+        $kode_rekomendasi = trim($temuan['kode_rekomendasi'] ?? '');
         $rekomendasi = trim($temuan['rekomendasi'] ?? '');
         $keterangan = trim($temuan['keterangan'] ?? '');
         $pengembalian = $this->cleanPengembalianValue($temuan['pengembalian'] ?? '0');
+
+        // Debug logging for kode_rekomendasi
+        Log::info('Processing temuan item', [
+            'kode_temuan' => $kode_temuan,
+            'nama_temuan' => $nama_temuan,
+            'kode_rekomendasi' => $kode_rekomendasi,
+            'rekomendasi' => $rekomendasi
+        ]);
 
         // If there's no kode_temuan or nama_temuan, skip this item
         if (empty($kode_temuan) || empty($nama_temuan)) {
@@ -835,6 +844,7 @@ class DashboardAminTLController extends Controller
                 'id_penugasan' => $id_penugasan,
                 'nama_temuan' => $nama_temuan,
                 'kode_temuan' => $kode_temuan,
+                'kode_rekomendasi' => $kode_rekomendasi,
                 'rekomendasi' => $rekomendasi,
                 'keterangan' => $keterangan,
                 'pengembalian' => $pengembalian,
@@ -875,6 +885,7 @@ class DashboardAminTLController extends Controller
     {
         $count = 0;
 
+        $kode_rekomendasi = trim($subRekom['kode_rekomendasi'] ?? '');
         $rekomendasi = trim($subRekom['rekomendasi'] ?? '');
         $keterangan = trim($subRekom['keterangan'] ?? '');
         $pengembalian = $this->cleanPengembalianValue($subRekom['pengembalian'] ?? '0');
@@ -890,6 +901,7 @@ class DashboardAminTLController extends Controller
             'id_penugasan' => $id_penugasan,
             'nama_temuan' => $nama_temuan,
             'kode_temuan' => $kode_temuan,
+            'kode_rekomendasi' => $kode_rekomendasi,
             'rekomendasi' => $rekomendasi,
             'keterangan' => $keterangan,
             'pengembalian' => $pengembalian,
@@ -1029,6 +1041,7 @@ class DashboardAminTLController extends Controller
                             foreach ($subItem->sub as $nestedItem) {
                                 $subChildren[] = (object) array(
                                     'id' => $nestedItem->id,
+                                    'kode_rekomendasi' => $nestedItem->kode_rekomendasi,
                                     'rekomendasi' => $nestedItem->rekomendasi,
                                     'keterangan' => $nestedItem->keterangan,
                                     'pengembalian' => $nestedItem->pengembalian,
@@ -1039,6 +1052,7 @@ class DashboardAminTLController extends Controller
 
                         $children[] = (object) array(
                             'id' => $subItem->id,
+                            'kode_rekomendasi' => $subItem->kode_rekomendasi,
                             'rekomendasi' => $subItem->rekomendasi,
                             'keterangan' => $subItem->keterangan,
                             'pengembalian' => $subItem->pengembalian,
@@ -1051,6 +1065,7 @@ class DashboardAminTLController extends Controller
                     'id' => $parentItem->id,
                     'kode_temuan' => $parentItem->kode_temuan,
                     'nama_temuan' => $parentItem->nama_temuan,
+                    'kode_rekomendasi' => $parentItem->kode_rekomendasi,
                     'rekomendasi' => $parentItem->rekomendasi,
                     'keterangan' => $parentItem->keterangan,
                     'pengembalian' => $parentItem->pengembalian,
@@ -1178,10 +1193,17 @@ class DashboardAminTLController extends Controller
         try {
             // Ambil semua data dan kelompokkan berdasarkan kode_temuan dan nama_temuan
             $allData = DB::table('jenis_temuans')
+                ->select('*') // Pastikan semua field terambil termasuk kode_rekomendasi
                 ->where('id_pengawasan', $id)
                 ->orderBy('kode_temuan')
                 ->orderBy('id')
                 ->get();
+
+            // Debug: Log data untuk memastikan kode_rekomendasi ada
+            Log::info('Retrieved data from database:', [
+                'count' => $allData->count(),
+                'sample_data' => $allData->take(2)->toArray()
+            ]);
 
             // Kelompokkan berdasarkan kombinasi kode_temuan + nama_temuan
             $groupedData = [];
@@ -1242,6 +1264,7 @@ class DashboardAminTLController extends Controller
         try {
             $request->validate([
                 'id' => 'required|integer',
+                'kode_rekomendasi' => 'nullable|string|max:50',
                 'rekomendasi' => 'required|string|max:1000',
                 'keterangan' => 'nullable|string|max:500',
                 'pengembalian' => 'nullable|numeric|min:0'
@@ -1250,6 +1273,7 @@ class DashboardAminTLController extends Controller
             $updated = DB::table('jenis_temuans')
                 ->where('id', $request->id)
                 ->update([
+                    'kode_rekomendasi' => $request->kode_rekomendasi,
                     'rekomendasi' => $request->rekomendasi,
                     'keterangan' => $request->keterangan,
                     'pengembalian' => $request->pengembalian ?: 0,
