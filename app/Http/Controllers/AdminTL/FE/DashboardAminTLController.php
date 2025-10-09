@@ -816,20 +816,15 @@ class DashboardAminTLController extends Controller
     {
         $count = 0;
 
-        // Extract basic temuan data
+        // Extract basic temuan data (parent level - hanya kode_temuan dan nama_temuan)
         $kode_temuan = trim($temuan['kode_temuan'] ?? '');
         $nama_temuan = trim($temuan['nama_temuan'] ?? '');
-        $kode_rekomendasi = trim($temuan['kode_rekomendasi'] ?? '');
-        $rekomendasi = trim($temuan['rekomendasi'] ?? '');
-        $keterangan = trim($temuan['keterangan'] ?? '');
-        $pengembalian = $this->cleanPengembalianValue($temuan['pengembalian'] ?? '0');
 
-        // Debug logging for kode_rekomendasi
-        Log::info('Processing temuan item', [
+        // Debug logging for parent temuan
+        Log::info('Processing temuan item (parent level)', [
             'kode_temuan' => $kode_temuan,
             'nama_temuan' => $nama_temuan,
-            'kode_rekomendasi' => $kode_rekomendasi,
-            'rekomendasi' => $rekomendasi
+            'has_sub_items' => isset($temuan['sub']) && is_array($temuan['sub'])
         ]);
 
         // If there's no kode_temuan or nama_temuan, skip this item
@@ -837,41 +832,45 @@ class DashboardAminTLController extends Controller
             return 0;
         }
 
-        // Create main temuan record with its rekomendasi
-        if (!empty($rekomendasi)) {
-            $mainId = DB::table('jenis_temuans')->insertGetId([
-                'id_pengawasan' => $id_pengawasan,
-                'id_penugasan' => $id_penugasan,
-                'nama_temuan' => $nama_temuan,
-                'kode_temuan' => $kode_temuan,
-                'kode_rekomendasi' => $kode_rekomendasi,
-                'rekomendasi' => $rekomendasi,
-                'keterangan' => $keterangan,
-                'pengembalian' => $pengembalian,
-                'id_parent' => null, // Will be updated to self
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        // Create parent temuan record (without rekomendasi data - that goes to child records)
+        $parentId = DB::table('jenis_temuans')->insertGetId([
+            'id_pengawasan' => $id_pengawasan,
+            'id_penugasan' => $id_penugasan,
+            'nama_temuan' => $nama_temuan,
+            'kode_temuan' => $kode_temuan,
+            'kode_rekomendasi' => null, // Parent level tidak memiliki kode rekomendasi
+            'rekomendasi' => null,      // Parent level tidak memiliki rekomendasi
+            'keterangan' => null,       // Parent level tidak memiliki keterangan
+            'pengembalian' => 0,        // Parent level tidak memiliki pengembalian
+            'id_parent' => null, // Will be updated to self
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-            // Update id_parent to point to itself (main record)
-            DB::table('jenis_temuans')
-                ->where('id', $mainId)
-                ->update(['id_parent' => $mainId]);
+        // Update id_parent to point to itself (this makes it a parent record)
+        DB::table('jenis_temuans')
+            ->where('id', $parentId)
+            ->update(['id_parent' => $parentId]);
 
-            $count++;
+        $count++;
 
-            // Process sub-recommendations if they exist
-            if (isset($temuan['sub']) && is_array($temuan['sub'])) {
-                foreach ($temuan['sub'] as $subRekom) {
-                    $count += $this->processSubRekomendasi(
-                        $subRekom,
-                        $id_pengawasan,
-                        $id_penugasan,
-                        $nama_temuan,
-                        $kode_temuan,
-                        $mainId
-                    );
-                }
+        Log::info('Created parent temuan record', [
+            'parent_id' => $parentId,
+            'kode_temuan' => $kode_temuan,
+            'nama_temuan' => $nama_temuan
+        ]);
+
+        // Process sub-recommendations (child records dengan kode_rekomendasi)
+        if (isset($temuan['sub']) && is_array($temuan['sub'])) {
+            foreach ($temuan['sub'] as $subIndex => $subRekom) {
+                $count += $this->processSubRekomendasi(
+                    $subRekom,
+                    $id_pengawasan,
+                    $id_penugasan,
+                    $nama_temuan,
+                    $kode_temuan,
+                    $parentId
+                );
             }
         }
 
@@ -1119,6 +1118,54 @@ class DashboardAminTLController extends Controller
 
         return $roots;
     }
+
+    /**
+     * Check if a child item is descendant of a parent item
+     */
+    private function isDescendantOf($child, $parentId, $allData)
+    {
+        // Direct child check
+        if ($child->id_parent == $parentId) {
+            return true;
+        }
+
+        // Recursive check for indirect descendants
+        $currentParentId = $child->id_parent;
+        $visited = []; // Prevent infinite loops
+
+        while ($currentParentId != null && !in_array($currentParentId, $visited)) {
+            $visited[] = $currentParentId;
+
+            // Find parent item
+            $parentItem = null;
+            foreach ($allData as $item) {
+                if ($item->id == $currentParentId) {
+                    $parentItem = $item;
+                    break;
+                }
+            }
+
+            if (!$parentItem) {
+                break; // Parent not found
+            }
+
+            // Check if this parent is the target parent
+            if ($parentItem->id == $parentId) {
+                return true;
+            }
+
+            // Check if this parent is a root (id = id_parent)
+            if ($parentItem->id == $parentItem->id_parent) {
+                break; // Reached root, not a descendant
+            }
+
+            // Move to next level up
+            $currentParentId = $parentItem->id_parent;
+        }
+
+        return false;
+    }
+
     public function indexdatadukungrekom()
     {
         $client = new Client();
@@ -1205,31 +1252,55 @@ class DashboardAminTLController extends Controller
                 'sample_data' => $allData->take(2)->toArray()
             ]);
 
-            // Kelompokkan berdasarkan kombinasi kode_temuan + nama_temuan
-            $groupedData = [];
+            // Pisahkan parent (temuan) dan child (rekomendasi) berdasarkan id_parent
+            $parentItems = [];
+            $childItems = [];
 
             foreach ($allData as $item) {
-                $key = $item->kode_temuan . '|' . $item->nama_temuan;
-
-                if (!isset($groupedData[$key])) {
-                    $groupedData[$key] = [
-                        'kode_temuan' => $item->kode_temuan,
-                        'nama_temuan' => $item->nama_temuan,
-                        'recommendations' => []
-                    ];
+                if ($item->id == $item->id_parent) {
+                    // Ini adalah parent/temuan utama
+                    $parentItems[] = $item;
+                } else {
+                    // Ini adalah child/rekomendasi
+                    $childItems[] = $item;
                 }
-
-                // Tambahkan item sebagai rekomendasi
-                $groupedData[$key]['recommendations'][] = $item;
             }
 
-            // Convert ke format yang dibutuhkan view dan build hierarchy
+            // Debug: Log pemisahan parent dan child
+            Log::info('Parent-Child separation:', [
+                'parent_count' => count($parentItems),
+                'child_count' => count($childItems),
+                'parent_ids' => collect($parentItems)->pluck('id')->toArray(),
+                'child_ids' => collect($childItems)->pluck('id')->toArray()
+            ]);
+
+            // Kelompokkan berdasarkan parent items
             $formattedData = [];
-            foreach ($groupedData as $group) {
+            foreach ($parentItems as $parent) {
+                // Ambil semua rekomendasi yang terkait dengan parent ini (langsung maupun tidak langsung)
+                $relatedRecommendations = [];
+                foreach ($childItems as $child) {
+                    if ($this->isDescendantOf($child, $parent->id, $allData)) {
+                        $relatedRecommendations[] = $child;
+                    }
+                }
+
+                // Langsung gunakan child recommendations tanpa hierarki kompleks
+                // karena struktur yang diinginkan sederhana: Parent -> Children langsung
+
+                // Debug: Log hasil untuk setiap parent
+                Log::info('Formatted temuan data:', [
+                    'parent_id' => $parent->id,
+                    'kode_temuan' => $parent->kode_temuan,
+                    'nama_temuan' => $parent->nama_temuan,
+                    'related_recommendations_count' => count($relatedRecommendations),
+                    'related_recommendations_ids' => collect($relatedRecommendations)->pluck('id')->toArray()
+                ]);
+
                 $temuan = (object) [
-                    'kode_temuan' => $group['kode_temuan'],
-                    'nama_temuan' => $group['nama_temuan'],
-                    'recommendations' => $this->buildRecommendationHierarchy($group['recommendations'])
+                    'kode_temuan' => $parent->kode_temuan,
+                    'nama_temuan' => $parent->nama_temuan,
+                    'recommendations' => $relatedRecommendations  // Langsung kirim child records
                 ];
                 $formattedData[] = $temuan;
             }
