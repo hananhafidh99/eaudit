@@ -49,6 +49,29 @@
         margin-left: 20px;
     }
 
+    /* Parent Temuan Row Styling */
+    .parent-temuan-row {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    /* Recommendation Level Styling */
+    .recommendation-level {
+        background-color: #fff;
+    }
+
+    .sub-level-1 {
+        background-color: #f9f9f9;
+    }
+
+    .sub-level-2 {
+        background-color: #f5f5f5;
+    }
+
+    .sub-level-3 {
+        background-color: #f1f1f1;
+    }
+
     /* Upload Progress Styles */
     #progressBarsContainer {
         max-height: 400px;
@@ -226,7 +249,8 @@
     </div>
 </div>
 
-<div class="card mb-4" style="width: 100%;">
+<div class="card mb-4" style="width: 100%; display: none
+">
 <div class="card-header"> Jenis Temuan dan Rekomendasi</div>
     <div class="card-body">
         @if(session('success'))
@@ -255,8 +279,9 @@
         @endif
 
         {{-- Display existing data --}}
+        {{-- @dd('ANW') --}}
         @if(isset($existingData) && $existingData->count() > 0)
-        <div class="card mb-4">
+        <div class="card mb-4" style="display: none">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0"><i class="fas fa-list"></i> Data Temuan & Rekomendasi yang Sudah Ada</h5>
             </div>
@@ -294,53 +319,49 @@
                                 @if($parent->recommendations && count($parent->recommendations) > 0)
                                     @php
                                         $rekomCounter = 1;
-                                        $renderRecommendations = function($recommendations, $baseNumber = '', $level = 0, $parent = null) use (&$renderRecommendations, &$rekomCounter) {
-                                            foreach ($recommendations as $rekom) {
-                                                $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
-                                                $number = $baseNumber ? $baseNumber . '.' . $rekomCounter : $rekomCounter;
-                                                $levelClass = $level > 0 ? 'sub-level-' . min($level, 3) : '';
+                                        $renderRecommendations = function($recommendations, $parent = null) use (&$renderRecommendations, &$rekomCounter) {
+                                            // Show parent row (Kode Temuan + Nama Temuan ONLY)
+                                            echo '<tr class="parent-temuan-row">';
+                                            echo '<td><strong>' . $rekomCounter . '</strong></td>';
+                                            echo '<td><span class="badge bg-primary">' . ($parent->kode_temuan ?? '-') . '</span></td>';
+                                            echo '<td><strong>' . ($parent->nama_temuan ?? '-') . '</strong></td>';
+                                            echo '<td colspan="5" class="text-muted"><em>Temuan Utama - Tidak ada Kode Rekomendasi</em></td>';
+                                            echo '</tr>';
 
-                                                echo '<tr class="' . $levelClass . '">';
+                                            // Show child recommendations
+                                            foreach ($recommendations as $rekomendasiIndex => $rekom) {
+                                                $subNumber = $rekomCounter . '.' . ($rekomendasiIndex + 1);
 
-                                                if ($level > 0) {
-                                                    echo '<td>' . $indent . '↳ ' . $number . '</td>';
-                                                } else {
-                                                    echo '<td><strong>' . $number . '</strong></td>';
-                                                }
+                                                echo '<tr class="recommendation-level">';
 
-                                                // Kode Temuan
-                                                if ($level == 0) {
-                                                    echo '<td><span class="badge bg-primary">' . ($parent->kode_temuan ?? '-') . '</span></td>';
-                                                } else {
-                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($parent->kode_temuan ?? '-') . '</small></td>';
-                                                }
+                                                // Nomor sub rekomendasi
+                                                echo '<td>&nbsp;&nbsp;&nbsp;&nbsp;<strong>' . $subNumber . '</strong></td>';
 
-                                                // Nama Temuan
-                                                if ($level == 0) {
-                                                    echo '<td><strong>' . ($parent->nama_temuan ?? '-') . '</strong></td>';
-                                                } else {
-                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($parent->nama_temuan ?? '-') . '</small></td>';
-                                                }
+                                                // Kode Temuan - kosong untuk rekomendasi
+                                                echo '<td></td>';
 
-                                                // Kode Rekomendasi
-                                                if ($level == 0) {
-                                                    echo '<td><span class="badge bg-success">' . ($rekom->kode_rekomendasi ?? '-') . '</span></td>';
-                                                } else {
-                                                    echo '<td>' . $indent . '<small class="text-muted">' . ($rekom->kode_rekomendasi ?? '-') . '</small></td>';
-                                                }
+                                                // Nama Temuan - kosong untuk rekomendasi
+                                                echo '<td></td>';
 
-                                                $rekomStyle = $level > 0 ? '' : 'font-weight: bold;';
-                                                echo '<td style="' . $rekomStyle . '">' . $indent . ($rekom->rekomendasi ?? '-') . '</td>';
+                                                // Kode Rekomendasi - hanya untuk rekomendasi
+                                                echo '<td><span class="badge bg-success">' . ($rekom->kode_rekomendasi ?? '-') . '</span></td>';
+
+                                                // Rekomendasi
+                                                echo '<td><strong>' . ($rekom->rekomendasi ?? '-') . '</strong></td>';
+
+                                                // Keterangan
                                                 echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
-                                                echo '<td>';
 
+                                                // Pengembalian
+                                                echo '<td>';
                                                 if ($rekom->pengembalian && $rekom->pengembalian > 0) {
                                                     echo '<span class="text-success fw-bold">Rp ' . number_format($rekom->pengembalian, 0, ',', '.') . '</span>';
                                                 } else {
                                                     echo '<span class="text-muted">-</span>';
                                                 }
-
                                                 echo '</td>';
+
+                                                // Action buttons
                                                 echo '<td>';
                                                 echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
                                                 echo 'data-id="' . $rekom->id . '" ';
@@ -355,20 +376,13 @@
                                                 echo '</button> ';
                                                 echo '</td>';
                                                 echo '</tr>';
-
-                                                // Increment counter hanya untuk root level
-                                                if ($level == 0) {
-                                                    $rekomCounter++;
-                                                }
-
-                                                // Recursive call for nested children
-                                                if (isset($rekom->children) && count($rekom->children) > 0) {
-                                                    $renderRecommendations($rekom->children, $number, $level + 1, $parent);
-                                                }
                                             }
+
+                                            // Increment counter setelah selesai render satu parent
+                                            $rekomCounter++;
                                         };
 
-                                        $renderRecommendations($parent->recommendations, '', 0, $parent);
+                                        $renderRecommendations($parent->recommendations, $parent);
                                     @endphp
                                 @else
                                     <tr>

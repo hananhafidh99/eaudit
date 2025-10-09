@@ -499,18 +499,27 @@
                                         <div class="temuan-field-group">
                                             <div class="temuan-field-row">
                                                 <label>Kode Temuan</label>
-                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][kode_temuan]" value="{{ $item->kode_temuan ?? '' }}" required>
+                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][kode_temuan]" value="{{ $item->kode_temuan ?? '' }}">
                                             </div>
                                             <div class="temuan-field-row">
                                                 <label>Nama Temuan</label>
-                                                <textarea class="form-control" name="tipeB[{{ $key }}][nama_temuan]" required>{{ $item->nama_temuan ?? '' }}</textarea>
+                                                <textarea class="form-control" name="tipeB[{{ $key }}][nama_temuan]">{{ $item->nama_temuan ?? '' }}</textarea>
                                             </div>
                                             <div class="temuan-field-row">
-                                                <small class="text-muted">
-                                                    <i class="fa-solid fa-info-circle"></i>
-                                                    Level Parent - Hanya berisi informasi temuan utama.
-                                                    Kode Rekomendasi dan detail lainnya diisi di level rekomendasi (sub item).
-                                                </small>
+                                                <label>Kode Rekomendasi</label>
+                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][kode_rekomendasi]" value="{{ $item->kode_rekomendasi ?? '' }}" placeholder="Contoh: REC-001">
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Rekomendasi</label>
+                                                <textarea class="form-control" name="tipeB[{{ $key }}][rekomendasi]">{{ $item->rekomendasi ?? '' }}</textarea>
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Keterangan</label>
+                                                <textarea class="form-control" name="tipeB[{{ $key }}][keterangan]">{{ $item->keterangan ?? '' }}</textarea>
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Pengembalian</label>
+                                                <input type="text" class="form-control tanparupiah" name="tipeB[{{ $key }}][pengembalian]" value="{{ isset($item->pengembalian) && is_numeric($item->pengembalian) ? number_format($item->pengembalian,0,',','.') : '0' }}">
                                             </div>
                                         </div>
                                     </td>
@@ -635,11 +644,20 @@
                                                 <textarea class="form-control" name="tipeB[0][nama_temuan]" required></textarea>
                                             </div>
                                             <div class="temuan-field-row">
-                                                <small class="text-muted">
-                                                    <i class="fa-solid fa-info-circle"></i>
-                                                    Level Parent - Hanya berisi informasi temuan utama.
-                                                    Tambahkan sub item untuk memasukkan Kode Rekomendasi dan detail lainnya.
-                                                </small>
+                                                <label>Kode Rekomendasi</label>
+                                                <input type="text" class="form-control" name="tipeB[0][kode_rekomendasi]" placeholder="Contoh: REC-001">
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Rekomendasi</label>
+                                                <textarea class="form-control" name="tipeB[0][rekomendasi]"></textarea>
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Keterangan</label>
+                                                <textarea class="form-control" name="tipeB[0][keterangan]"></textarea>
+                                            </div>
+                                            <div class="temuan-field-row">
+                                                <label>Pengembalian</label>
+                                                <input type="text" class="form-control tanparupiah" name="tipeB[0][pengembalian]" value="0">
                                             </div>
                                         </div>
                                     </td>
@@ -862,19 +880,28 @@
                                     <textarea class="form-control" name="tipeB[${index}][nama_temuan]" required></textarea>
                                 </div>
                                 <div class="temuan-field-row">
-                                    <small class="text-muted">
-                                        <i class="fa-solid fa-info-circle"></i>
-                                        Level Parent - Hanya berisi informasi temuan utama.
-                                        Tambahkan sub item untuk memasukkan Kode Rekomendasi dan detail lainnya.
-                                    </small>
+                                    <label>Kode Rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeB[${index}][kode_rekomendasi]" placeholder="Contoh: REC-001">
+                                </div>
+                                <div class="temuan-field-row">
+                                    <label>Rekomendasi</label>
+                                    <textarea class="form-control" name="tipeB[${index}][rekomendasi]"></textarea>
+                                </div>
+                                <div class="temuan-field-row">
+                                    <label>Keterangan</label>
+                                    <textarea class="form-control" name="tipeB[${index}][keterangan]"></textarea>
+                                </div>
+                                <div class="temuan-field-row">
+                                    <label>Pengembalian</label>
+                                    <input type="text" class="form-control tanparupiah" name="tipeB[${index}][pengembalian]" value="0">
                                 </div>
                             </div>
                         </td>
                         <td class="temuan-action-cell">
-                            <button type="button" data-level1="${index}" class="btn btn-purple btn-sm temuan-add-sub" title="Tambah Sub Rekomendasi">
+                            <button type="button" data-level1="${index}" class="btn btn-purple btn-sm temuan-add-sub" title="Tambah Sub Item">
                                 <i class="fas fa-indent"></i>
                             </button>
-                            <button type="button" class="btn btn-danger btn-sm temuan-remove-item" title="Hapus Temuan">
+                            <button type="button" class="btn btn-danger btn-sm temuan-remove-item" title="Hapus Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
