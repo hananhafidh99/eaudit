@@ -249,7 +249,8 @@
     </div>
 </div>
 
-<div class="card mb-4" style="width: 100%; display: none">
+<div class="card mb-4" style="width: 100%; display: none
+">
 <div class="card-header"> Jenis Temuan dan Rekomendasi</div>
     <div class="card-body">
         @if(session('success'))
