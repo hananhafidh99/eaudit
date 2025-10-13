@@ -53,6 +53,9 @@ Route::post('adminTL/rekom/datadukung', [DashboardAminTLController::class, 'data
 // File upload routes
 Route::post('adminTL/rekom/upload-file', [DashboardAminTLController::class, 'uploadFile']);
 Route::post('adminTL/rekom/delete-file', [DashboardAminTLController::class, 'deleteFile']);
+// File upload routes per rekomendasi
+Route::post('adminTL/rekom/upload-file-rekomendasi', [DashboardAminTLController::class, 'uploadFileRekomendasi']);
+Route::post('adminTL/rekom/delete-file-rekomendasi', [DashboardAminTLController::class, 'deleteFileRekomendasi']);
 // Route::get('adminTL/rekom/datadukung/{id}/edit', [DashboardAminTLController::class, 'datadukungrekomEdit']);
 Route::get('adminTL/temuan_rekom/{id}', [DashboardAminTLController::class, 'temuanrekomEdit']);
 Route::get('/adminTL/datadukung/rekom', [DashboardAminTLController::class, 'indexdatadukungrekom']);

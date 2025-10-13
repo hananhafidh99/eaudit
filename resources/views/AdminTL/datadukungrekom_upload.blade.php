@@ -179,66 +179,94 @@
     </div>
 </div>
 
-@include('AdminTL.datadukungkom_tambahrekomendasi_componponen', [
-    'pengawasan' => $pengawasan,
-    'data' => $data
-])
-
-<div class="card mt-3" style="width: 100%; ">
-    <div class="card-header">Upload Data Dukung</div>
+<!-- Data Rekomendasi dengan Upload File -->
+<div class="card mb-4" style="width: 100%;">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fa-solid fa-list-check"></i> Data Rekomendasi & Upload File Pendukung
+        </h5>
+    </div>
     <div class="card-body">
-        <form id="uploadForm" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
-            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
+        {{-- Debug: Show data structure --}}
+        @php
+            if (app()->environment(['local', 'testing'])) {
+                echo "<!-- DEBUG: existingData count: " . (isset($existingData) ? count($existingData) : 0) . " -->";
+                if (isset($existingData) && count($existingData) > 0) {
+                    echo "<!-- DEBUG: First item structure: " . json_encode($existingData->first()) . " -->";
+                }
+            }
+        @endphp
 
-            <div class="row">
-                <div class="col-12">
-                    <input type="file" id="fileUpload" multiple placeholder="choose file or browse" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.svg,.zip,.docx,.xlsx,.doc,.xls,.ppt,.pptx"/>
-                </div>
+        @if(isset($existingData) && count($existingData) > 0)
+            @php $itemCounter = 1; @endphp
+            @foreach($existingData as $item)
+                @include('AdminTL.partials.hierarchy_item', ['item' => $item, 'itemNumber' => $itemCounter, 'parentNumber' => ''])
+                @php $itemCounter++; @endphp
+            @endforeach
+        @else
+            <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-exclamation-circle fa-3x mb-3"></i>
+                <h5>Belum Ada Data Rekomendasi</h5>
+                <p>Silakan buat data temuan dan rekomendasi terlebih dahulu.</p>
             </div>
-            <button type="button" onclick="uploadFiles()" class="mt-3 btn btn-info">
-                <i class="fas fa-upload"></i> Upload
-            </button>
-        </form>
+        @endif
+    </div>
+</div>
 
-        <!-- Progress container -->
-        <div class="mt-4" id="uploadProgress" style="display: none;">
-            <h6>Upload Progress:</h6>
-            <div id="progressBarsContainer">
-                <!-- Progress bars will be dynamically added here -->
-            </div>
+<!-- Legacy Upload Section (keep for now) -->
+<div class="card mt-3" style="width: 100%; ">
+    <div class="card-header">Upload Data Dukung Global</div>
+    <div class="card-body">
+        <div class="text-center text-muted">
+            <p><em>Upload file per rekomendasi sudah tersedia di setiap item rekomendasi di atas.</em></p>
         </div>
-
-        <!-- Upload status -->
-        <div id="uploadStatus" class="mt-3"></div>
-
-        <br>
     </div>
 </div>
 
 <div class="card mt-3" style="width: 100%; ">
     <div class="card-header">Berkas Data Dukung</div>
     <div class="card-body">
-        @if(isset($uploadedFiles) && $uploadedFiles->count() > 0)
+        @php
+            // Get all uploaded files for this pengawasan
+            $allUploadedFiles = \App\Models\DataDukung::where('id_pengawasan', $pengawasan['id'])->get();
+        @endphp
+
+        @if($allUploadedFiles->count() > 0)
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>No</th>
                             <th>Nama File</th>
+                            <th>Terkait Rekomendasi</th>
+                            <th>Keterangan</th>
                             <th>Tanggal Upload</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($uploadedFiles as $key => $file)
+                        @foreach($allUploadedFiles as $file)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <i class="fas fa-file"></i>
                                 {{ basename($file->nama_file) }}
                             </td>
+                            <td>
+                                @if($file->id_jenis_temuan)
+                                    @php
+                                        $relatedItem = DB::table('jenis_temuans')->find($file->id_jenis_temuan);
+                                    @endphp
+                                    @if($relatedItem)
+                                        {{ $relatedItem->rekomendasi ?? 'N/A' }}
+                                    @else
+                                        <span class="text-muted">Item terhapus</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Global</span>
+                                @endif
+                            </td>
+                            <td>{{ $file->keterangan_file ?? '-' }}</td>
                             <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
                             <td>
                                 <a href="{{ asset($file->nama_file) }}" target="_blank" class="btn btn-sm btn-info">
@@ -247,7 +275,7 @@
                                 <a href="{{ asset($file->nama_file) }}" download class="btn btn-sm btn-success">
                                     <i class="fas fa-download"></i> Download
                                 </a>
-                                <button type="button" onclick="deleteUploadedFile({{ $file->id }}, this)" class="btn btn-sm btn-danger">
+                                <button type="button" onclick="deleteFile({{ $file->id }}, this)" class="btn btn-sm btn-danger">
                                     <i class="fas fa-trash"></i> Hapus
                                 </button>
                             </td>
@@ -262,6 +290,46 @@
                 <p>Belum ada file yang diupload</p>
             </div>
         @endif
+    </div>
+</div>
+
+<!-- Legacy Upload Section -->
+<div class="card mt-3" style="width: 100%;">
+    <div class="card-header">Upload Data Dukung Global</div>
+    <div class="card-body">
+        <form id="uploadForm" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
+            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
+
+            <div class="row">
+                <div class="col-12">
+                    <input type="file" id="fileUpload" multiple placeholder="choose file or browse" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.svg,.zip,.docx,.xlsx,.doc,.xls,.ppt,.pptx"/>
+                </div>
+            </div>
+            <button type="button" onclick="uploadFiles()" class="mt-3 btn btn-info">
+                <i class="fas fa-upload"></i> Upload Global
+            </button>
+        </form>
+
+        <!-- Progress container -->
+        <div class="mt-4" id="uploadProgress" style="display: none;">
+            <h6>Upload Progress:</h6>
+            <div id="progressBarsContainer">
+                <!-- Progress bars will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Upload status -->
+        <div id="uploadStatus" class="mt-3"></div>
+
+        <div class="mt-3">
+            <small class="text-muted">
+                <i class="fa-solid fa-info-circle"></i>
+                File yang diupload di sini akan menjadi file umum yang tidak terkait dengan rekomendasi spesifik.
+                Untuk file yang terkait dengan rekomendasi tertentu, gunakan fitur upload di setiap item rekomendasi.
+            </small>
+        </div>
     </div>
 </div>
 
@@ -305,11 +373,11 @@
 
             // Upload each valid file
             for (var i = 0; i < validFiles.length; i++) {
-                uploadFile(validFiles[i], i + 1);
+                uploadGlobalFile(validFiles[i], i + 1);
             }
         }
 
-        function uploadFile(file, index) {
+        function uploadGlobalFile(file, index) {
             console.log('Starting upload for file:', file.name, 'Size:', file.size);
 
             var formData = new FormData();
@@ -404,7 +472,7 @@
                         deleteBtn.className = 'btn btn-sm btn-outline-danger';
                         deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
                         deleteBtn.onclick = function() {
-                            deleteFile(response.file_id, progressContainer);
+                            deleteGlobalFile(response.file_id, progressContainer);
                         };
                         actionButtons.appendChild(deleteBtn);
 
@@ -450,7 +518,7 @@
             xhr.send(formData);
         }
 
-        function deleteFile(fileId, progressContainer) {
+        function deleteGlobalFile(fileId, progressContainer) {
             if (!confirm('Are you sure you want to delete this file?')) {
                 return;
             }
@@ -555,6 +623,181 @@
 
             xhr.open('POST', '{{ url("adminTL/rekom/delete-file") }}', true);
             xhr.send(formData);
+        }
+
+        // Handle file upload per rekomendasi (for hierarchy items)
+        function uploadFile(button) {
+            const form = button.closest('.file-upload-form');
+            const fileInput = form.querySelector('input[type="file"]');
+            const keteranganInput = form.querySelector('input[name="keterangan_file"]');
+            const rekomendasiId = form.dataset.rekomendasiId;
+
+            if (!fileInput.files[0]) {
+                alert('Pilih file terlebih dahulu!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('keterangan_file', keteranganInput.value);
+            formData.append('id_jenis_temuan', rekomendasiId);
+            formData.append('id_pengawasan', '{{ $pengawasan["id"] }}');
+            formData.append('_token', '{{ csrf_token() }}');
+
+            // Disable button and show loading
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+            fetch('{{ url("adminTL/rekom/upload-file-rekomendasi") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('File berhasil diupload!');
+                    location.reload(); // Refresh to show new file
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat upload file');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+            });
+        }
+
+        // Handle file upload for hierarchy items (uploadGlobalFile function)
+        function uploadGlobalFile(button) {
+            const form = button.closest('.file-upload-form');
+            const fileInput = form.querySelector('input[name="file"]');
+            const keteranganInput = form.querySelector('input[name="keterangan_file"]');
+            const rekomendasiId = form.dataset.rekomendasiId;
+
+            if (!fileInput.files[0]) {
+                alert('Pilih file terlebih dahulu!');
+                return;
+            }
+
+            // Debug: Log the data being sent
+            console.log('Sending upload request with data:', {
+                file_name: fileInput.files[0].name,
+                file_size: fileInput.files[0].size,
+                keterangan_file: keteranganInput.value,
+                id_jenis_temuan: rekomendasiId,
+                id_pengawasan: '{{ $pengawasan["id"] }}'
+            });
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('keterangan_file', keteranganInput.value);
+            formData.append('id_jenis_temuan', rekomendasiId);
+            formData.append('id_pengawasan', '{{ $pengawasan["id"] }}');
+            formData.append('_token', '{{ csrf_token() }}');
+
+            // Disable button and show loading
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+            fetch('{{ url("adminTL/rekom/upload-file-rekomendasi") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    alert('File berhasil diupload!');
+                    location.reload(); // Refresh to show new file
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat upload file: ' + error.message);
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+            });
+        }
+
+        // Handle file deletion for hierarchy items
+        function deleteFile(fileId, buttonElement) {
+            if (!confirm('Yakin ingin menghapus file ini?')) {
+                return;
+            }
+
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            const formData = new FormData();
+            formData.append('file_id', fileId);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch('{{ url("adminTL/rekom/delete-file-rekomendasi") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to update file list
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus file');
+            })
+            .finally(() => {
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+            });
+        }
+
+        // Handle file deletion for hierarchy items (deleteGlobalFile function)
+        function deleteGlobalFile(fileId, buttonElement) {
+            if (!confirm('Yakin ingin menghapus file ini?')) {
+                return;
+            }
+
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            const formData = new FormData();
+            formData.append('file_id', fileId);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch('{{ url("adminTL/rekom/delete-file-rekomendasi") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to update file list
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus file');
+            })
+            .finally(() => {
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+            });
         }
 
 
