@@ -1927,7 +1927,7 @@ class DashboardAminTLController extends Controller
                 Log::error('Validation failed', [
                     'errors' => $validator->errors()->toArray()
                 ]);
-                
+
                 return response()->json([
                     'success' => false,
                     'message' => 'The given data was invalid.',

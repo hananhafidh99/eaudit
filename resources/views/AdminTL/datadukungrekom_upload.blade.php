@@ -674,7 +674,7 @@
         // Handle file upload for hierarchy items (uploadGlobalFile function)
         function uploadGlobalFile(button) {
             const form = button.closest('.file-upload-form');
-            const fileInput = form.querySelector('input[type="file"]');
+            const fileInput = form.querySelector('input[name="file"]');
             const keteranganInput = form.querySelector('input[name="keterangan_file"]');
             const rekomendasiId = form.dataset.rekomendasiId;
 
@@ -682,6 +682,15 @@
                 alert('Pilih file terlebih dahulu!');
                 return;
             }
+
+            // Debug: Log the data being sent
+            console.log('Sending upload request with data:', {
+                file_name: fileInput.files[0].name,
+                file_size: fileInput.files[0].size,
+                keterangan_file: keteranganInput.value,
+                id_jenis_temuan: rekomendasiId,
+                id_pengawasan: '{{ $pengawasan["id"] }}'
+            });
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);

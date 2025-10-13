@@ -100,7 +100,7 @@
                 <form class="file-upload-form mb-3" data-rekomendasi-id="{{ $item->id }}">
                     <div class="row">
                         <div class="col-md-6">
-                            <input type="file" class="form-control" name="file_upload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx">
+                            <input type="file" class="form-control" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx">
                         </div>
                         <div class="col-md-4">
                             <input type="text" class="form-control" name="keterangan_file" placeholder="Keterangan file (opsional)">
