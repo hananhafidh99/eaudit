@@ -1197,36 +1197,108 @@ class DashboardAminTLController extends Controller
         $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
-        // Get uploaded files from database
-        $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
-
         try {
-            $getparent = DB::table('jenis_temuans')
-                ->where('id_parent', DB::raw('id'))
+            // Ambil semua data dari database
+            $allData = DB::table('jenis_temuans')
                 ->where('id_pengawasan', $id)
+                ->orderBy('id')
                 ->get();
 
-            foreach ($getparent as $key => $value) {
-                $value->sub = DB::table('jenis_temuans')
-                    ->where('id_parent', $value->id)
-                    ->where('id', '!=', $value->id)
-                    ->get();
+            Log::info('Retrieved rekomendasi data from database:', [
+                'count' => count($allData),
+                'all_data' => $allData->toArray()
+            ]);
 
-                foreach ($value->sub as $subKey => $subValue) {
-                    $subValue->sub = DB::table('jenis_temuans')
-                        ->where('id_parent', $subValue->id)
-                        ->where('id', '!=', $subValue->id)
-                        ->get();
-                }
-            }
+            // Build hierarchical structure menggunakan method khusus
+            $hierarchicalData = $this->buildHierarchicalStructure($allData);
+
+            Log::info('Built hierarchical structure:', [
+                'structure_count' => count($hierarchicalData)
+            ]);
+
             return view('AdminTL.datadukungrekom_upload', [
                 'pengawasan' => $pengawasan,
-                'uploadedFiles' => $uploadedFiles,
-                'data' => $getparent
+                'existingData' => collect($hierarchicalData)
             ]);
+
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            Log::error('Error in datadukungrekomEdit:', [
+                'error' => $e->getMessage(),
+                'id_pengawasan' => $id
+            ]);
+
+            return view('AdminTL.datadukungrekom_upload', [
+                'pengawasan' => $pengawasan,
+                'existingData' => collect([])
+            ]);
         }
+    }
+
+    /**
+     * Build hierarchical structure for rekomendasi data
+     * Supports multi-level hierarchy: Parent > Sub > Sub-Sub
+     */
+    private function buildHierarchicalStructure($allData)
+    {
+        // Convert to array for easier manipulation
+        $dataArray = $allData->toArray();
+
+        // Find root items (items where id = id_parent)
+        $rootItems = [];
+        foreach ($dataArray as $item) {
+            if ($item->id == $item->id_parent) {
+                $rootItems[] = $item;
+            }
+        }
+
+        // Build hierarchy for each root item
+        $result = [];
+        foreach ($rootItems as $root) {
+            $hierarchyItem = $this->buildItemHierarchy($root, $dataArray, 0);
+            if ($hierarchyItem) {
+                $result[] = $hierarchyItem;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Recursively build hierarchy for a single item
+     */
+    private function buildItemHierarchy($item, $allData, $level = 0)
+    {
+        // Add uploaded files for this item
+        $item->uploadedFiles = DataDukung::where('id_jenis_temuan', $item->id)->get();
+
+        // Find children of this item
+        $children = [];
+        foreach ($allData as $potentialChild) {
+            // Child is an item where id_parent points to current item's id
+            // but id != id_parent (not a root item)
+            if ($potentialChild->id_parent == $item->id && $potentialChild->id != $potentialChild->id_parent) {
+                $childHierarchy = $this->buildItemHierarchy($potentialChild, $allData, $level + 1);
+                if ($childHierarchy) {
+                    $children[] = $childHierarchy;
+                }
+            }
+        }
+
+        // Create hierarchy object
+        $hierarchyItem = (object) [
+            'id' => $item->id,
+            'kode_temuan' => $item->kode_temuan ?? null,
+            'nama_temuan' => $item->nama_temuan ?? null,
+            'rekomendasi' => $item->rekomendasi ?? null,
+            'kode_rekomendasi' => $item->kode_rekomendasi ?? null,
+            'keterangan' => $item->keterangan ?? null,
+            'pengembalian' => $item->pengembalian ?? 0,
+            'level' => $level,
+            'uploadedFiles' => $item->uploadedFiles,
+            'children' => $children
+        ];
+
+        return $hierarchyItem;
     }
 
     public function datadukungtemuanEdit($id)
@@ -1815,6 +1887,165 @@ class DashboardAminTLController extends Controller
             Log::error('File Delete Error:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Delete failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload file for specific rekomendasi
+     */
+    public function uploadFileRekomendasi(Request $request)
+    {
+        try {
+            Log::info('Upload file rekomendasi request received', [
+                'all_data' => $request->all(),
+                'has_file' => $request->hasFile('file'),
+                'file_info' => $request->hasFile('file') ? [
+                    'name' => $request->file('file')->getClientOriginalName(),
+                    'size' => $request->file('file')->getSize(),
+                    'mime' => $request->file('file')->getMimeType(),
+                ] : null,
+                'id_pengawasan' => $request->id_pengawasan,
+                'id_jenis_temuan' => $request->id_jenis_temuan,
+                'keterangan_file' => $request->keterangan_file
+            ]);
+
+            // Validate request
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'file' => 'required|file|max:10240', // Max 10MB
+                'id_pengawasan' => 'required',
+                'id_jenis_temuan' => 'required',
+                'keterangan_file' => 'nullable|string|max:255'
+            ]);
+
+            if ($validator->fails()) {
+                Log::error('Validation failed', [
+                    'errors' => $validator->errors()->toArray()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The given data was invalid.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $file = $request->file('file');
+
+            if (!$file || !$file->isValid()) {
+                throw new \Exception('Invalid file uploaded');
+            }
+
+            // Create directory if not exists
+            $uploadPath = public_path('uploads/datadukung');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            // Generate unique filename
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            $filepath = 'uploads/datadukung/' . $filename;
+
+            // Move file
+            $file->move($uploadPath, $filename);
+
+            // Save to database
+            $dataDukung = DataDukung::create([
+                'id_pengawasan' => $request->id_pengawasan,
+                'id_jenis_temuan' => $request->id_jenis_temuan,
+                'nama_file' => $filepath,
+                'keterangan_file' => $request->keterangan_file
+            ]);
+
+            Log::info('File uploaded successfully for rekomendasi', [
+                'file_id' => $dataDukung->id,
+                'original_name' => $originalName,
+                'stored_path' => $filepath,
+                'id_jenis_temuan' => $request->id_jenis_temuan
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil diupload',
+                'file_id' => $dataDukung->id,
+                'stored_name' => $filename,
+                'path' => $filepath
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation exception in upload file rekomendasi', [
+                'errors' => $e->errors(),
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The given data was invalid.',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Upload file rekomendasi failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete file for specific rekomendasi
+     */
+    public function deleteFileRekomendasi(Request $request)
+    {
+        try {
+            Log::info('Delete file rekomendasi request received', [
+                'file_id' => $request->file_id
+            ]);
+
+            // Validate request
+            $request->validate([
+                'file_id' => 'required|exists:datadukung,id'
+            ]);
+
+            $file = DataDukung::findOrFail($request->file_id);
+
+            // Delete physical file
+            $filePath = public_path($file->nama_file);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+
+            // Delete from database
+            $file->delete();
+
+            Log::info('File deleted successfully for rekomendasi', [
+                'file_id' => $request->file_id,
+                'deleted_path' => $file->nama_file
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Delete file rekomendasi failed', [
+                'error' => $e->getMessage(),
+                'file_id' => $request->file_id
             ]);
 
             return response()->json([
