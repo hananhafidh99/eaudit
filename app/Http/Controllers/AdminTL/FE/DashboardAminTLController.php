@@ -307,7 +307,7 @@ class DashboardAminTLController extends Controller
                                     continue;
                                 }
 
-                                DB::table('jenis_temuans')->insert([
+                                $id_nested_child = DB::table('jenis_temuans')->insertGetId([
                                     'id_parent' => $id_child,
                                     'rekomendasi' => trim($nestedSubItem['rekomendasi']),
                                     'keterangan' => trim($nestedSubItem['keterangan'] ?? ''),
@@ -317,6 +317,26 @@ class DashboardAminTLController extends Controller
                                     'created_at' => now(),
                                     'updated_at' => now(),
                                 ]);
+
+                                // Insert level 4 (sub-sub-sub) if they exist
+                                if (isset($nestedSubItem['sub']) && is_array($nestedSubItem['sub'])) {
+                                    foreach ($nestedSubItem['sub'] as $level4Item) {
+                                        if (empty(trim($level4Item['rekomendasi'] ?? ''))) {
+                                            continue;
+                                        }
+
+                                        DB::table('jenis_temuans')->insert([
+                                            'id_parent' => $id_nested_child,
+                                            'rekomendasi' => trim($level4Item['rekomendasi']),
+                                            'keterangan' => trim($level4Item['keterangan'] ?? ''),
+                                            'id_pengawasan' => $request->id_pengawasan,
+                                            'id_penugasan' => $request->id_penugasan,
+                                            'pengembalian' => $this->cleanPengembalianValue($level4Item['pengembalian'] ?? '0'),
+                                            'created_at' => now(),
+                                            'updated_at' => now(),
+                                        ]);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1025,6 +1045,14 @@ class DashboardAminTLController extends Controller
                         ->where('id_parent', $subValue->id)
                         ->where('id', '!=', $subValue->id)
                         ->get();
+
+                    // Get level 4 data (sub-sub-sub)
+                    foreach ($subValue->sub as $nestedKey => $nestedValue) {
+                        $nestedValue->sub = DB::table('jenis_temuans')
+                            ->where('id_parent', $nestedValue->id)
+                            ->where('id', '!=', $nestedValue->id)
+                            ->get();
+                    }
                 }
             }
 
@@ -1038,13 +1066,26 @@ class DashboardAminTLController extends Controller
                         $subChildren = array();
                         if (isset($subItem->sub)) {
                             foreach ($subItem->sub as $nestedItem) {
+                                $subSubChildren = array();
+                                if (isset($nestedItem->sub)) {
+                                    foreach ($nestedItem->sub as $subNestedItem) {
+                                        $subSubChildren[] = (object) array(
+                                            'id' => $subNestedItem->id,
+                                            'kode_rekomendasi' => $subNestedItem->kode_rekomendasi,
+                                            'rekomendasi' => $subNestedItem->rekomendasi,
+                                            'keterangan' => $subNestedItem->keterangan,
+                                            'pengembalian' => $subNestedItem->pengembalian,
+                                        );
+                                    }
+                                }
+
                                 $subChildren[] = (object) array(
                                     'id' => $nestedItem->id,
                                     'kode_rekomendasi' => $nestedItem->kode_rekomendasi,
                                     'rekomendasi' => $nestedItem->rekomendasi,
                                     'keterangan' => $nestedItem->keterangan,
                                     'pengembalian' => $nestedItem->pengembalian,
-                                    'children' => array()
+                                    'children' => $subSubChildren
                                 );
                             }
                         }
@@ -1306,97 +1347,41 @@ class DashboardAminTLController extends Controller
         $token = session('ctoken');
         $pengawasan = Http::get("http://127.0.0.1:8000/api/pengawasan-edit/$id", ['token' => $token])['data'];
 
-        // Get uploaded files from database
-        $uploadedFiles = DataDukung::where('id_pengawasan', $id)->get();
-
         try {
-            // Ambil semua data dan kelompokkan berdasarkan kode_temuan dan nama_temuan
+            // Ambil semua data dari database
             $allData = DB::table('jenis_temuans')
-                ->select('*') // Pastikan semua field terambil termasuk kode_rekomendasi
                 ->where('id_pengawasan', $id)
-                ->orderBy('kode_temuan')
                 ->orderBy('id')
                 ->get();
 
-            // Debug: Log data untuk memastikan kode_rekomendasi ada
-            Log::info('Retrieved data from database:', [
-                'count' => $allData->count(),
-                'sample_data' => $allData->take(2)->toArray()
+            Log::info('Retrieved temuan data from database:', [
+                'count' => count($allData),
+                'all_data' => $allData->toArray()
             ]);
 
-            // Pisahkan parent (temuan) dan child (rekomendasi) berdasarkan id_parent
-            $parentItems = [];
-            $childItems = [];
+            // Build hierarchical structure menggunakan method khusus
+            $hierarchicalData = $this->buildHierarchicalStructure($allData);
 
-            foreach ($allData as $item) {
-                if ($item->id == $item->id_parent) {
-                    // Ini adalah parent/temuan utama
-                    $parentItems[] = $item;
-                } else {
-                    // Ini adalah child/rekomendasi
-                    $childItems[] = $item;
-                }
-            }
-
-            // Debug: Log pemisahan parent dan child
-            Log::info('Parent-Child separation:', [
-                'parent_count' => count($parentItems),
-                'child_count' => count($childItems),
-                'parent_ids' => collect($parentItems)->pluck('id')->toArray(),
-                'child_ids' => collect($childItems)->pluck('id')->toArray()
+            Log::info('Built hierarchical structure for temuan:', [
+                'structure_count' => count($hierarchicalData)
             ]);
-
-            // Kelompokkan berdasarkan parent items
-            $formattedData = [];
-            foreach ($parentItems as $parent) {
-                // Ambil semua rekomendasi yang terkait dengan parent ini (langsung maupun tidak langsung)
-                $relatedRecommendations = [];
-                foreach ($childItems as $child) {
-                    if ($this->isDescendantOf($child, $parent->id, $allData)) {
-                        $relatedRecommendations[] = $child;
-                    }
-                }
-
-                // Langsung gunakan child recommendations tanpa hierarki kompleks
-                // karena struktur yang diinginkan sederhana: Parent -> Children langsung
-
-                // Debug: Log hasil untuk setiap parent
-                Log::info('Formatted temuan data:', [
-                    'parent_id' => $parent->id,
-                    'kode_temuan' => $parent->kode_temuan,
-                    'nama_temuan' => $parent->nama_temuan,
-                    'related_recommendations_count' => count($relatedRecommendations),
-                    'related_recommendations_ids' => collect($relatedRecommendations)->pluck('id')->toArray()
-                ]);
-
-                $temuan = (object) [
-                    'kode_temuan' => $parent->kode_temuan,
-                    'nama_temuan' => $parent->nama_temuan,
-                    'recommendations' => $relatedRecommendations  // Langsung kirim child records
-                ];
-                $formattedData[] = $temuan;
-            }
 
             return view('AdminTL.datadukungtemuan_upload', [
                 'pengawasan' => $pengawasan,
-                'existingData' => collect($formattedData),
-                'uploadedFiles' => $uploadedFiles
+                'existingData' => collect($hierarchicalData)
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error loading temuan data:', [
+            Log::error('Error in datadukungtemuanEdit:', [
                 'error' => $e->getMessage(),
                 'id_pengawasan' => $id
             ]);
 
             return view('AdminTL.datadukungtemuan_upload', [
                 'pengawasan' => $pengawasan,
-                'existingData' => collect([]),
-                'uploadedFiles' => $uploadedFiles
+                'existingData' => collect([])
             ]);
         }
-
-
     }
 
     /**
