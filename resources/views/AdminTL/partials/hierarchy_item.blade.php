@@ -25,10 +25,15 @@
             $bgClass = 'bg-warning';
             $iconClass = 'fa-file';
             break;
-        default:
-            $borderClass = 'border-info';
-            $bgClass = 'bg-info';
+        case 3: // Sub-sub-sub level
+            $borderClass = 'border-danger';
+            $bgClass = 'bg-danger';
             $iconClass = 'fa-file-alt';
+            break;
+        default: // Level 4 and beyond
+            $borderClass = 'border-dark';
+            $bgClass = 'bg-dark';
+            $iconClass = 'fa-file-code';
     }
 @endphp
 
@@ -91,8 +96,8 @@
             </div>
         @endif
 
-        {{-- File Upload Section - Only available for sub level (indentLevel = 1, green color) --}}
-        @if(!empty($item->id) && $indentLevel == 1)
+        {{-- File Upload Section - Available for both root level (indentLevel = 0, blue color) and sub level (indentLevel = 1, green color) --}}
+        @if(!empty($item->id) && ($indentLevel == 0 || $indentLevel == 1))
             <div class="border-top pt-3">
                 <h6><i class="fa-solid fa-upload"></i> Upload File Data Dukung</h6>
 
@@ -106,7 +111,7 @@
                             <input type="text" class="form-control" name="keterangan_file" placeholder="Keterangan file (opsional)">
                         </div>
                         <div class="col-md-2">
-                            <button type="button" class="btn btn-primary w-100" onclick="uploadGlobalFile(this)">
+                            <button type="button" class="btn {{ $indentLevel == 0 ? 'btn-primary' : 'btn-success' }} w-100" onclick="uploadGlobalFile(this)">
                                 <i class="fa-solid fa-upload"></i> Upload
                             </button>
                         </div>

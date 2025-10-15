@@ -154,6 +154,13 @@
         position: relative;
     }
 
+    .temuan-level-3 {
+        margin-left: 90px;
+        margin-top: 2px;
+        z-index: 1;
+        position: relative;
+    }
+
     /* Ensure proper stacking */
     .temuan-hierarchy-item .temuan-hierarchy-table {
         position: relative;
@@ -162,7 +169,8 @@
 
     /* Container styling to prevent overlap */
     .temuan-sub-items-container,
-    .temuan-sub-sub-items-container {
+    .temuan-sub-sub-items-container,
+    .temuan-sub-sub-sub-items-container {
         width: 100%;
         clear: both;
         overflow: hidden;
@@ -173,6 +181,11 @@
     }
 
     .temuan-sub-sub-items-container {
+        margin-top: 2px;
+        margin-left: 0;
+    }
+
+    .temuan-sub-sub-sub-items-container {
         margin-top: 2px;
         margin-left: 0;
     }
@@ -193,6 +206,11 @@
         min-width: 700px;
     }
 
+    .temuan-level-3 .temuan-hierarchy-table {
+        width: calc(100% - 90px);
+        min-width: 650px;
+    }
+
     /* Responsive wrapper */
     .table-responsive {
         overflow-x: auto;
@@ -201,7 +219,8 @@
 
     /* Specific styling for sub levels */
     .temuan-level-1 .temuan-action-cell,
-    .temuan-level-2 .temuan-action-cell {
+    .temuan-level-2 .temuan-action-cell,
+    .temuan-level-3 .temuan-action-cell {
         position: sticky;
         right: 0;
         z-index: 10;
@@ -216,9 +235,14 @@
         max-width: calc(100% - 280px);
     }
 
+    .temuan-level-3 .temuan-content-cell {
+        max-width: calc(100% - 310px);
+    }
+
     /* Ensure buttons stack properly */
     .temuan-level-1 .temuan-action-cell .btn,
-    .temuan-level-2 .temuan-action-cell .btn {
+    .temuan-level-2 .temuan-action-cell .btn,
+    .temuan-level-3 .temuan-action-cell .btn {
         display: block !important;
         margin: 2px auto !important;
         width: 30px;
@@ -369,7 +393,8 @@
         }
 
         .temuan-level-1 .temuan-action-cell,
-        .temuan-level-2 .temuan-action-cell {
+        .temuan-level-2 .temuan-action-cell,
+        .temuan-level-3 .temuan-action-cell {
             background-color: #343a40 !important;
             box-shadow: -2px 0 4px rgba(0,0,0,0.3);
         }
@@ -444,7 +469,8 @@
     }
 
     [data-bs-theme="dark"] .temuan-level-1 .temuan-action-cell,
-    [data-bs-theme="dark"] .temuan-level-2 .temuan-action-cell {
+    [data-bs-theme="dark"] .temuan-level-2 .temuan-action-cell,
+    [data-bs-theme="dark"] .temuan-level-3 .temuan-action-cell {
         background-color: #343a40 !important;
         box-shadow: -2px 0 4px rgba(0,0,0,0.3);
     }
@@ -602,12 +628,58 @@
                                                                         </div>
                                                                     </td>
                                                                     <td class="temuan-action-cell">
+                                                                        <button type="button" class="btn btn-success btn-sm temuan-add-sub-sub-sub-item"
+                                                                                onclick="temuanAddSubSubSubItem({{ $key }}, {{ $subKey }}, {{ $nestedKey }})"
+                                                                                title="Tambah Sub-Sub-Sub Item">
+                                                                            <i class="fa-solid fa-plus"></i>
+                                                                        </button>
                                                                         <button type="button" class="btn btn-danger btn-sm temuan-remove-item" title="Hapus Sub-Sub Item">
                                                                             <i class="fa-solid fa-minus"></i>
                                                                         </button>
                                                                     </td>
                                                                 </tr>
                                                             </table>
+
+                                                            <!-- Sub-Sub-Sub Items Container -->
+                                                            <div class="temuan-sub-sub-sub-items-container">
+                                                                @if(isset($nestedItem->children) && is_countable($nestedItem->children) && count($nestedItem->children) > 0)
+                                                                    @foreach($nestedItem->children as $subNestedKey => $subNestedItem)
+                                                                        <!-- Sub-Sub-Sub Item (Level 4) -->
+                                                                        <div class="temuan-hierarchy-item temuan-level-3" data-level="3" data-parent="{{ $key }}-{{ $subKey }}-{{ $nestedKey }}" data-index="{{ $subNestedKey }}">
+                                                                            <table class="temuan-hierarchy-table">
+                                                                                <tr>
+                                                                                    <td class="temuan-number-cell">{{ $loop->parent->parent->parent->iteration }}.{{ $loop->parent->parent->iteration }}.{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
+                                                                                    <td class="temuan-content-cell">
+                                                                                        <div class="temuan-field-group">
+                                                                                            <div class="temuan-field-row">
+                                                                                                <label>Kode Rekomendasi</label>
+                                                                                                <input type="text" class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][kode_rekomendasi]" value="{{ $subNestedItem->kode_rekomendasi ?? '' }}" placeholder="Contoh: REC-001.1.1.1">
+                                                                                            </div>
+                                                                                            <div class="temuan-field-row">
+                                                                                                <label>Rekomendasi</label>
+                                                                                                <textarea class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][rekomendasi]">{{ $subNestedItem->rekomendasi ?? '' }}</textarea>
+                                                                                            </div>
+                                                                                            <div class="temuan-field-row">
+                                                                                                <label>Keterangan</label>
+                                                                                                <textarea class="form-control" name="tipeB[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][keterangan]">{{ $subNestedItem->keterangan ?? '' }}</textarea>
+                                                                                            </div>
+                                                                                            <div class="temuan-field-row">
+                                                                                                <label>Pengembalian</label>
+                                                                                                <input type="text" class="form-control tanparupiah" name="tipeB[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][pengembalian]" value="{{ isset($subNestedItem->pengembalian) && is_numeric($subNestedItem->pengembalian) ? number_format($subNestedItem->pengembalian,0,',','.') : '0' }}">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td class="temuan-action-cell">
+                                                                                        <button type="button" class="btn btn-danger btn-sm temuan-remove-item" title="Hapus Sub-Sub-Sub Item">
+                                                                                            <i class="fa-solid fa-minus"></i>
+                                                                                        </button>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </table>
+                                                                        </div>
+                                                                    @endforeach
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     @endforeach
                                                 @endif
@@ -704,6 +776,7 @@
     let temuanMainItemCounter = @if(isset($existingData) && is_countable($existingData) && count($existingData) > 0) {{ count($existingData) }} @else 1 @endif;
     let temuanSubItemCounters = {};
     let temuanSubSubItemCounters = {};
+    let temuanSubSubSubItemCounters = {};
 
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize counters based on existing data
@@ -820,6 +893,31 @@
 
         if (!temuanSubSubItemCounters[level1]) temuanSubSubItemCounters[level1] = {};
         temuanSubSubItemCounters[level1][level2] = (temuanSubSubItemCounters[level1][level2] || 0) + 1;
+        updateTemuanNumbering();
+        ensureTemuanButtonsVisible();
+    }
+
+    function temuanAddSubSubSubItem(level1, level2, level3) {
+        const parentSubSubItem = document.querySelector(`.temuan-hierarchy-item[data-level="2"][data-parent="${level1}-${level2}"][data-index="${level3}"]`);
+        if (!parentSubSubItem) return;
+
+        const subSubSubContainer = parentSubSubItem.querySelector('.temuan-sub-sub-sub-items-container');
+        if (!subSubSubContainer) {
+            // Create container if it doesn't exist
+            const table = parentSubSubItem.querySelector('.temuan-hierarchy-table');
+            const containerHTML = `<div class="temuan-sub-sub-sub-items-container"></div>`;
+            table.insertAdjacentHTML('afterend', containerHTML);
+        }
+
+        const container = parentSubSubItem.querySelector('.temuan-sub-sub-sub-items-container');
+        const newSubSubSubIndex = temuanSubSubSubItemCounters[level1]?.[level2]?.[level3] || 0;
+
+        const newSubSubSubItem = createTemuanSubSubSubItemHTML(level1, level2, level3, newSubSubSubIndex);
+        container.insertAdjacentHTML('beforeend', newSubSubSubItem);
+
+        if (!temuanSubSubSubItemCounters[level1]) temuanSubSubSubItemCounters[level1] = {};
+        if (!temuanSubSubSubItemCounters[level1][level2]) temuanSubSubSubItemCounters[level1][level2] = {};
+        temuanSubSubSubItemCounters[level1][level2][level3] = (temuanSubSubSubItemCounters[level1][level2][level3] || 0) + 1;
         updateTemuanNumbering();
         ensureTemuanButtonsVisible();
     }
@@ -953,7 +1051,50 @@
                             </div>
                         </td>
                         <td class="temuan-action-cell">
+                            <button type="button" class="btn btn-success btn-sm temuan-add-sub-sub-sub-item"
+                                    onclick="temuanAddSubSubSubItem(${level1}, ${level2}, ${level3})"
+                                    title="Tambah Sub-Sub-Sub Item">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
                             <button type="button" class="btn btn-danger btn-sm temuan-remove-item" title="Hapus Sub-Sub Item">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="temuan-sub-sub-sub-items-container"></div>
+            </div>
+        `;
+    }
+
+    function createTemuanSubSubSubItemHTML(level1, level2, level3, level4) {
+        return `
+            <div class="temuan-hierarchy-item temuan-level-3" data-level="3" data-parent="${level1}-${level2}-${level3}" data-index="${level4}">
+                <table class="temuan-hierarchy-table">
+                    <tr>
+                        <td class="temuan-number-cell">${parseInt(level1) + 1}.${parseInt(level2) + 1}.${parseInt(level3) + 1}.${level4 + 1}</td>
+                        <td class="temuan-content-cell">
+                            <div class="temuan-field-group">
+                                <div class="temuan-field-row">
+                                    <label>Kode Rekomendasi</label>
+                                    <input type="text" class="form-control" name="tipeB[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][kode_rekomendasi]" placeholder="Contoh: REC-001.1.1.1">
+                                </div>
+                                <div class="temuan-field-row">
+                                    <label>Rekomendasi</label>
+                                    <textarea class="form-control" name="tipeB[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][rekomendasi]"></textarea>
+                                </div>
+                                <div class="temuan-field-row">
+                                    <label>Keterangan</label>
+                                    <textarea class="form-control" name="tipeB[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][keterangan]"></textarea>
+                                </div>
+                                <div class="temuan-field-row">
+                                    <label>Pengembalian</label>
+                                    <input type="text" class="form-control tanparupiah" name="tipeB[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][pengembalian]" value="0">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="temuan-action-cell">
+                            <button type="button" class="btn btn-danger btn-sm temuan-remove-item" title="Hapus Sub-Sub-Sub Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
@@ -987,6 +1128,15 @@
                     if (subSubNumberCell) {
                         subSubNumberCell.textContent = `${index + 1}.${subIndex + 1}.${subSubIndex + 1}`;
                     }
+
+                    // Update sub-sub-sub item numbering
+                    const subSubSubItems = subSubItem.querySelectorAll('.temuan-hierarchy-item[data-level="3"]');
+                    subSubSubItems.forEach((subSubSubItem, subSubSubIndex) => {
+                        const subSubSubNumberCell = subSubSubItem.querySelector('.temuan-number-cell');
+                        if (subSubSubNumberCell) {
+                            subSubSubNumberCell.textContent = `${index + 1}.${subIndex + 1}.${subSubIndex + 1}.${subSubSubIndex + 1}`;
+                        }
+                    });
                 });
             });
         });

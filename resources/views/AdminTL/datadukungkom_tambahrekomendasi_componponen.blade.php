@@ -162,6 +162,13 @@
         position: relative;
     }
 
+    .level-3 {
+        margin-left: 90px;
+        margin-top: 2px;
+        z-index: 1;
+        position: relative;
+    }
+
     /* Ensure proper stacking */
     .hierarchy-item .hierarchy-table {
         position: relative;
@@ -170,7 +177,8 @@
 
     /* Container styling to prevent overlap */
     .sub-items-container,
-    .sub-sub-items-container {
+    .sub-sub-items-container,
+    .sub-sub-sub-items-container {
         width: 100%;
         clear: both;
         overflow: hidden;
@@ -183,6 +191,11 @@
     .sub-sub-items-container {
         margin-top: 2px;
         margin-left: 0; /* Reset margin since level-2 already has margin */
+    }
+
+    .sub-sub-sub-items-container {
+        margin-top: 2px;
+        margin-left: 0; /* Reset margin since level-3 already has margin */
     }
 
     /* Fix width calculation for indented items */
@@ -201,6 +214,11 @@
         min-width: 700px;
     }
 
+    .level-3 .hierarchy-table {
+        width: calc(100% - 90px);
+        min-width: 650px;
+    }
+
     /* Responsive wrapper */
     .table-responsive {
         overflow-x: auto;
@@ -209,7 +227,8 @@
 
     /* Specific styling for sub levels */
     .level-1 .action-cell,
-    .level-2 .action-cell {
+    .level-2 .action-cell,
+    .level-3 .action-cell {
         position: sticky;
         right: 0;
         z-index: 10;
@@ -224,9 +243,14 @@
         max-width: calc(100% - 280px);
     }
 
+    .level-3 .content-cell {
+        max-width: calc(100% - 310px);
+    }
+
     /* Ensure buttons stack properly */
     .level-1 .action-cell .btn,
-    .level-2 .action-cell .btn {
+    .level-2 .action-cell .btn,
+    .level-3 .action-cell .btn {
         display: block !important;
         margin: 2px auto !important;
         width: 30px;
@@ -352,7 +376,8 @@
         }
 
         .level-1 .action-cell,
-        .level-2 .action-cell {
+        .level-2 .action-cell,
+        .level-3 .action-cell {
             background-color: #343a40 !important;
             box-shadow: -2px 0 4px rgba(0,0,0,0.3);
         }
@@ -427,7 +452,8 @@
     }
 
     [data-bs-theme="dark"] .level-1 .action-cell,
-    [data-bs-theme="dark"] .level-2 .action-cell {
+    [data-bs-theme="dark"] .level-2 .action-cell,
+    [data-bs-theme="dark"] .level-3 .action-cell {
         background-color: #343a40 !important;
         box-shadow: -2px 0 4px rgba(0,0,0,0.3);
     }
@@ -650,12 +676,54 @@
                                                                         </div>
                                                                     </td>
                                                                     <td class="action-cell">
+                                                                        <button type="button" class="btn btn-success btn-sm add-sub-sub-sub-item"
+                                                                                onclick="addSubSubSubItem({{ $key }}, {{ $subKey }}, {{ $nestedKey }})"
+                                                                                title="Tambah Sub-Sub-Sub Item">
+                                                                            <i class="fa-solid fa-plus"></i>
+                                                                        </button>
                                                                         <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}_{{ $nestedKey }}">
                                                                             <i class="fa-solid fa-minus"></i>
                                                                         </button>
                                                                     </td>
                                                                 </tr>
                                                             </table>
+
+                                                            <!-- Sub-Sub-Sub Items Container -->
+                                                            <div class="sub-sub-sub-items-container">
+                                                                @if(isset($nestedItem->sub))
+                                                                    @foreach($nestedItem->sub as $subNestedKey => $subNestedItem)
+                                                                        <!-- Sub-Sub-Sub Item (Level 4) -->
+                                                                        <div class="hierarchy-item level-3" data-level="3" data-parent="{{ $key }}-{{ $subKey }}-{{ $nestedKey }}" data-index="{{ $subNestedKey }}">
+                                                                            <table class="hierarchy-table">
+                                                                                <tr>
+                                                                                    <td class="number-cell">{{ $loop->parent->parent->parent->iteration }}.{{ $loop->parent->parent->iteration }}.{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
+                                                                                    <td class="content-cell">
+                                                                                        <div class="field-group">
+                                                                                            <div class="field-row">
+                                                                                                <label>rekomendasi</label>
+                                                                                                <textarea class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][rekomendasi]" required placeholder="Masukkan sub-sub-sub rekomendasi...">{{ $subNestedItem->rekomendasi }}</textarea>
+                                                                                            </div>
+                                                                                            <div class="field-row">
+                                                                                                <label>keterangan</label>
+                                                                                                <input type="text" class="form-control" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][keterangan]" value="{{ $subNestedItem->keterangan }}">
+                                                                                            </div>
+                                                                                            <div class="field-row">
+                                                                                                <label>pengembalian</label>
+                                                                                                <input type="text" class="form-control tanparupiah" name="tipeA[{{ $key }}][sub][{{ $subKey }}][sub][{{ $nestedKey }}][sub][{{ $subNestedKey }}][pengembalian]" value="{{ number_format($subNestedItem->pengembalian,0,',','.') }}">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td class="action-cell">
+                                                                                        <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}_{{ $nestedKey }}_{{ $subNestedKey }}">
+                                                                                            <i class="fa-solid fa-minus"></i>
+                                                                                        </button>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </table>
+                                                                        </div>
+                                                                    @endforeach
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     @endforeach
                                                 @endif
@@ -749,6 +817,7 @@
     let mainItemCounter = @if(isset($data) && count($data) > 0) {{ count($data) }} @else 1 @endif;
     let subItemCounters = {};
     let subSubItemCounters = {};
+    let subSubSubItemCounters = {};
 
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM Content Loaded - Initializing hierarchy component');
@@ -912,6 +981,31 @@
         ensureButtonsVisible();
     }
 
+    function addSubSubSubItem(level1, level2, level3) {
+        const parentSubSubItem = document.querySelector(`.hierarchy-item[data-level="2"][data-parent="${level1}-${level2}"][data-index="${level3}"]`);
+        if (!parentSubSubItem) return;
+
+        const subSubSubContainer = parentSubSubItem.querySelector('.sub-sub-sub-items-container');
+        if (!subSubSubContainer) {
+            // Create container if it doesn't exist
+            const table = parentSubSubItem.querySelector('.hierarchy-table');
+            const containerHTML = `<div class="sub-sub-sub-items-container"></div>`;
+            table.insertAdjacentHTML('afterend', containerHTML);
+        }
+
+        const container = parentSubSubItem.querySelector('.sub-sub-sub-items-container');
+        const newSubSubSubIndex = subSubSubItemCounters[level1]?.[level2]?.[level3] || 0;
+
+        const newSubSubSubItem = createSubSubSubItemHTML(level1, level2, level3, newSubSubSubIndex);
+        container.insertAdjacentHTML('beforeend', newSubSubSubItem);
+
+        if (!subSubSubItemCounters[level1]) subSubSubItemCounters[level1] = {};
+        if (!subSubSubItemCounters[level1][level2]) subSubSubItemCounters[level1][level2] = {};
+        subSubSubItemCounters[level1][level2][level3] = (subSubSubItemCounters[level1][level2][level3] || 0) + 1;
+        updateNumbering();
+        ensureButtonsVisible();
+    }
+
     function removeItem(button) {
         const item = button.closest('.hierarchy-item');
         if (!item) return;
@@ -1030,7 +1124,46 @@
                             </div>
                         </td>
                         <td class="action-cell">
+                            <button type="button" class="btn btn-success btn-sm add-sub-sub-sub-item"
+                                    onclick="addSubSubSubItem(${level1}, ${level2}, ${level3})"
+                                    title="Tambah Sub-Sub-Sub Item">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
                             <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub-Sub Item">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="sub-sub-sub-items-container"></div>
+            </div>
+        `;
+    }
+
+    function createSubSubSubItemHTML(level1, level2, level3, level4) {
+        return `
+            <div class="hierarchy-item level-3" data-level="3" data-parent="${level1}-${level2}-${level3}" data-index="${level4}">
+                <table class="hierarchy-table">
+                    <tr>
+                        <td class="number-cell">${parseInt(level1) + 1}.${parseInt(level2) + 1}.${parseInt(level3) + 1}.${level4 + 1}</td>
+                        <td class="content-cell">
+                            <div class="field-group">
+                                <div class="field-row">
+                                    <label>rekomendasi</label>
+                                    <textarea class="form-control" name="tipeA[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][rekomendasi]" required placeholder="Masukkan sub-sub-sub rekomendasi..."></textarea>
+                                </div>
+                                <div class="field-row">
+                                    <label>keterangan</label>
+                                    <input type="text" class="form-control" name="tipeA[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][keterangan]">
+                                </div>
+                                <div class="field-row">
+                                    <label>pengembalian</label>
+                                    <input type="text" class="form-control tanparupiah" name="tipeA[${level1}][sub][${level2}][sub][${level3}][sub][${level4}][pengembalian]" value="0">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="action-cell">
+                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub-Sub-Sub Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
@@ -1064,6 +1197,15 @@
                     if (subSubNumberCell) {
                         subSubNumberCell.textContent = `${index + 1}.${subIndex + 1}.${subSubIndex + 1}`;
                     }
+
+                    // Update sub-sub-sub item numbering
+                    const subSubSubItems = subSubItem.querySelectorAll('.hierarchy-item[data-level="3"]');
+                    subSubSubItems.forEach((subSubSubItem, subSubSubIndex) => {
+                        const subSubSubNumberCell = subSubSubItem.querySelector('.number-cell');
+                        if (subSubSubNumberCell) {
+                            subSubSubNumberCell.textContent = `${index + 1}.${subIndex + 1}.${subSubIndex + 1}.${subSubSubIndex + 1}`;
+                        }
+                    });
                 });
             });
         });

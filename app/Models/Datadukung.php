@@ -15,11 +15,7 @@ class DataDukung extends Model
         'id_pengawasan',
         'id_jenis_temuan',
         'nama_file',
-        'keterangan_file',
-        'original_name',
-        'file_path',
-        'file_size',
-        'file_type'
+        'keterangan_file'
     ];
 
     protected $casts = [

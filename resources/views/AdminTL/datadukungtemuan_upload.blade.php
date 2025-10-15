@@ -1,77 +1,6 @@
 @extends('template')
 @section('content')
 <style>
-    #mytable {
-      font-family: Arial, Helvetica, sans-serif;
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    #mytable td, #mytable th {
-      border: 2px solid #000;
-      padding: 8px;
-    }
-
-    #mytable th {
-      padding-top: 12px;
-      padding-bottom: 12px;
-      text-align: left;
-      background-color: #04AA6D;
-      color: white;
-    }
-
-    #mytable1 {
-      font-family: Arial, Helvetica, sans-serif;
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    #mytable1 td, #mytable th {
-      border: 2px solid #000;
-      padding: 8px;
-    }
-
-    #mytable1 th {
-      padding-top: 12px;
-      padding-bottom: 12px;
-      text-align: left;
-      background-color:#32CD32;
-      color: white;
-    }
-
-     table #baris1 .kolom1{
-        margin-left: 10px;
-    }
-    table #baris .kolom{
-        margin-left: 15px;
-    }
-    table #baris2 .kolom2{
-        margin-left: 20px;
-    }
-
-    /* Parent Temuan Row Styling */
-    .parent-temuan-row {
-        background-color: #f8f9fa;
-        font-weight: bold;
-    }
-
-    /* Recommendation Level Styling */
-    .recommendation-level {
-        background-color: #fff;
-    }
-
-    .sub-level-1 {
-        background-color: #f9f9f9;
-    }
-
-    .sub-level-2 {
-        background-color: #f5f5f5;
-    }
-
-    .sub-level-3 {
-        background-color: #f1f1f1;
-    }
-
     /* Upload Progress Styles */
     #progressBarsContainer {
         max-height: 400px;
@@ -249,215 +178,94 @@
     </div>
 </div>
 
-<div class="card mb-4" style="width: 100%; display: none
-">
-<div class="card-header"> Jenis Temuan dan Rekomendasi</div>
+<!-- Data Temuan dengan Upload File -->
+<div class="card mb-4" style="width: 100%;">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fa-solid fa-list-check"></i> Data Temuan & Rekomendasi & Upload File Pendukung
+        </h5>
+    </div>
     <div class="card-body">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        {{-- Debug: Show data structure --}}
+        @php
+            if (app()->environment(['local', 'testing'])) {
+                echo "<!-- DEBUG: existingData count: " . (isset($existingData) ? count($existingData) : 0) . " -->";
+                if (isset($existingData) && count($existingData) > 0) {
+                    echo "<!-- DEBUG: First item structure: " . json_encode($existingData->first()) . " -->";
+                }
+            }
+        @endphp
+
+        @if(isset($existingData) && count($existingData) > 0)
+            @php $itemCounter = 1; @endphp
+            @foreach($existingData as $item)
+                @include('AdminTL.partials.hierarchy_item', ['item' => $item, 'itemNumber' => $itemCounter, 'parentNumber' => ''])
+                @php $itemCounter++; @endphp
+            @endforeach
+        @else
+            <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-exclamation-circle fa-3x mb-3"></i>
+                <h5>Belum Ada Data Temuan & Rekomendasi</h5>
+                <p>Silakan buat data temuan dan rekomendasi terlebih dahulu.</p>
             </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        {{-- Display existing data --}}
-        {{-- @dd('ANW') --}}
-        @if(isset($existingData) && $existingData->count() > 0)
-        <div class="card mb-4" style="display: none">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-list"></i> Data Temuan & Rekomendasi yang Sudah Ada</h5>
-            </div>
-            <div class="card-body">
-                @foreach($existingData as $parentIndex => $parent)
-                <div class="mb-4 border rounded p-3">
-                    <div class="row mb-3 bg-light p-2 rounded">
-                        <div class="col-md-3">
-                            <strong>Kode Temuan:</strong><br>
-                            <span class="badge bg-primary">{{ $parent->kode_temuan ?? '-' }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Nama Temuan:</strong><br>
-                            <span class="text-primary fw-bold">{{ $parent->nama_temuan ?? '-' }}</span>
-                        </div>
-                    </div>
-
-                    {{-- Display recommendations hierarchically --}}
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead class="table-dark" >
-                                <tr >
-                                    <th width="5%" style="color: white">No</th>
-                                    <th width="8%" style="color: white">Kode Temuan</th>
-                                    <th width="12%" style="color: white">Nama Temuan</th>
-                                    <th width="8%" style="color: white">Kode Rekomendasi</th>
-                                    <th width="25%" style="color: white">Rekomendasi</th>
-                                    <th width="17%" style="color: white">Keterangan</th>
-                                    <th width="15%" style="color: white">Pengembalian</th>
-                                    <th width="10%" style="color: white">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody style="color: white">
-                                {{-- Display all recommendations for this temuan --}}
-                                @if($parent->recommendations && count($parent->recommendations) > 0)
-                                    @php
-                                        $rekomCounter = 1;
-                                        $renderRecommendations = function($recommendations, $parent = null) use (&$renderRecommendations, &$rekomCounter) {
-                                            // Show parent row (Kode Temuan + Nama Temuan ONLY)
-                                            echo '<tr class="parent-temuan-row">';
-                                            echo '<td><strong>' . $rekomCounter . '</strong></td>';
-                                            echo '<td><span class="badge bg-primary">' . ($parent->kode_temuan ?? '-') . '</span></td>';
-                                            echo '<td><strong>' . ($parent->nama_temuan ?? '-') . '</strong></td>';
-                                            echo '<td colspan="5" class="text-muted"><em>Temuan Utama - Tidak ada Kode Rekomendasi</em></td>';
-                                            echo '</tr>';
-
-                                            // Show child recommendations
-                                            foreach ($recommendations as $rekomendasiIndex => $rekom) {
-                                                $subNumber = $rekomCounter . '.' . ($rekomendasiIndex + 1);
-
-                                                echo '<tr class="recommendation-level">';
-
-                                                // Nomor sub rekomendasi
-                                                echo '<td>&nbsp;&nbsp;&nbsp;&nbsp;<strong>' . $subNumber . '</strong></td>';
-
-                                                // Kode Temuan - kosong untuk rekomendasi
-                                                echo '<td></td>';
-
-                                                // Nama Temuan - kosong untuk rekomendasi
-                                                echo '<td></td>';
-
-                                                // Kode Rekomendasi - hanya untuk rekomendasi
-                                                echo '<td><span class="badge bg-success">' . ($rekom->kode_rekomendasi ?? '-') . '</span></td>';
-
-                                                // Rekomendasi
-                                                echo '<td><strong>' . ($rekom->rekomendasi ?? '-') . '</strong></td>';
-
-                                                // Keterangan
-                                                echo '<td>' . ($rekom->keterangan ?? '-') . '</td>';
-
-                                                // Pengembalian
-                                                echo '<td>';
-                                                if ($rekom->pengembalian && $rekom->pengembalian > 0) {
-                                                    echo '<span class="text-success fw-bold">Rp ' . number_format($rekom->pengembalian, 0, ',', '.') . '</span>';
-                                                } else {
-                                                    echo '<span class="text-muted">-</span>';
-                                                }
-                                                echo '</td>';
-
-                                                // Action buttons
-                                                echo '<td>';
-                                                echo '<button type="button" class="btn btn-warning btn-sm edit-rekom-btn" ';
-                                                echo 'data-id="' . $rekom->id . '" ';
-                                                echo 'data-kode-rekomendasi="' . htmlspecialchars($rekom->kode_rekomendasi ?? '') . '" ';
-                                                echo 'data-rekomendasi="' . htmlspecialchars($rekom->rekomendasi ?? '') . '" ';
-                                                echo 'data-keterangan="' . htmlspecialchars($rekom->keterangan ?? '') . '" ';
-                                                echo 'data-pengembalian="' . ($rekom->pengembalian ?? 0) . '" ';
-                                                echo 'data-kode-temuan="' . htmlspecialchars($parent->kode_temuan ?? '') . '" ';
-                                                echo 'data-nama-temuan="' . htmlspecialchars($parent->nama_temuan ?? '') . '" ';
-                                                echo 'title="Edit Rekomendasi">';
-                                                echo '<i class="fas fa-edit"></i>';
-                                                echo '</button> ';
-                                                echo '</td>';
-                                                echo '</tr>';
-                                            }
-
-                                            // Increment counter setelah selesai render satu parent
-                                            $rekomCounter++;
-                                        };
-
-                                        $renderRecommendations($parent->recommendations, $parent);
-                                    @endphp
-                                @else
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted">Tidak ada rekomendasi</td>
-                                    </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
         @endif
     </div>
 </div>
 
-{{-- Include Temuan Component --}}
-@include('AdminTL.datadukungkom_tambahtemuan_componponen', ['existingData' => isset($existingData) ? $existingData : [], 'pengawasan' => $pengawasan])
-
+<!-- Legacy Upload Section (keep for now) -->
 <div class="card mt-3" style="width: 100%; ">
-    <div class="card-header">Upload Data Dukung</div>
+    <div class="card-header">Upload Data Dukung Global</div>
     <div class="card-body">
-        <form id="uploadForm" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
-            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
-
-            <div class="row">
-                <div class="col-12">
-                    <input type="file" id="fileUpload" multiple placeholder="choose file or browse" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.svg,.zip,.docx,.xlsx,.doc,.xls,.ppt,.pptx"/>
-                </div>
-            </div>
-            <button type="button" onclick="uploadFiles()" class="mt-3 btn btn-info">
-                <i class="fas fa-upload"></i> Upload
-            </button>
-        </form>
-
-        <!-- Progress container -->
-        <div class="mt-4" id="uploadProgress" style="display: none;">
-            <h6>Upload Progress:</h6>
-            <div id="progressBarsContainer">
-                <!-- Progress bars will be dynamically added here -->
-            </div>
+        <div class="text-center text-muted">
+            <p><em>Upload file per temuan/rekomendasi sudah tersedia di setiap item di atas.</em></p>
         </div>
-
-        <!-- Upload status -->
-        <div id="uploadStatus" class="mt-3"></div>
-
-        <br>
     </div>
 </div>
 
 <div class="card mt-3" style="width: 100%; ">
     <div class="card-header">Berkas Data Dukung</div>
     <div class="card-body">
-        @if(isset($uploadedFiles) && $uploadedFiles->count() > 0)
+        @php
+            // Get all uploaded files for this pengawasan
+            $allUploadedFiles = \App\Models\DataDukung::where('id_pengawasan', $pengawasan['id'])->get();
+        @endphp
+
+        @if($allUploadedFiles->count() > 0)
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>No</th>
                             <th>Nama File</th>
+                            <th>Terkait Item</th>
+                            <th>Keterangan</th>
                             <th>Tanggal Upload</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($uploadedFiles as $key => $file)
+                        @foreach($allUploadedFiles as $file)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <i class="fas fa-file"></i>
                                 {{ basename($file->nama_file) }}
                             </td>
+                            <td>
+                                @if($file->id_jenis_temuan)
+                                    @php
+                                        $relatedItem = DB::table('jenis_temuans')->find($file->id_jenis_temuan);
+                                    @endphp
+                                    @if($relatedItem)
+                                        {{ $relatedItem->rekomendasi ?? $relatedItem->nama_temuan ?? 'N/A' }}
+                                    @else
+                                        <span class="text-muted">Item terhapus</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Global</span>
+                                @endif
+                            </td>
+                            <td>{{ $file->keterangan_file ?? '-' }}</td>
                             <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
                             <td>
                                 <a href="{{ asset($file->nama_file) }}" target="_blank" class="btn btn-sm btn-info">
@@ -466,7 +274,7 @@
                                 <a href="{{ asset($file->nama_file) }}" download class="btn btn-sm btn-success">
                                     <i class="fas fa-download"></i> Download
                                 </a>
-                                <button type="button" onclick="deleteUploadedFile({{ $file->id }}, this)" class="btn btn-sm btn-danger">
+                                <button type="button" onclick="deleteFile({{ $file->id }}, this)" class="btn btn-sm btn-danger">
                                     <i class="fas fa-trash"></i> Hapus
                                 </button>
                             </td>
@@ -481,6 +289,46 @@
                 <p>Belum ada file yang diupload</p>
             </div>
         @endif
+    </div>
+</div>
+
+<!-- Legacy Upload Section -->
+<div class="card mt-3" style="width: 100%;">
+    <div class="card-header">Upload Data Dukung Global</div>
+    <div class="card-body">
+        <form id="uploadForm" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="id_pengawasan" value="{{ $pengawasan['id'] }}">
+            <input type="hidden" name="id_penugasan" value="{{ $pengawasan['id_penugasan'] }}">
+
+            <div class="row">
+                <div class="col-12">
+                    <input type="file" id="fileUpload" multiple placeholder="choose file or browse" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.svg,.zip,.docx,.xlsx,.doc,.xls,.ppt,.pptx"/>
+                </div>
+            </div>
+            <button type="button" onclick="uploadFiles()" class="mt-3 btn btn-info">
+                <i class="fas fa-upload"></i> Upload Global
+            </button>
+        </form>
+
+        <!-- Progress container -->
+        <div class="mt-4" id="uploadProgress" style="display: none;">
+            <h6>Upload Progress:</h6>
+            <div id="progressBarsContainer">
+                <!-- Progress bars will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Upload status -->
+        <div id="uploadStatus" class="mt-3"></div>
+
+        <div class="mt-3">
+            <small class="text-muted">
+                <i class="fa-solid fa-info-circle"></i>
+                File yang diupload di sini akan menjadi file umum yang tidak terkait dengan temuan/rekomendasi spesifik.
+                Untuk file yang terkait dengan item tertentu, gunakan fitur upload di setiap item.
+            </small>
+        </div>
     </div>
 </div>
 
@@ -524,11 +372,11 @@
 
             // Upload each valid file
             for (var i = 0; i < validFiles.length; i++) {
-                uploadFile(validFiles[i], i + 1);
+                uploadGlobalFile(validFiles[i], i + 1);
             }
         }
 
-        function uploadFile(file, index) {
+        function uploadGlobalFile(file, index) {
             console.log('Starting upload for file:', file.name, 'Size:', file.size);
 
             var formData = new FormData();
@@ -623,7 +471,7 @@
                         deleteBtn.className = 'btn btn-sm btn-outline-danger';
                         deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
                         deleteBtn.onclick = function() {
-                            deleteFile(response.file_id, progressContainer);
+                            deleteGlobalFile(response.file_id, progressContainer);
                         };
                         actionButtons.appendChild(deleteBtn);
 
@@ -669,7 +517,7 @@
             xhr.send(formData);
         }
 
-        function deleteFile(fileId, progressContainer) {
+        function deleteGlobalFile(fileId, progressContainer) {
             if (!confirm('Are you sure you want to delete this file?')) {
                 return;
             }
@@ -774,6 +622,150 @@
 
             xhr.open('POST', '{{ url("adminTL/rekom/delete-file") }}', true);
             xhr.send(formData);
+        }
+
+        // Handle file upload per item (for hierarchy items)
+        function uploadFile(button) {
+            const form = button.closest('.file-upload-form');
+            const fileInput = form.querySelector('input[type="file"]');
+            const keteranganInput = form.querySelector('input[name="keterangan_file"]');
+            const rekomendasiId = form.dataset.rekomendasiId;
+
+            if (!fileInput.files[0]) {
+                alert('Pilih file terlebih dahulu!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('keterangan_file', keteranganInput.value);
+            formData.append('id_jenis_temuan', rekomendasiId);
+            formData.append('id_pengawasan', '{{ $pengawasan["id"] }}');
+            formData.append('_token', '{{ csrf_token() }}');
+
+            // Disable button and show loading
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+            fetch('{{ url("adminTL/rekom/upload-file-rekomendasi") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('File berhasil diupload!');
+                    location.reload(); // Refresh to show new file
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat upload file');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+            });
+        }
+
+        // Handle file upload for hierarchy items (uploadGlobalFile function overload for buttons)
+        function uploadGlobalFile(button) {
+            // If button is passed, it's from hierarchy upload form
+            if (button && typeof button === 'object' && button.closest) {
+                const form = button.closest('.file-upload-form');
+                const fileInput = form.querySelector('input[name="file"]');
+                const keteranganInput = form.querySelector('input[name="keterangan_file"]');
+                const rekomendasiId = form.dataset.rekomendasiId;
+
+                if (!fileInput.files[0]) {
+                    alert('Pilih file terlebih dahulu!');
+                    return;
+                }
+
+                // Debug: Log the data being sent
+                console.log('Sending upload request with data:', {
+                    file_name: fileInput.files[0].name,
+                    file_size: fileInput.files[0].size,
+                    keterangan_file: keteranganInput.value,
+                    id_jenis_temuan: rekomendasiId,
+                    id_pengawasan: '{{ $pengawasan["id"] }}'
+                });
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('keterangan_file', keteranganInput.value);
+                formData.append('id_jenis_temuan', rekomendasiId);
+                formData.append('id_pengawasan', '{{ $pengawasan["id"] }}');
+                formData.append('_token', '{{ csrf_token() }}');
+
+                // Disable button and show loading
+                button.disabled = true;
+                button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+                fetch('{{ url("adminTL/rekom/upload-file-rekomendasi") }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        alert('File berhasil diupload!');
+                        location.reload(); // Refresh to show new file
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat upload file: ' + error.message);
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+                });
+            }
+            // If not a button, it's the original global upload function (keep existing logic for files)
+        }
+
+        // Handle file deletion for hierarchy items
+        function deleteFile(fileId, buttonElement) {
+            if (!confirm('Yakin ingin menghapus file ini?')) {
+                return;
+            }
+
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            const formData = new FormData();
+            formData.append('file_id', fileId);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch('{{ url("adminTL/rekom/delete-file-rekomendasi") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to update file list
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus file');
+            })
+            .finally(() => {
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+            });
         }
     </script>
 
