@@ -1579,6 +1579,135 @@ class DashboardAminTLController extends Controller
     }
 
     /**
+     * Delete main item and all its children (sub and sub-sub items)
+     */
+    public function deleteMainItem(Request $request)
+    {
+        try {
+            Log::info('Delete main item request received', [
+                'request_data' => $request->all()
+            ]);
+
+            // Validate request
+            $request->validate([
+                'item_id' => 'required|integer'
+            ]);
+
+            $itemId = $request->item_id;
+
+            // Check if item exists
+            $mainItem = DB::table('jenis_temuans')->where('id', $itemId)->first();
+            if (!$mainItem) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Item tidak ditemukan'
+                ], 404);
+            }
+
+            Log::info('Main item found:', ['item' => $mainItem]);
+
+            // Start transaction
+            DB::beginTransaction();
+
+            try {
+                // Find all children (recursive delete)
+                $allChildrenIds = $this->getAllChildrenIds($itemId);
+                $allItemsToDelete = array_merge([$itemId], $allChildrenIds);
+
+                Log::info('Items to delete:', [
+                    'main_item_id' => $itemId,
+                    'children_ids' => $allChildrenIds,
+                    'total_items' => count($allItemsToDelete)
+                ]);
+
+                // Delete associated files first
+                $deletedFiles = 0;
+                foreach ($allItemsToDelete as $id) {
+                    $files = DB::table('datadukungs')->where('id_jenis_temuan', $id)->get();
+                    foreach ($files as $file) {
+                        // Delete physical file
+                        if (file_exists(public_path($file->nama_file))) {
+                            unlink(public_path($file->nama_file));
+                        }
+                        // Delete file record
+                        DB::table('datadukungs')->where('id', $file->id)->delete();
+                        $deletedFiles++;
+                    }
+                }
+
+                // Delete all items (children first, then parent)
+                $deletedCount = DB::table('jenis_temuans')
+                    ->whereIn('id', $allItemsToDelete)
+                    ->delete();
+
+                DB::commit();
+
+                Log::info('Delete operation completed successfully:', [
+                    'deleted_items' => $deletedCount,
+                    'deleted_files' => $deletedFiles,
+                    'main_item_rekomendasi' => $mainItem->rekomendasi ?? 'N/A'
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Item dan semua sub-item berhasil dihapus',
+                    'deleted_count' => $deletedCount,
+                    'deleted_files' => $deletedFiles
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error in deleteMainItem:', [
+                'errors' => $e->errors()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak valid',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting main item:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'item_id' => $request->item_id ?? 'not provided'
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all children IDs recursively
+     */
+    private function getAllChildrenIds($parentId)
+    {
+        $children = DB::table('jenis_temuans')
+            ->where('id_parent', $parentId)
+            ->where('id', '!=', $parentId) // Exclude self-referencing items
+            ->get();
+
+        $allChildrenIds = [];
+
+        foreach ($children as $child) {
+            $allChildrenIds[] = $child->id;
+            // Recursively get children of this child
+            $grandChildren = $this->getAllChildrenIds($child->id);
+            $allChildrenIds = array_merge($allChildrenIds, $grandChildren);
+        }
+
+        return $allChildrenIds;
+    }
+
+    /**
      * Delete entire temuan with all its recommendations and sub-recommendations
      */
     public function deleteTemuanWithAllRekomendasi($kode_temuan)

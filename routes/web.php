@@ -47,6 +47,8 @@ Route::get('adminTL/temuan_rekom_edit/{id}/edit', [DashboardAminTLController::cl
 Route::post('adminTL/rekomendasi/update', [DashboardAminTLController::class, 'updateRekomendasi']);
 Route::post('adminTL/rekomendasi/add-sub', [DashboardAminTLController::class, 'addSubRekomendasi']);
 Route::delete('adminTL/rekomendasi/{id}', [DashboardAminTLController::class, 'deleteRekomendasi']);
+// Route for deleting main item and all its children
+Route::post('adminTL/rekom/delete-main-item', [DashboardAminTLController::class, 'deleteMainItem']);
 // Routes for temuan CRUD - Delete entire temuan with all recommendations
 Route::delete('adminTL/temuan/{kode_temuan}/delete-all', [DashboardAminTLController::class, 'deleteTemuanWithAllRekomendasi']);
 Route::post('adminTL/rekom/datadukung', [DashboardAminTLController::class, 'datadukungrekomStore']);
