@@ -74,13 +74,13 @@
         padding: 0 !important;
         background-color: var(--bs-body-bg, #ffffff);
         width: auto;
-        max-width: calc(100% - 220px);
+        max-width: calc(100% - 260px);
     }
 
     .action-cell {
-        width: 140px;
-        min-width: 140px;
-        max-width: 140px;
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
         text-align: center;
         vertical-align: middle;
         background-color: var(--bs-secondary-bg, #f8f9fa);
@@ -503,6 +503,20 @@
             background-color: #EC4899;
             border-color: #EC4899;
         }
+
+        /* Delete button styling */
+        .delete-main-item {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .delete-main-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+
+        .delete-main-item:active {
+            transform: scale(0.95);
+        }
     }
 
     [data-bs-theme="dark"] .btn-purple {
@@ -604,6 +618,9 @@
                                     <td class="action-cell">
                                         <button type="button" data-level1="{{ $key }}" data-parentid="{{ $item->id }}" class="btn btn-purple btn-sm add-sub" id="add_sub_{{ $key }}">
                                             <i class="fas fa-indent"></i>
+                                        </button>
+                                        <button type="button" data-itemid="{{ $item->id }}" data-level="{{ $key }}" class="btn btn-danger btn-sm delete-main-item" id="delete_main_{{ $key }}" title="Hapus item ini dan semua sub-item">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                         @if($key == 0)
                                             <button type="button" class="btn btn-primary btn-sm add-main" id="add_main_btn">
@@ -1602,4 +1619,151 @@
             previewData();
         }
     });
+
+    // Handle delete main item functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-main-item')) {
+            const button = e.target.closest('.delete-main-item');
+            const itemId = button.getAttribute('data-itemid');
+            const levelIndex = button.getAttribute('data-level');
+
+            // Get item info for confirmation
+            const hierarchyItem = button.closest('.hierarchy-item[data-level="0"]');
+            const rekomendasiText = hierarchyItem.querySelector('textarea[name*="rekomendasi"]').value;
+            const truncatedText = rekomendasiText.length > 50 ? rekomendasiText.substring(0, 50) + '...' : rekomendasiText;
+
+            // Count all children (sub and sub-sub items)
+            let childCount = 0;
+            const subItems = hierarchyItem.querySelectorAll('.hierarchy-item[data-level="1"]');
+            childCount += subItems.length;
+            subItems.forEach(subItem => {
+                childCount += subItem.querySelectorAll('.hierarchy-item[data-level="2"]').length;
+            });
+
+            let confirmMessage = `Apakah Anda yakin ingin menghapus item "${truncatedText}"?`;
+            if (childCount > 0) {
+                confirmMessage += `\n\nItem ini memiliki ${childCount} sub-item yang juga akan dihapus.`;
+            }
+
+            if (confirm(confirmMessage)) {
+                deleteMainItem(itemId, levelIndex);
+            }
+        }
+    });
+
+    // Function to delete main item and all its children
+    function deleteMainItem(itemId, levelIndex) {
+        // Show loading state
+        const button = document.querySelector(`#delete_main_${levelIndex}`);
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.disabled = true;
+
+        // Prepare data for deletion
+        const formData = new FormData();
+        formData.append('item_id', itemId);
+        formData.append('_token', document.querySelector('input[name="_token"]').value);
+        formData.append('_method', 'DELETE');
+
+        // Send delete request
+        fetch('/adminTL/rekom/delete-main-item', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the entire hierarchy item from DOM
+                const hierarchyItem = document.querySelector(`.hierarchy-item[data-level="0"][data-index="${levelIndex}"]`);
+                if (hierarchyItem) {
+                    // Add fade out animation
+                    hierarchyItem.style.transition = 'opacity 0.3s ease-out';
+                    hierarchyItem.style.opacity = '0';
+
+                    setTimeout(() => {
+                        hierarchyItem.remove();
+
+                        // Update numbering for remaining items
+                        updateMainItemNumbering();
+
+                        // Show success message
+                        showNotification('Item dan semua sub-item berhasil dihapus', 'success');
+                    }, 300);
+                } else {
+                    // Fallback: reload page if DOM manipulation fails
+                    window.location.reload();
+                }
+            } else {
+                // Show error message
+                showNotification(data.message || 'Gagal menghapus item', 'error');
+
+                // Restore button state
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
+            showNotification('Terjadi kesalahan saat menghapus item', 'error');
+
+            // Restore button state
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        });
+    }
+
+    // Function to update numbering after deletion
+    function updateMainItemNumbering() {
+        const mainItems = document.querySelectorAll('.hierarchy-item[data-level="0"]');
+        mainItems.forEach((item, index) => {
+            // Update data-index attribute
+            item.setAttribute('data-index', index);
+
+            // Update number cell
+            const numberCell = item.querySelector('.number-cell');
+            if (numberCell) {
+                numberCell.textContent = index + 1;
+            }
+
+            // Update sub-item numbering
+            const subItems = item.querySelectorAll('.hierarchy-item[data-level="1"]');
+            subItems.forEach((subItem, subIndex) => {
+                const subNumberCell = subItem.querySelector('.number-cell');
+                if (subNumberCell) {
+                    subNumberCell.textContent = `${index + 1}.${subIndex + 1}`;
+                }
+
+                // Update sub-sub-item numbering
+                const subSubItems = subItem.querySelectorAll('.hierarchy-item[data-level="2"]');
+                subSubItems.forEach((subSubItem, subSubIndex) => {
+                    const subSubNumberCell = subSubItem.querySelector('.number-cell');
+                    if (subSubNumberCell) {
+                        subSubNumberCell.textContent = `${index + 1}.${subIndex + 1}.${subSubIndex + 1}`;
+                    }
+                });
+            });
+        });
+    }
+
+    // Function to show notifications
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
 </script>

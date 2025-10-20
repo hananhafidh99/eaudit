@@ -96,8 +96,8 @@
             </div>
         @endif
 
-        {{-- File Upload Section - Available for both root level (indentLevel = 0, blue color) and sub level (indentLevel = 1, green color) --}}
-        @if(!empty($item->id) && ($indentLevel == 0 || $indentLevel == 1))
+        {{-- File Upload Section - Only available for leaf items (items without children) --}}
+        @if(!empty($item->id) && !$hasChildren)
             <div class="border-top pt-3">
                 <h6><i class="fa-solid fa-upload"></i> Upload File Data Dukung</h6>
 
@@ -111,7 +111,7 @@
                             <input type="text" class="form-control" name="keterangan_file" placeholder="Keterangan file (opsional)">
                         </div>
                         <div class="col-md-2">
-                            <button type="button" class="btn {{ $indentLevel == 0 ? 'btn-primary' : 'btn-success' }} w-100" onclick="uploadGlobalFile(this)">
+                            <button type="button" class="btn {{ $indentLevel == 0 ? 'btn-primary' : ($indentLevel == 1 ? 'btn-success' : ($indentLevel == 2 ? 'btn-warning' : 'btn-danger')) }} w-100" onclick="uploadGlobalFile(this)">
                                 <i class="fa-solid fa-upload"></i> Upload
                             </button>
                         </div>
@@ -153,6 +153,14 @@
                             <i class="fa-solid fa-file-upload"></i> Belum ada file yang diupload
                         </div>
                     @endif
+                </div>
+            </div>
+        @elseif(!empty($item->id) && $hasChildren)
+            {{-- Show message for parent items that have children --}}
+            <div class="border-top pt-3">
+                <div class="alert alert-info">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <strong>Upload file tersedia di sub-item:</strong> Item ini memiliki {{ count($item->children) }} sub-item. Silakan upload file pada masing-masing sub-item di bawah.
                 </div>
             </div>
         @endif
