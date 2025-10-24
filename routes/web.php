@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminTL\UserControlController;
 // use App\Http\Controllers\PemeriksaTL\DashboardPemeriksaTLController;
 use App\Http\Controllers\Pemeriksa\Fe\DashboardPemeriksa;
 use App\Http\Controllers\AdminTL\FE\DashboardAminTLController;
+use App\Http\Controllers\AdminTL\FE\VerifikasiController;
 use App\Http\Controllers\Login\Fe\UserController as FeUserController;
 
 /*
@@ -78,6 +79,15 @@ Route::delete('/adminTL/user-control/delete-user/{id}', [UserControlController::
 Route::get('/adminTL/user-control/user-data', [UserControlController::class, 'userData'])->name('admin.user-control.user-data');
 Route::post('/adminTL/user-control/update-user-data-access', [UserControlController::class, 'updateUserDataAccess'])->name('admin.user-control.update-user-data-access');
 Route::post('/adminTL/user-control/toggle-user-access/{userId}', [UserControlController::class, 'toggleUserAccess'])->name('admin.user-control.toggle-user-access');
+
+// Verifikasi Data Routes
+Route::get('/adminTL/verifikasi/rekomendasi', [VerifikasiController::class, 'indexRekomendasi'])->name('adminTL.verifikasi.rekomendasi');
+Route::get('/adminTL/verifikasi/temuan', [VerifikasiController::class, 'indexTemuan'])->name('adminTL.verifikasi.temuan');
+Route::get('/adminTL/verifikasi/{type}/{id}', [VerifikasiController::class, 'show'])->name('adminTL.verifikasi.show');
+Route::post('/adminTL/verifikasi/{type}/{id}/update-status', [VerifikasiController::class, 'updateStatus'])->name('adminTL.verifikasi.updateStatus');
+Route::get('/adminTL/verifikasi/{type}/{id}/status-options', [VerifikasiController::class, 'getStatusOptions'])->name('adminTL.verifikasi.statusOptions');
+// Legacy routes (redirect to new structure)
+Route::get('/adminTL/verifikasi', [VerifikasiController::class, 'index'])->name('adminTL.verifikasi.index');
 // Route::get('/PemeriksaTL', [DashboardPemeriksaTLController::class, 'index']);
 // Route::get('/Obrik', [DashboardObrikTLController::class, 'index']);
 

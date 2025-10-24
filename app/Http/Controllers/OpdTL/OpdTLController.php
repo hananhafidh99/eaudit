@@ -388,6 +388,26 @@ class OpdTLController extends Controller
                 'nama_file' => $uploadPath . '/' . $randomName,
             ]);
 
+            // Update status_LHP to 'Di Proses' when file is uploaded
+            try {
+                DB::table('pengawasans')
+                    ->where('id', $request->id_pengawasan)
+                    ->update([
+                        'status_LHP' => 'Di Proses',
+                        'updated_at' => now()
+                    ]);
+
+                Log::info('Status force updated to Di Proses for OpdTL upload', [
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'timestamp' => now()
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to update status for OpdTL', [
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             Log::info('OpdTL file uploaded successfully', [
                 'user_id' => auth()->id(),
                 'file_id' => $dataDukung->id,
