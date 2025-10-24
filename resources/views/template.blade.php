@@ -169,6 +169,22 @@
             </li>
 
             <li class="nav-item menu-items">
+              <a class="nav-link" data-toggle="collapse" href="#verifikasi-data" aria-expanded="false" aria-controls="verifikasi-data">
+                <span class="menu-icon">
+                  <i class="mdi mdi-check-circle"></i>
+                </span>
+                <span class="menu-title">Verifikasi Data</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="verifikasi-data">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="{{ route('adminTL.verifikasi.rekomendasi') }}">Rekomendasi</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="{{ route('adminTL.verifikasi.temuan') }}">Temuan dan Rekom</a></li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="nav-item menu-items">
               <a class="nav-link" data-toggle="collapse" href="#user-control" aria-expanded="false" aria-controls="user-control">
                 <span class="menu-icon">
                   <i class="mdi mdi-account-settings"></i>

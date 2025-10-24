@@ -16,6 +16,52 @@ use App\Models\UserDataAccess;
 
 class DashboardAminTLController extends Controller
 {
+    /**
+     * Update pengawasan status to 'Di Proses' with forced timestamp update
+     */
+    private function updateStatusToDiProses($id_pengawasan, $context = 'file upload')
+    {
+        try {
+            $pengawasan = Pengawasan::find($id_pengawasan);
+            if (!$pengawasan) {
+                Log::error('Pengawasan not found for status update', [
+                    'id_pengawasan' => $id_pengawasan,
+                    'context' => $context
+                ]);
+                return false;
+            }
+
+            $currentStatus = $pengawasan->status_LHP;
+
+            // Force update using direct DB query to ensure timestamp update
+            $updated = DB::table('pengawasans')
+                ->where('id', $id_pengawasan)
+                ->update([
+                    'status_LHP' => 'Di Proses',
+                    'updated_at' => now()
+                ]);
+
+            if ($updated) {
+                Log::info('Status successfully updated to Di Proses', [
+                    'id_pengawasan' => $id_pengawasan,
+                    'previous_status' => $currentStatus,
+                    'context' => $context,
+                    'timestamp' => now()
+                ]);
+                return true;
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Failed to update status to Di Proses', [
+                'id_pengawasan' => $id_pengawasan,
+                'context' => $context,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
     public function index()
     {
         return view('adminTL.index');
@@ -1914,6 +1960,8 @@ class DashboardAminTLController extends Controller
             ]);
 
             // Log file data
+            // Update status_LHP to 'Di Proses' when file is uploaded
+            $this->updateStatusToDiProses($request->id_pengawasan, 'global file upload');
             Log::info('File uploaded and saved to database successfully', [
                 'id' => $dataDukung->id,
                 'id_pengawasan' => $request->id_pengawasan,
@@ -2017,16 +2065,9 @@ class DashboardAminTLController extends Controller
     {
         try {
             Log::info('Upload file rekomendasi request received', [
-                'all_data' => $request->all(),
                 'has_file' => $request->hasFile('file'),
-                'file_info' => $request->hasFile('file') ? [
-                    'name' => $request->file('file')->getClientOriginalName(),
-                    'size' => $request->file('file')->getSize(),
-                    'mime' => $request->file('file')->getMimeType(),
-                ] : null,
                 'id_pengawasan' => $request->id_pengawasan,
-                'id_jenis_temuan' => $request->id_jenis_temuan,
-                'keterangan_file' => $request->keterangan_file
+                'id_jenis_temuan' => $request->id_jenis_temuan
             ]);
 
             // Validate request
@@ -2078,6 +2119,8 @@ class DashboardAminTLController extends Controller
                 'keterangan_file' => $request->keterangan_file
             ]);
 
+            // Update status_LHP to 'Di Proses' when file is uploaded
+            $this->updateStatusToDiProses($request->id_pengawasan, 'rekomendasi file upload');
             Log::info('File uploaded successfully for rekomendasi', [
                 'file_id' => $dataDukung->id,
                 'original_name' => $originalName,

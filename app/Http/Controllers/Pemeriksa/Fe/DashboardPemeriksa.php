@@ -1028,6 +1028,26 @@ class DashboardPemeriksa extends Controller
                 'created_at' => $dataDukung->created_at
             ]);
 
+            // Update status_LHP to 'Di Proses' when file is uploaded
+            try {
+                DB::table('pengawasans')
+                    ->where('id', $request->id_pengawasan)
+                    ->update([
+                        'status_LHP' => 'Di Proses',
+                        'updated_at' => now()
+                    ]);
+
+                Log::info('Status force updated to Di Proses', [
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'timestamp' => now()
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to update status', [
+                    'id_pengawasan' => $request->id_pengawasan,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             // Log file data
             Log::info('File uploaded and saved to database successfully', [
                 'id' => $dataDukung->id,

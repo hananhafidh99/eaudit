@@ -636,7 +636,7 @@
                                 @if(isset($item->sub))
                                     @foreach($item->sub as $subKey => $subItem)
                                         <!-- Sub Item -->
-                                        <div class="hierarchy-item level-1" data-level="1" data-parent="{{ $key }}" data-index="{{ $subKey }}">
+                                        <div class="hierarchy-item level-1" data-level="1" data-item-id="{{ $subItem->id }}" data-parent="{{ $key }}" data-index="{{ $subKey }}">
                                             <table class="hierarchy-table">
                                                 <tr>
                                                     <td class="number-cell">{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
@@ -660,7 +660,10 @@
                                                         <button type="button" data-level1="{{ $key }}" data-level2="{{ $subKey }}" data-parentid="{{ $subItem->id }}" class="btn btn-pink btn-sm add-sub" id="add_sub_{{ $key }}_{{ $subKey }}">
                                                             <i class="fas fa-indent"></i>
                                                         </button>
-                                                        <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}">
+                                                        <button type="button"
+                                                                class="btn btn-danger btn-sm"
+                                                                onclick="removeHierarchyItem('{{ $subItem->id }}', this)"
+                                                                title="Hapus item ini dan semua sub-itemnya">
                                                             <i class="fa-solid fa-minus"></i>
                                                         </button>
                                                     </td>
@@ -672,7 +675,7 @@
                                                 @if(isset($subItem->sub))
                                                     @foreach($subItem->sub as $nestedKey => $nestedItem)
                                                         <!-- Sub-Sub Item -->
-                                                        <div class="hierarchy-item level-2" data-level="2" data-parent="{{ $key }}-{{ $subKey }}" data-index="{{ $nestedKey }}">
+                                                        <div class="hierarchy-item level-2" data-level="2" data-item-id="{{ $nestedItem->id }}" data-parent="{{ $key }}-{{ $subKey }}" data-index="{{ $nestedKey }}">
                                                             <table class="hierarchy-table">
                                                                 <tr>
                                                                     <td class="number-cell">{{ $loop->parent->parent->iteration }}.{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
@@ -698,7 +701,10 @@
                                                                                 title="Tambah Sub-Sub-Sub Item">
                                                                             <i class="fa-solid fa-plus"></i>
                                                                         </button>
-                                                                        <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}_{{ $nestedKey }}">
+                                                                        <button type="button"
+                                                                                class="btn btn-danger btn-sm"
+                                                                                onclick="removeHierarchyItem('{{ $nestedItem->id }}', this)"
+                                                                                title="Hapus item ini dan semua sub-itemnya">
                                                                             <i class="fa-solid fa-minus"></i>
                                                                         </button>
                                                                     </td>
@@ -710,7 +716,7 @@
                                                                 @if(isset($nestedItem->sub))
                                                                     @foreach($nestedItem->sub as $subNestedKey => $subNestedItem)
                                                                         <!-- Sub-Sub-Sub Item (Level 4) -->
-                                                                        <div class="hierarchy-item level-3" data-level="3" data-parent="{{ $key }}-{{ $subKey }}-{{ $nestedKey }}" data-index="{{ $subNestedKey }}">
+                                                                        <div class="hierarchy-item level-3" data-level="3" data-parent="{{ $key }}-{{ $subKey }}-{{ $nestedKey }}" data-index="{{ $subNestedKey }}" data-item-id="{{ $subNestedItem->id }}">
                                                                             <table class="hierarchy-table">
                                                                                 <tr>
                                                                                     <td class="number-cell">{{ $loop->parent->parent->parent->iteration }}.{{ $loop->parent->parent->iteration }}.{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
@@ -731,7 +737,10 @@
                                                                                         </div>
                                                                                     </td>
                                                                                     <td class="action-cell">
-                                                                                        <button type="button" class="btn btn-danger btn-sm remove-item" id="remove_{{ $key }}_{{ $subKey }}_{{ $nestedKey }}_{{ $subNestedKey }}">
+                                                                                        <button type="button"
+                                                                                                class="btn btn-danger btn-sm"
+                                                                                                onclick="removeHierarchyItem('{{ $subNestedItem->id }}', this)"
+                                                                                                title="Hapus item ini">
                                                                                             <i class="fa-solid fa-minus"></i>
                                                                                         </button>
                                                                                     </td>
@@ -1070,7 +1079,10 @@
                             <button type="button" data-level1="${index}" class="btn btn-purple btn-sm add-sub" title="Tambah Sub Item">
                                 <i class="fas fa-indent"></i>
                             </button>
-                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Item">
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="removeHierarchyItem('new_item_id', this)"
+                                    title="Hapus Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
@@ -1107,7 +1119,10 @@
                             <button type="button" data-level1="${level1}" data-level2="${level2}" class="btn btn-pink btn-sm add-sub" title="Tambah Sub-Sub Item">
                                 <i class="fas fa-indent"></i>
                             </button>
-                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub Item">
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="removeHierarchyItem('new_sub_item_id', this)"
+                                    title="Hapus Sub Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
@@ -1146,7 +1161,10 @@
                                     title="Tambah Sub-Sub-Sub Item">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
-                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub-Sub Item">
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="removeHierarchyItem('new_sub_sub_item_id', this)"
+                                    title="Hapus Sub-Sub Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
@@ -1180,7 +1198,10 @@
                             </div>
                         </td>
                         <td class="action-cell">
-                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Hapus Sub-Sub-Sub Item">
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="removeHierarchyItem('new_sub_sub_sub_item_id', this)"
+                                    title="Hapus Sub-Sub-Sub Item">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
                         </td>
@@ -1651,65 +1672,51 @@
         }
     });
 
-    // Function to delete main item and all its children
+    // Function to delete main item and all its children (CLIENT-SIDE ONLY)
     function deleteMainItem(itemId, levelIndex) {
-        // Show loading state
+        console.log('Deleting main item client-side:', itemId, 'at level index:', levelIndex);
+
+        // Find the hierarchy item to remove
+        const hierarchyItem = document.querySelector(`.hierarchy-item[data-level="0"][data-index="${levelIndex}"]`);
+        if (!hierarchyItem) {
+            console.error('Hierarchy item not found for level index:', levelIndex);
+            showNotification('Item tidak ditemukan!', 'error');
+            return;
+        }
+
+        console.log('Found hierarchy item to delete:', hierarchyItem);
+
+        // Show loading state briefly for visual feedback
         const button = document.querySelector(`#delete_main_${levelIndex}`);
-        const originalContent = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        button.disabled = true;
+        if (button) {
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+        }
 
-        // Prepare data for deletion
-        const formData = new FormData();
-        formData.append('item_id', itemId);
-        formData.append('_token', document.querySelector('input[name="_token"]').value);
-        formData.append('_method', 'DELETE');
+        // Add fade out animation
+        hierarchyItem.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+        hierarchyItem.style.opacity = '0';
+        hierarchyItem.style.transform = 'scale(0.95)';
 
-        // Send delete request
-        fetch('/adminTL/rekom/delete-main-item', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+        // Remove the item after animation
+        setTimeout(() => {
+            try {
                 // Remove the entire hierarchy item from DOM
-                const hierarchyItem = document.querySelector(`.hierarchy-item[data-level="0"][data-index="${levelIndex}"]`);
-                if (hierarchyItem) {
-                    // Add fade out animation
-                    hierarchyItem.style.transition = 'opacity 0.3s ease-out';
-                    hierarchyItem.style.opacity = '0';
+                hierarchyItem.remove();
+                console.log('Hierarchy item removed from DOM');
 
-                    setTimeout(() => {
-                        hierarchyItem.remove();
+                // Update numbering for remaining items
+                updateMainItemNumbering();
+                console.log('Main item numbering updated');
 
-                        // Update numbering for remaining items
-                        updateMainItemNumbering();
-
-                        // Show success message
-                        showNotification('Item dan semua sub-item berhasil dihapus', 'success');
-                    }, 300);
-                } else {
-                    // Fallback: reload page if DOM manipulation fails
-                    window.location.reload();
-                }
-            } else {
-                // Show error message
-                showNotification(data.message || 'Gagal menghapus item', 'error');
-
-                // Restore button state
-                button.innerHTML = originalContent;
-                button.disabled = false;
+                // Show success message
+                showNotification('Item dan semua sub-item berhasil dihapus dari daftar', 'success');
+            } catch (error) {
+                console.error('Error during item removal:', error);
+                showNotification('Terjadi kesalahan saat menghapus item: ' + error.message, 'error');
             }
-        })
-        .catch(error => {
-            console.error('Delete error:', error);
-            showNotification('Terjadi kesalahan saat menghapus item', 'error');
-
-            // Restore button state
-            button.innerHTML = originalContent;
-            button.disabled = false;
-        });
+        }, 300);
     }
 
     // Function to update numbering after deletion
@@ -1765,5 +1772,119 @@
                 notification.remove();
             }
         }, 5000);
+    }
+
+    // Handle hierarchy item removal (client-side only) for level 1 and above
+    function removeHierarchyItem(itemId, buttonElement) {
+        console.log('removeHierarchyItem called with itemId:', itemId);
+
+        // Find the item container
+        const itemContainer = buttonElement.closest('.hierarchy-item');
+        if (!itemContainer) {
+            console.error('Item container not found');
+            alert('Item tidak ditemukan!');
+            return;
+        }
+
+        console.log('Found item container:', itemContainer);
+
+        // Get item info for confirmation
+        const itemLevel = itemContainer.dataset.level;
+        const itemHeaderElement = itemContainer.querySelector('textarea[name*="rekomendasi"], input[name*="rekomendasi"]');
+        const itemHeaderText = itemHeaderElement ? itemHeaderElement.value.trim() : 'Item';
+
+        console.log('Item level:', itemLevel, 'Header text:', itemHeaderText);
+
+        // Check if item has children - improved logic
+        const allItems = document.querySelectorAll('.hierarchy-item');
+        const currentIndex = Array.from(allItems).indexOf(itemContainer);
+        let hasChildren = false;
+
+        // Check following items for children
+        for (let i = currentIndex + 1; i < allItems.length; i++) {
+            const nextItem = allItems[i];
+            const nextLevel = parseInt(nextItem.dataset.level);
+
+            if (nextLevel > parseInt(itemLevel)) {
+                hasChildren = true;
+                break;
+            } else if (nextLevel <= parseInt(itemLevel)) {
+                break;
+            }
+        }
+
+        console.log('Has children:', hasChildren);
+
+        let confirmMessage = `Yakin ingin menghapus "${itemHeaderText.substring(0, 50)}${itemHeaderText.length > 50 ? '...' : ''}"?`;
+        if (hasChildren) {
+            confirmMessage += '\n\nPerhatian: Item ini memiliki sub-item yang juga akan ikut terhapus.';
+        }
+
+        if (!confirm(confirmMessage)) {
+            console.log('User cancelled deletion');
+            return;
+        }
+
+        console.log('User confirmed deletion, proceeding...');
+
+        // Create removal animation
+        itemContainer.style.transition = 'all 0.3s ease';
+        itemContainer.style.opacity = '0.5';
+        itemContainer.style.transform = 'scale(0.95)';
+
+        // Remove the item after animation
+        setTimeout(() => {
+            try {
+                // Also remove any child items that might be nested
+                const allChildItems = getAllChildItems(itemContainer);
+                console.log('Found child items to remove:', allChildItems.length);
+                allChildItems.forEach(child => child.remove());
+
+                // Remove the main item
+                itemContainer.remove();
+                console.log('Item successfully removed from DOM');
+
+                // Show success message
+                showNotification('Item berhasil dihapus dari daftar', 'success');
+
+                // Update numbering for remaining items
+                updateMainItemNumbering();
+                console.log('Item numbering updated');
+            } catch (error) {
+                console.error('Error during item removal:', error);
+                alert('Terjadi kesalahan saat menghapus item: ' + error.message);
+            }
+        }, 300);
+    }
+
+    // Helper function to get all child items recursively
+    function getAllChildItems(parentContainer) {
+        const childItems = [];
+        const parentLevel = parseInt(parentContainer.dataset.level);
+
+        // Get all hierarchy items
+        const allItems = document.querySelectorAll('.hierarchy-item');
+        const parentIndex = Array.from(allItems).indexOf(parentContainer);
+
+        console.log('Parent level:', parentLevel, 'Parent index:', parentIndex);
+
+        // Check all items after the parent
+        for (let i = parentIndex + 1; i < allItems.length; i++) {
+            const item = allItems[i];
+            const itemLevel = parseInt(item.dataset.level);
+
+            // If item level is greater than parent, it's a child
+            if (itemLevel > parentLevel) {
+                childItems.push(item);
+                console.log('Added child item at level:', itemLevel);
+            } else {
+                // If we encounter an item at same or lower level, stop
+                console.log('Stopped at item with level:', itemLevel);
+                break;
+            }
+        }
+
+        console.log('Total child items found:', childItems.length);
+        return childItems;
     }
 </script>
