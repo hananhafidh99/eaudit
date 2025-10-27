@@ -65,6 +65,37 @@
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
     }
+
+    /* Status LHP Styling */
+    .status-lhp-container {
+        position: relative;
+    }
+
+    .status-lhp-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .status-belum-jadi { background-color: #ffc107; color: #000; }
+    .status-di-proses { background-color: #17a2b8; color: #fff; }
+    .status-diterima { background-color: #28a745; color: #fff; }
+    .status-ditolak { background-color: #dc3545; color: #fff; }
+
+    .alasan-verifikasi-box {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #007bff;
+        font-style: italic;
+    }
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -126,7 +157,93 @@
                     <label for="">Status LHP </label>
                 </div>
                 <div class="col-9 mt-3">
-                    <textarea name="nama" style="color: black; background-color:white" class="form-control" readonly>{{ 'Belum Jadi' }}</textarea>
+                    @php
+                        $status = $pengawasan['status_LHP'] ?? 'Belum Jadi';
+                    @endphp
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <input type="text"
+                                   name="status_lhp"
+                                   style="color: black; background-color:white"
+                                   class="form-control"
+                                   readonly
+                                   value="{{ $status }}">
+                            <div class="input-group-append">
+                                <span class="input-group-text">
+                                    @if($status == 'Belum Jadi')
+                                        <i class="fas fa-clock text-warning" title="Belum Jadi"></i>
+                                    @elseif($status == 'Di Proses')
+                                        <i class="fas fa-cogs text-info" title="Di Proses"></i>
+                                    @elseif($status == 'Diterima')
+                                        <i class="fas fa-check-circle text-success" title="Diterima"></i>
+                                    @elseif($status == 'Ditolak')
+                                        <i class="fas fa-times-circle text-danger" title="Ditolak"></i>
+                                    @else
+                                        <i class="fas fa-question-circle text-muted" title="Status Tidak Dikenal"></i>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Status Badge --}}
+                        <div class="status-lhp-badge
+                                    @if($status == 'Belum Jadi') status-belum-jadi
+                                    @elseif($status == 'Di Proses') status-di-proses
+                                    @elseif($status == 'Diterima') status-diterima
+                                    @elseif($status == 'Ditolak') status-ditolak
+                                    @endif">
+                            @if($status == 'Belum Jadi')
+                                <i class="fas fa-exclamation"></i>
+                            @elseif($status == 'Di Proses')
+                                <i class="fas fa-sync-alt fa-spin"></i>
+                            @elseif($status == 'Diterima')
+                                <i class="fas fa-check"></i>
+                            @elseif($status == 'Ditolak')
+                                <i class="fas fa-times"></i>
+                            @endif
+                        </div>
+                    </div>
+                    @if(isset($pengawasan['tgl_verifikasi']) && $pengawasan['tgl_verifikasi'])
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt"></i>
+                            Terakhir diverifikasi: {{ \Carbon\Carbon::parse($pengawasan['tgl_verifikasi'])->format('d/m/Y H:i') }}
+                        </small>
+                    @endif
+                    @if(isset($pengawasan['alasan_verifikasi']) && $pengawasan['alasan_verifikasi'])
+                        <div class="mt-3">
+                            <div class="card">
+                                <div class="card-header py-2" style="background-color: #f8f9fa;">
+                                    <small class="text-muted mb-0">
+                                        <i class="fas fa-comment-alt"></i>
+                                        <strong>Alasan Verifikasi:</strong>
+                                    </small>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="alasan-verifikasi-box p-2 rounded" style="font-size: 0.875rem;">
+                                        {{ $pengawasan['alasan_verifikasi'] }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Show verification link for eligible statuses --}}
+                    @if(in_array($pengawasan['status_LHP'] ?? 'Belum Jadi', ['Belum Jadi', 'Di Proses']))
+                        <div class="mt-2">
+                            @php
+                                $verifikasiType = 'rekomendasi'; // Default type
+                                if (isset($pengawasan['jenis']) && strpos(strtolower($pengawasan['jenis']), 'temuan') !== false) {
+                                    $verifikasiType = 'temuan';
+                                } elseif (isset($pengawasan['tipe']) && strpos(strtolower($pengawasan['tipe']), 'temuan') !== false) {
+                                    $verifikasiType = 'temuan';
+                                }
+                            @endphp
+                            <a href="{{ route('adminTL.verifikasi.show', [$verifikasiType, $pengawasan['id']]) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Kelola Verifikasi
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </form>
