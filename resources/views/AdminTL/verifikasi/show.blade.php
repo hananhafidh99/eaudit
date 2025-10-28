@@ -65,6 +65,280 @@
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
     }
+
+    .text-center.py-4 {
+        color: var(--text-muted);
+    }
+
+    .form-text {
+        color: var(--text-muted) !important;
+    }
+
+    .form-label {
+        color: var(--text-primary);
+    }
+
+    .modal-content {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+    }
+
+    .bg-light {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary);
+    }
+
+    /* Info section styling */
+    .info-section {
+        background-color: var(--bg-secondary);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    /* Ensure proper contrast for small text */
+    small.text-muted,
+    .small.text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* Button outline adjustments for dark theme */
+    .btn-outline-secondary {
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: var(--bg-secondary);
+        border-color: var(--text-secondary);
+        color: var(--text-primary);
+    }
+
+    /* Additional text color fixes for dark theme */
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+    }
+
+    p, span, div {
+        color: var(--text-primary);
+    }
+
+    /* Specific fixes for form elements */
+    .form-label, label {
+        color: var(--text-primary) !important;
+    }
+
+    /* Card body text */
+    .card-body, .card-body p, .card-body div, .card-body span {
+        color: var(--text-primary);
+    }
+
+    /* Status flow section */
+    .status-flow-section h6 {
+        color: var(--text-primary) !important;
+    }
+
+    /* File section text */
+    .file-item h6, .file-item p, .file-item span {
+        color: var(--text-primary);
+    }
+
+    /* Update status form text */
+    .update-status-form label,
+    .update-status-form small,
+    .update-status-form .form-text {
+        color: var(--text-primary) !important;
+    }
+
+    /* Override Bootstrap default colors */
+    body.sidebar-dark .text-dark {
+        color: var(--text-primary) !important;
+    }
+
+    body.sidebar-dark .text-secondary {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Ensure proper text color inheritance */
+    body.sidebar-dark * {
+        color: inherit;
+    }
+
+    /* Force text color for specific elements that might inherit wrong colors */
+    body.sidebar-dark .container-fluid,
+    body.sidebar-dark .row,
+    body.sidebar-dark .col-12,
+    body.sidebar-dark .col-lg-8,
+    body.sidebar-dark .col-lg-4,
+    body.sidebar-dark .col-md-6,
+    body.sidebar-dark .col-md-8,
+    body.sidebar-dark .col-md-4 {
+        color: var(--text-primary);
+    }
+
+    /* Form control placeholder text */
+    .form-control::placeholder,
+    .form-select::placeholder,
+    textarea::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7;
+    }
+
+    /* Info labels and values */
+    .info-item strong {
+        color: var(--text-primary) !important;
+        font-weight: 600;
+    }
+
+    .info-item span {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Status badge text contrast enhancement */
+    body.sidebar-dark .status-badge {
+        font-weight: 700;
+    }
+
+    /* Small text elements */
+    body.sidebar-dark small {
+        color: var(--text-muted) !important;
+    }
+
+    /* Link colors in dark theme */
+    body.sidebar-dark a:not(.btn) {
+        color: #66b3ff !important;
+    }
+
+    body.sidebar-dark a:not(.btn):hover {
+        color: #4da6ff !important;
+    }
+
+    /* Modal dialog fixes for dark theme */
+    body.sidebar-dark .modal-content {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-color);
+    }
+
+    body.sidebar-dark .modal-header {
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    body.sidebar-dark .modal-footer {
+        border-top: 1px solid var(--border-color);
+    }
+
+    body.sidebar-dark .modal-body {
+        color: var(--text-primary) !important;
+    }
+
+    body.sidebar-dark .modal-body p {
+        color: var(--text-primary) !important;
+    }
+
+    /* Loading overlay spinner text */
+    body.sidebar-dark .loading-overlay .spinner-border {
+        color: var(--text-primary) !important;
+    }
+
+    body.sidebar-dark .visually-hidden {
+        color: var(--text-primary) !important;
+    }
+
+    /* Ensure icons maintain proper colors */
+    body.sidebar-dark .fas,
+    body.sidebar-dark .far,
+    body.sidebar-dark .fab {
+        color: inherit;
+    }
+
+    /* Special handling for text-info class in dark theme */
+    body.sidebar-dark .text-info {
+        color: #66b3ff !important;
+    }
+
+    /* Override any remaining Bootstrap text utilities */
+    body.sidebar-dark .text-dark {
+        color: var(--text-primary) !important;
+    }
+
+    body.sidebar-dark .text-light {
+        color: var(--text-primary) !important;
+    }
+
+    /* Force override for text-muted class in dark theme */
+    body.sidebar-dark .text-muted {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Specific override for info-item text */
+    body.sidebar-dark .info-item .text-muted,
+    body.sidebar-dark .info-item span {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Override Bootstrap's default text-muted color */
+    body.sidebar-dark span.text-muted {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Ensure text-white works in both themes */
+    .text-white {
+        color: #ffffff !important;
+    }
+
+    /* In light theme, use dark color for better contrast */
+    /* body:not(.sidebar-dark) .text-white {
+        color: #212529 !important;
+    } */
+
+    /* Read-only form styling */
+    .form-control[readonly],
+    .form-control[disabled],
+    .form-select[disabled] {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+        opacity: 0.8;
+    }
+
+    /* Input group styling for dark theme */
+    .input-group-text {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Label styling */
+    .fw-bold {
+        font-weight: 600 !important;
+    }
+
+    /* Hierarchy item styling */
+    .hierarchy-item {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+    }
+
+    .hierarchy-item .sub-item {
+        background-color: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        margin: 0.5rem 0 0.5rem 2rem;
+        padding: 0.75rem;
+    }
+
+    .hierarchy-item .sub-sub-item {
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin: 0.5rem 0 0.5rem 2rem;
+        padding: 0.5rem;
+    }
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
