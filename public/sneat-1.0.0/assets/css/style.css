@@ -1,0 +1,85 @@
+
+    .page {
+        font-size: 12pt;
+        width: 215.9mm;
+        min-height: 330.2mm;
+        padding: 20mm;
+        margin: 10mm auto;
+        border: 1px #D3D3D3 solid;
+        background: white;
+    }
+
+    @page {
+        size: A4;
+        margin: 20px;
+    }       
+
+    table{
+        border-collapse: collapse;
+
+    }
+    .table1 {
+        width: 100%;
+        background: #fff;
+        padding: 20px;
+        border-collapse: collapse;
+    }
+    .table1 tr, .table1 td, .table1 th {
+        border: table-cell;
+        border: 1px  solid #444;
+    }
+    tr,td,th {
+        vertical-align: top;
+    }
+
+    .table2 tr, .table2 td , .table2 th{
+        border: 0px!important;
+    }
+    .ttd{
+        height: 20px;
+    }
+
+    @media print{
+        html, body {
+            font-size: 12pt;
+            width: 215.9mm;
+            height: 330.2mm;        
+        }
+        .page {
+            margin: 0px;
+            border: initial;
+            border-radius: initial;
+            width: initial;
+            min-height: initial;
+            box-shadow: initial;
+            background: initial;
+            page-break-after:always;
+
+        }
+
+        nav {
+            display: none;
+        }
+        .table1 {
+           align:center;
+           font-size: 12pt;
+           color: #212121;
+       }
+       .table1 tr, .table1 td , .table1 th{
+        border: table-cell;
+        border: 1px  solid #444;
+        padding: 2px 2px 2px 2px!important;
+
+    }
+    tr,td,th {
+       line-height:1.0;
+       vertical-align: top;
+   }
+   .table2 tr, .table2 td , .table2 th{
+    border: 0px!important;
+}
+
+td .fix {
+    width: 200px;
+}
+}

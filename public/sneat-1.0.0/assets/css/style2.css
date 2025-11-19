@@ -1,0 +1,211 @@
+body{
+    margin: 0.5cm 1cm 1cm 2.5cm!important;
+}
+h6{
+    font-size: 14pt!important;
+}
+h5{
+    font-size: 24pt!important;
+}
+.table1 {
+    background: #fff;
+    padding: 5px;
+    border-collapse: collapse;
+}
+.table1 tr, .table1 td, .table1 th {
+    border: table-cell;
+    border: 1px  solid #444;
+}
+th{
+    height: 30px;
+    vertical-align: middle!important;
+}
+tr,td{
+    vertical-align: top!important;
+}
+#right {
+    border-right: none !important;
+}
+#left {
+    border-left: none !important;
+}
+.disp {
+    text-align: center;
+    margin-bottom: .5rem;
+}
+.judul {
+    font-size: 16pt;
+    font-weight: bold;
+}
+.logodisp {
+    width: 110px;
+    height: 150px;
+    
+    position: absolute;
+    left: 280px;
+    top: 40px;
+}
+#lead {
+    width: auto;
+    position: relative;
+    margin: 25px 0px 0px 75%;
+}
+.lead {
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: -10px;
+}
+.tgh {
+    text-align: center;
+}
+.rata {
+    text-align: justify;
+}
+.lt{
+    text-align: left;
+}
+.rgt{
+    text-align: right;
+}
+#nama {
+    font-size: 2.1rem;
+    margin-bottom: -1rem;
+}
+#alamat {
+    font-size: 16pt;
+}
+.up {
+    text-transform: uppercase;
+    margin: 0px;
+    line-height: 2.2rem;
+    font-size: 1.5rem;
+}
+.status {
+    margin: 0;
+    font-size: 1.3rem;
+    margin-bottom: .5rem;
+}
+.separator {
+    border-bottom: 2px solid #616161;
+    margin: -1.3rem 0 1.5rem;
+}
+@media print{
+    body {
+        margin: 0.5cm 1cm 1cm 2.0cm!important;
+        background-color: yellow;
+        font-family:Times New Roman;
+        font-size: 14pt;
+    }
+
+    #colres {
+        
+    }
+    h6{
+       font-size: 14pt!important;
+   }
+   h5{
+       font-size: 24pt!important;
+   }
+   nav {
+    display: none;
+}
+.table1 {
+    font-size: 12pt!important;
+    color: #212121;
+    width: 100%;
+}
+.table1 thead{
+    text-align: center;
+}
+th{
+    height: 30px!important;
+    vertical-align: middle!important;
+}
+tr,td{
+    vertical-align: top!important;
+}
+.table1 tr, .table1 td , .table1 th{
+    height: 20px;
+    border: table-cell;
+    border: 1px  solid #444;
+    padding: 2px!important;
+
+}
+#prn{
+    min-width: 100pt!important;
+}
+table{
+    font-size: 14pt;
+}
+.ttd{
+    text-align: center;
+}
+.tgh {
+    text-align: center;
+}
+.rata {
+    text-align: justify;
+}
+.disp {
+    text-align: center;
+    margin-left: 80px;
+
+}
+.logodisp {
+
+
+    position: absolute;
+    left: 120px;
+    top: 80px;
+
+    width: 80px;
+    height: 120px;
+
+}
+#surat {
+    width: auto;
+    position: relative;
+
+}
+#lead {
+    width: auto;
+    position: relative;
+
+}
+.lead {
+    font-weight: bold;
+    text-decoration: underline;
+
+}
+#nama {
+    font-weight: bold;
+    text-transform: uppercase;
+
+}
+.up {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.status {
+    font-size: 14pt!important;
+    font-weight: normal;
+
+}
+#alamat {
+    font-size: 11pt;
+}
+#lbr {
+    font-size: 17px;
+    font-weight: bold;
+}
+.judul {
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 0px;
+}
+.separator {
+    border-bottom: 5px solid #616161;
+
+}
+
+}
