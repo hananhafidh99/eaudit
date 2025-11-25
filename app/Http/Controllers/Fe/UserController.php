@@ -10,14 +10,14 @@ use Illuminate\Support\Facades\Http;
 class UserController extends Controller
 {
     public function index(Request $request)
-     {
-                $client       = new Client();
-                $url          = "http://127.0.0.1:8000/api/obrik?token=";
-                $response     = $client->request('GET',$url);
-                $content      = $response->getBody()->getContents();
-                $contentArray = json_decode($content,true);
-                $data         = $contentArray['data'];
-     }
+    {
+        $client = new Client();
+        $url = "http://127.0.0.1:8000/api/obrik?token=";
+        $response = $client->request('GET', $url);
+        $content = $response->getBody()->getContents();
+        $contentArray = json_decode($content, true);
+        $data = $contentArray['data'];
+    }
     public function login(Request $request)
     {
 
@@ -34,15 +34,21 @@ class UserController extends Controller
             'password' => $password
         ];
 
-        $response = Http::post("http://127.0.0.1:8000".('/api/login'),$params);
-        // dd($response->json());
-        $token = $response->json()['token'];
+        $response = Http::post("http://127.0.0.1:8000" . ('/api/login'), $params);
+        $json = $response->json();
 
-        session(['ctoken' => $token, 'sdata' => date('Y')] );
+        // Debug: uncomment line below to see API response
+        // dd($json);
 
-        // session(['ctoken' => $token, 'sdata' => date('Y'), 'usernamebaru' => $usernamebaru, 'levelbaru' => $levelbaru] );
+        $token = $json['token'] ?? null;
+        $redirectUrl = $json['data'] ?? '/';
 
-        return redirect(url($response->json()['data']));
+        if (!$token) {
+            return back()->withErrors(['login' => 'Login gagal, token tidak ditemukan.']);
+        }
+
+        session(['ctoken' => $token, 'sdata' => date('Y')]);
+        return redirect(url($redirectUrl));
     }
     public function logout(Request $request)
     {
@@ -54,9 +60,9 @@ class UserController extends Controller
 
     public function ubahtahun(Request $request)
     {
-    $request->session()->put("sdata", $request->input('tahun'));
+        $request->session()->put("sdata", $request->input('tahun'));
 
-    return redirect('skpd');
+        return redirect('skpd');
 
     }
 
