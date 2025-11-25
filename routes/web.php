@@ -42,6 +42,20 @@ Route::resource('pangkat', PangkatController::class);
 
 Route::post('login', [UserController::class, 'login']);
 
+// Route untuk adminTL - redirect ke dashboard admin
+Route::get('adminTL', function () {
+    return redirect('skpd');
+});
+
+// Route untuk level user lain
+Route::get('PemeriksaTL', function () {
+    return redirect('skpd');
+});
+
+Route::get('divisionHead', function () {
+    return redirect('obrik');
+});
+
 // Route::resource('eselon' , EselonController::class);
 
 Route::get('eselon', [EselonController::class, 'index']);

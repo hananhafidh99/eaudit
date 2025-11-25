@@ -154,12 +154,13 @@
         <div class="card-body">
           <form action="{{ url("skpd_edit") }}" method="post">
             @csrf
+            <input type="hidden" name="id" value="{{ $data['id'] }}">
             <div class="row mb-3">
                 <div class="col-md-6 mt-3">
                     <label class="form-label" for="basic-default-fullname">Nomor Surat Dalam Daerah</label>
                 </div>
                 <div class="col-md-6 mt-3">
-                    <input type="text" class="form-control" name="nomordalam"  id="basic-default-fullname" value="{{ $data['nomorsurat'] }}" />
+                    <input type="text" class="form-control" name="nomorsurat" id="basic-default-fullname" value="{{ $data['nomorsurat'] }}" />
                 </div>
             </div>
 
