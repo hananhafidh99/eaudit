@@ -19,8 +19,6 @@ class SKPDController extends Controller
         $pegawai = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token,'N'=>true])['data'];
         // $pegawai = Pegawai::all();
         session(['brand_logo'=>$data['logo'], 'id_pimpinan' => $data['id_pimpinan'], 'id_bendahara' => $data['id_bendahara']]);
-
-
          return view('admin.skpd',compact('data','pegawai'));
  }
 
@@ -84,7 +82,6 @@ class SKPDController extends Controller
          return view('admin.skpd',['data' => $data]);
      }
  }
-
  public function update(Request $request)
  {
    try{
@@ -127,13 +124,13 @@ class SKPDController extends Controller
              'contents' => $request->nomorsurat
          ],
          [
-             'name'     => 'id_pemimpin',
-             'contents' => $request->id_pemimpin
+             'name'     => 'id_pimpinan',
+             'contents' => $request->id_pimpinan
          ],
          [
              'name'     => 'id_bendahara',
              'contents' => $request->id_bendahara
-         ],
+         ]
      ];
 
      if ($request->hasFile('logo')) {
@@ -144,7 +141,6 @@ class SKPDController extends Controller
          ];
      }
 
-    //  dd($parameter);
 
      $client       = new Client();
      $token        = session('ctoken');
@@ -167,6 +163,8 @@ class SKPDController extends Controller
 
    }
  }
+
+
 
  public function destroy($id)
  {

@@ -6,6 +6,7 @@ use App\Models\SKPD;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Skpd as ModelsSkpd;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -83,12 +84,12 @@ class SKPDController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+   public function update(Request $request)
     {
         try{
             $id = $request->id;
 
-            $dataSkpd = SKPD::where('id', $id)->first();
+            $dataSkpd = Skpd::where('id', $id)->first();
             if (empty($dataSkpd)) {
                 return response()->json([
                     'status'  => false,
@@ -129,16 +130,16 @@ class SKPDController extends Controller
                 $dataSkpd->logo = $logo->hashName();
             }
 
-            //  $dataSkpd->instansi = $request->instansi;
+             $dataSkpd->instansi = $request->instansi;
              $dataSkpd->skpd = $request->skpd;
-            //  $dataSkpd->alamat = $request->alamat;
-            //  $dataSkpd->telp = $request->telp;
-            //  $dataSkpd->website = $request->website;
-            //  $dataSkpd->email = $request->email;
-            //  $dataSkpd->kodepos = $request->kodepos? $request->kodepos : $dataSkpd->kodepos;
-            //  $dataSkpd->nomorsurat = $request->nomorsurat;
-            //  $dataSkpd->id_pemimpin = $request->id_pemimpin;
-            //  $dataSkpd->id_bendahara = $request->id_bendahara;
+             $dataSkpd->alamat = $request->alamat;
+             $dataSkpd->telp = $request->telp;
+             $dataSkpd->website = $request->website;
+             $dataSkpd->email = $request->email;
+             $dataSkpd->kodepos = $request->kodepos? $request->kodepos : $dataSkpd->kodepos;
+             $dataSkpd->nomorsurat = $request->nomorsurat;
+             $dataSkpd->id_pimpinan = $request->id_pimpinan;
+             $dataSkpd->id_bendahara = $request->id_bendahara;
              $dataSkpd->save();
 
             return response()->json([
@@ -153,6 +154,7 @@ class SKPDController extends Controller
             ]);
         }
     }
+
 
     public function destroy($id)
     {

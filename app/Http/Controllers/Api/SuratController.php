@@ -88,6 +88,7 @@ class SuratController extends Controller
         $penugasanId = DB::table('penugasans')->insertGetId([
             'noSurat'                => $penugasanData['noSurat'] ?? null,
             'id_jenisPengawasan'     => $penugasanData['id_jenisPengawasan'] ?? null,
+            'id_kelompokPenugasan'     => $penugasanData['id_kelompokPenugasan'] ?? null,
             'id_obrik'               => $penugasanData['id_obrik'] ?? null,
             'tanggalTerbitPenugasan' => $penugasanData['tanggalTerbitPenugasan'] ?? null,
             'id_anggaran'            => $penugasanData['id_anggaran'] ?? null,
@@ -175,7 +176,6 @@ class SuratController extends Controller
 
     public function suratdinas(Request $request,$id)
     {
-    dd('tes');
     $penugasan = DB::table('v_demo8')->where('id', $id)->first();
     $penugasan->detail_petugas = json_decode($penugasan->detail_petugas);
     $total = 0;

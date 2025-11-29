@@ -1,84 +1,49 @@
 @extends('template')
 @section('content')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<div class="row">
-    <div class="col-xl">
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Data Instansi</h5>
-        </div>
-        <div class="card-body">
-            <form action="{{ url("skpd_edit") }}" method="post" enctype="multipart/form-data">
-                @csrf
+<div class="alert alert-info" role="alert">
+    Edit SKPD
+  </div>
+<div class="card mb-4">
+    <div class="card-header"></div>
+    <div class="card-body">
+            <form action="{{ url('skpd_edit') }}" method="post" enctype="multipart/form-data">
+               @csrf
                 <input type="hidden" name="id" value="{{ $data['id'] }}">
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Instansi</label>
-                </div>
-                <div class="col-md-8 mt-2">
-                    <input type="text" class="form-control" name="instansi" id="basic-default-fullname" value="{{ $data['instansi'] }}" />
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">SKPD</label>
-                </div>
-                <div class="col-md-8">
+            <div class="row">
+               <div class="col-4 mb-3">
+                    <label for="">Instansi</label>
+                    <input type="text" class="form-control" name="instansi" id="basic-default-fullname" value="{{ $data['instansi'] }}" />                </div>
+                <div class="col-4 mb-3">
+                    <label for="">SKPD </label>
                     <input type="text" class="form-control" name="skpd" id="basic-default-fullname"  value="{{ $data['skpd'] }}"/>
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Alamat</label>
-                </div>
-                <div class="col-md-8">
+                <div class="col-4 mb-3">
+                    <label for="">Alamat </label>
                     <input type="text" class="form-control" name="alamat" id="basic-default-fullname"  value="{{ $data['alamat'] }}"/>
                 </div>
             </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Telp/Fax</label>
-                </div>
-                <div class="col-md-8">
+            <div class="row">
+                <div class="col-4 mb-3">
+                <label for="">Telp/Fax  </label>
                     <input type="text" class="form-control" name="telp" id="basic-default-fullname"  value="{{ $data['telp'] }}"/>
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Website</label>
-                </div>
-                <div class="col-md-8">
+                <div class="col-4 mb-3">
+                    <label for="">Website</label>
                     <input type="text" class="form-control" name="website" id="basic-default-fullname"  value="{{ $data['website'] }}"/>
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Email</label>
-                </div>
-                <div class="col-md-8">
+                <div class="col-4 mb-3">
+                <label for="">Email</label>
                     <input type="text" class="form-control" name="email" id="basic-default-fullname"  value="{{ $data['email'] }}"/>
                 </div>
-            </div>
 
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Kode Pos</label>
-                </div>
-                <div class="col-md-8">
+            </div>
+            <div class="row">
+                <div class="col-4 mb-3">
+                    <label for="">Kode Pos  </label>
                     <input type="text" class="form-control" name="kodepos" id="basic-default-fullname"  value="{{ $data['kodepos'] }}"/>
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Logo</label>
-                </div>
-                <div class="col-md-8">
+                <div class="col-4 mb-3">
+                    <label for="">Logo</label>
                     <input type="file" class="form-control" name="logo" id="basic-default-fullname" />
                     @if (!empty($data['logo']))
                         <img src="{{ asset('storage/logo/'.$data['logo']) }}" class="mt-3" alt="Logo" style="width: 50px">
@@ -86,14 +51,15 @@
                         <p class="mt-3">Logo belum tersedia</p>
                     @endif
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Pemimpin</label>
+                <div class="col-4 mb-3">
+                    <label for="">Nomor Surat Dalam Daerah  </label>
+                    <input type="text" class="form-control" name="nomorsurat"  id="basic-default-fullname" value="{{ $data['nomorsurat'] }}" />
                 </div>
-                <div class="col-md-8">
-                      <select class="form-control"  name="id_pemimpin" id="pemimpin">
+            </div>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label for="">Pimpinan</label>
+                        <select class="form-control"  name="id_pimpinan" id="pemimpin">
                          <option value="">Pilih</option>
                          @if (!empty($pegawai))
                             @foreach ($pegawai as $g)
@@ -112,22 +78,16 @@
                         @endif
                      </select>
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4 mt-2">
-                    <label class="form-label" for="basic-default-fullname">Bendahara</label>
-                </div>
-                <div class="col-md-8">
-                     <select class="form-control"  name="id_bendahara" id="bendahara">
+                <div class="col-6 mb-3">
+                    <label for="">Bendahara</label>
+                        <select class="form-control"  name="id_bendahara" id="bendahara">
                         <option value="">Pilih</option>
                          @if (!empty($pegawai))
                             @foreach ($pegawai as $v)
                              @php
                             if ($v['id']==$data['id_bendahara']) {
                                 # code...
-                                session(['id_bendahara' => $v['id'], 'nama_bendahara' => $v['nama_pegawai'] ]);
-                                session(['id_bendahara' => $g['id'], 'nama_bendahara' => $g['nama_pegawai'], 'nip_bendahara' => $g['nip'] ]);
+                                session(['id_bendahara' => $v['id'], 'nama_bendahara' => $v['nama_pegawai'], 'nip_bendahara' => $v['nip'], 'pangkat_bendahara' => $v['pangkat']['nama_pangkat'] ]);
                             }
                             @endphp
                                 <option value="{{ $v['id'] }}" {{ $v['id']==$data['id_bendahara']?'selected':''}}>
@@ -140,95 +100,35 @@
                     </select>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary">Ubah Data</button>
-          </form>
-        </div>
-      </div>
+            <button class="btn btn-primary">Edit SKPD</button>
+        </form>
     </div>
-    <div class="col-xl">
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Nomor Surat</h5>
-        </div>
-        <div class="card-body">
-          <form action="{{ url("skpd_edit") }}" method="post">
-            @csrf
-            <div class="row mb-3">
-                <div class="col-md-6 mt-3">
-                    <label class="form-label" for="basic-default-fullname">Nomor Surat Dalam Daerah</label>
-                </div>
-                <div class="col-md-6 mt-3">
-                    <input type="text" class="form-control" name="nomordalam"  id="basic-default-fullname" value="{{ $data['nomorsurat'] }}" />
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Ubah Data</button>
-
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
- <script>
-            $(document).ready(function () {
-                $("#kota").select2({
-                    theme: 'bootstrap4',
-                    placeholder: "Please Select"
-                });
-
-                $("#pemimpin").select2({
-                    theme: 'bootstrap4',
-                    placeholder: "Please Select"
-                });
-
-                 $("#bendahara").select2({
-                    theme: 'bootstrap4',
-                    placeholder: "Please Select"
-                });
-            });
-
-        </script>
-
-       <script>
-
-        @if (Session::has('success'))
-            toastr.success("{{ Session::get('success') }}")
-        @endif
-
-        @if (Session::has('info'))
-            toastr.info("{{ Session::get('info') }}")
-        @endif
-
-        @if (Session::has('warning'))
-            toastr.warning("{{ Session::get('warning') }}")
-        @endif
-  </script>
-
   <script>
             $(document).ready(function () {
-                $("#obrik").select2({
+                $("#pangkat").select2({
                     theme: 'bootstrap4',
-                    placeholder: "Pilih Obrik"
+                    placeholder: "Please Select"
                 });
-                $("#jenis_pengawasan").select2({
+                $("#kendaraan").select2({
                     theme: 'bootstrap4',
-                    placeholder: "Pilih Jenis Pengawasan"
+                    placeholder: "Please Select"
                 });
-                $("#bulan").select2({
+                $("#jabatan").select2({
                     theme: 'bootstrap4',
-                    placeholder: "Pilih Bulan"
+                    placeholder: "Please Select"
                 });
-                $("#tahun23").select2({
+                 $("#status").select2({
                     theme: 'bootstrap4',
-                    placeholder: "Pilih Bulan"
+                    placeholder: "Please Select"
                 });
-                   $("#tahun").select2({
+                $("#eselon").select2({
                     theme: 'bootstrap4',
-                    placeholder: "Pilih Anggaran Kegiatan"
+                    placeholder: "Please Select"
+                });
+                 $("#tahun").select2({
+                    theme: 'bootstrap4'
                 });
             });
         </script>

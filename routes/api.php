@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\EselonController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\JenisPengawasanController;
 use App\Http\Controllers\Api\KegiatanController;
+use App\Http\Controllers\Api\KelompokPenugasanController;
 use App\Http\Controllers\Api\ObrikController;
 use App\Http\Controllers\Api\PangkatController;
 use App\Http\Controllers\Api\PegawaiController;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SKPDController;
 use App\Http\Controllers\Api\SuratController;
 use App\Http\Controllers\Api\UserController;
+use App\Models\KelompokPenugasan;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +31,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::apiResource('/skpd', SKPDController::class);
+Route::apiResource('k_penugasan', KelompokPenugasanController::class);
 Route::apiResource('/penugasan', SuratController::class);
 Route::apiResource('/eselon', EselonController::class);
 Route::apiResource('/jabatan', JabatanController::class);
