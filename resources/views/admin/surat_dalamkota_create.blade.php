@@ -189,9 +189,18 @@
             <hr>
 
             <div class="row">
-                <div class="col-12 mb-3">
+                <div class="col-6 mb-3">
                     <label for="">Tanggal Pembuatan Surat  </label>
                     <input type="text" name="tanggalTerbitPenugasan" class="form-control datepicker" value="{{ old('tanggalTerbitPenugasan') }}"  >
+                </div>
+                <div class="col-6 mb-3">
+                    <label for="">Kelompok Penugasan  </label>
+                        <select class="form-control"  name="id_kelompokPenugasan" id="obrik">
+                        <option value="">Pilih</option>
+                        @foreach ($kelompokPenugasan as $key => $kelompokPenugasan)
+                            <option value="{{ $kelompokPenugasan['id'] }}" {{ $kelompokPenugasan['id'] == old('id_kelompokPenugasan	') ? 'selected':'' }}>{{ $kelompokPenugasan['kelompokPenugasan'] }}</option>
+                        @endforeach
+                     </select>
                 </div>
             </div>
 

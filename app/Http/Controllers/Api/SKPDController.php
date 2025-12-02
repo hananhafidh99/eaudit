@@ -6,6 +6,7 @@ use App\Models\SKPD;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Skpd as ModelsSkpd;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -101,7 +102,7 @@ class SKPDController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+   public function update(Request $request)
     {
         try {
             // Debug: Log incoming request
@@ -113,7 +114,7 @@ class SKPDController extends Controller
 
             $id = $request->id;
 
-            $dataSkpd = SKPD::where('id', $id)->first();
+            $dataSkpd = Skpd::where('id', $id)->first();
             if (empty($dataSkpd)) {
                 return response()->json([
                     'status' => false,
@@ -200,6 +201,7 @@ class SKPDController extends Controller
             ]);
         }
     }
+
 
     public function destroy($id)
     {

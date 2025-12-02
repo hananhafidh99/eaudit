@@ -43,13 +43,15 @@ class SuratController extends Controller
         $peran            = Http::get("http://127.0.0.1:8000/api/peran", ['token' => $token])['data'];
         $jenisPengawasan  = Http::get("http://127.0.0.1:8000/api/jenisPengawasan", ['token' => $token])['data'];
         $obrik            = Http::get("http://127.0.0.1:8000/api/obrik", ['token' => $token])['data'];
-        return view('admin.surat_dalamkota_create', ['data'=>$data,'jenisPengawasan'=>$jenisPengawasan,'obrik'=>$obrik,'peran'=>$peran,'pegawai'=>$pegawai]);
+        $kelompokPenugasan= Http::get("http://127.0.0.1:8000/api/k_penugasan", ['token' => $token])['data'];
+        return view('admin.surat_dalamkota_create', ['data'=>$data,'kelompokPenugasan'=>$kelompokPenugasan,'jenisPengawasan'=>$jenisPengawasan,'obrik'=>$obrik,'peran'=>$peran,'pegawai'=>$pegawai]);
     }
 
     public function store(Request $request)
     {
         $noSurat                     = $request->noSurat;
         $id_jenisPengawasan          = $request->id_jenisPengawasan;
+        $id_kelompokPenugasan          = $request->id_kelompokPenugasan;
         $id_obrik                    = $request->id_obrik;
         $tanggalAwalPenugasan        = $request->tanggalAwalPenugasan;
         $id_anggaran                 = $request->id_anggaran;
@@ -61,6 +63,7 @@ class SuratController extends Controller
         $penugasan = [
             'noSurat'                => $noSurat,
             'id_jenisPengawasan'     => $id_jenisPengawasan,
+            'id_kelompokPenugasan'     => $id_kelompokPenugasan,
             'id_obrik'               => $id_obrik,
             'tanggalTerbitPenugasan' => $tanggalTerbitPenugasan,
             'id_anggaran'            => $id_anggaran,

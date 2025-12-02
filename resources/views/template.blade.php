@@ -91,7 +91,7 @@
                 <a href="{{ url('index') }}" class="app-brand-link">
                   <span class="app-brand-logo demo">
                     @if (isset($f))
-                    <img src="{{ asset('logo/sragen.png' ) }}"  alt="" style="width: 65px;height:65px; align-items:center" class="ms-2 mt-3 ">
+                    <img src="{{ asset('storage/logo/' . $f) }}"  alt="" style="width: 65px;height:65px; align-items:center" class="ms-2 mt-3 ">
                     @endif
 
                   </span>
@@ -200,6 +200,13 @@
               <a href="{{ url('Peran') }}" class="menu-link text-white">
                 <i class="menu-icon fas fa-users"></i>
                 <div data-i18n="Analytics">Daftar Peran</div>
+              </a>
+            </li>
+
+              <li class="menu-item ">
+              <a href="{{ url('k_penugasan') }}" class="menu-link text-white">
+                <i class="menu-icon fas fa-users"></i>
+                <div data-i18n="Analytics">Kelompok Penugasan</div>
               </a>
             </li>
 
