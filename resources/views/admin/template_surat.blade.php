@@ -304,7 +304,7 @@
           $f = session('brand_logo');
       @endphp
             <div class="disp" >
-            <img class="logo" style="width: 90px;height:90px;margin-top:15px; margin-left:20px" src="{{ asset('logo/sragen.png' ) }}"/>
+            <img class="logo" style="width: 90px;height:90px;margin-top:15px; margin-left:20px" src="{{ asset('storage/logo/'.$data['logo']) }}" />
                 <h6 class="up">{{ $data['instansi'] }} </h6>
                 <h5 class="up" id="nama">{{ $data['skpd'] }}</h5><br />
                 <h6 class="status">{{ $data['alamat'] }} Telp/Fax {{ $data['telp'] }}</h6><span
@@ -326,10 +326,10 @@
                     <table class="table1">
                         <thead>
                             <tr>
-                                <th>NO</th>
-                                <th class="text-center">NAMA</th>
-                                <th class="text-center">NIP</th>
-                                <th class="text-center">PERAN</th>
+                                <th style="width: 10%" class="text-center">NO</th>
+                                <th class="text-center" style="width: 40%">NAMA</th>
+                                <th class="text-center" style="width: 25%">NIP</th>
+                                <th class="text-center" style="width: 40%" >PERAN</th>
                             </tr>
                         </thead>
                         <tbody>
