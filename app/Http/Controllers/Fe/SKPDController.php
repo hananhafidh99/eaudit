@@ -19,7 +19,7 @@ class SKPDController extends Controller
         $data = Http::get("http://127.0.0.1:8000/api/skpd", ['token' => $token])['data'][0];
         $pegawai = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => true])['data'];
         // $pegawai = Pegawai::all();
-        session(['brand_logo' => $data['logo'], 'id_pimpinan' => $data['id_pimpinan'], 'id_bendahara' => $data['id_bendahara']]);
+        session(['brand_logo' => $data['logo'], 'id_pimpinan' => $data['id_pimpinan'] ?? null, 'id_bendahara' => $data['id_bendahara']]);
 
 
         return view('admin.skpd', compact('data', 'pegawai'));
@@ -52,7 +52,7 @@ class SKPDController extends Controller
 
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8002/api/skpd?token=" . $token;
+        $url = "http://127.0.0.1:8000/api/skpd?token=" . $token;
         $response = $client->request('POST', $url, [
             'headers' => ['Content-type' => 'application/json'],
             'body' => json_encode($parameter)
@@ -72,7 +72,7 @@ class SKPDController extends Controller
     {
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8002/api/skpd/$id?token=" . $token;
+        $url = "http://127.0.0.1:8000/api/skpd/$id?token=" . $token;
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);
@@ -131,8 +131,8 @@ class SKPDController extends Controller
                     'contents' => $request->nomorsurat
                 ],
                 [
-                    'name' => 'id_pemimpin',
-                    'contents' => $request->id_pemimpin
+                    'name' => 'id_pimpinan',
+                    'contents' => $request->id_pimpinan
                 ],
                 [
                     'name' => 'id_bendahara',
@@ -152,7 +152,7 @@ class SKPDController extends Controller
 
             $client = new Client();
             $token = session('ctoken');
-            $url = "http://127.0.0.1:8002/api/skpd/$id?token=" . $token;
+            $url = "http://127.0.0.1:8000/api/skpd/$id?token=" . $token;
             $response = $client->request('POST', $url, [
                 'multipart' => $parameter
             ]);
@@ -163,8 +163,7 @@ class SKPDController extends Controller
             // Debug: Log response untuk debugging
             Log::info('SKPD Update Response:', $contentArray);
 
-            // Temporary debug - uncomment to see response
-            dd('URL:', $url, 'Parameter sent:', $parameter, 'Response:', $contentArray);
+
 
             if ($contentArray['status'] != true) {
                 $error = $contentArray['data'] ?? $contentArray['message'] ?? 'Unknown error';
@@ -184,7 +183,7 @@ class SKPDController extends Controller
     {
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8002/api/skpd/$id?token=" . $token;
+        $url = "http://127.0.0.1:8000/api/skpd/$id?token=" . $token;
         $response = $client->request('DELETE', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);

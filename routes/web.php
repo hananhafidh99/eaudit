@@ -13,7 +13,7 @@ use App\Http\Controllers\Fe\PangkatController;
 use App\Http\Controllers\Fe\PegawaiController;
 use App\Http\Controllers\Fe\KegiatanController;
 use App\Http\Controllers\Fe\JenisPengawasanController;
-use App\Http\Controllers\Fe\KelompokPenugasan;
+use App\Http\Controllers\Fe\KelompokPenugasanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +36,7 @@ Route::get('/', function () {
 });
 Route::resource('skpd', SKPDController::class);
 
-Route::POST('/skpd_edit', [SKPDController::class, 'update']);
+Route::post('/skpd_edit', [SKPDController::class, 'update']);
 
 // Route::POST('/skpd/{id}', [SKPDController::class,'update'])->name('skpd.update');
 Route::resource('pangkat', PangkatController::class);
@@ -113,13 +113,8 @@ Route::post('/obrik_baru', [ObrikController::class, 'store']);
 Route::get('obrik/{id}/edit', [ObrikController::class, 'edit']);
 Route::put('obrik/{id}', [ObrikController::class, 'update']);
 Route::delete('obrik/{id}/hapus', [ObrikController::class, 'destroy']);
-Route::get('/obrik', [ObrikController::class, 'index']);
 
-Route::get('/Peran', [PeranController::class, 'index']);
-Route::get('/Peran_baru', [PeranController::class, 'create']);
-Route::post('/Peran_baru', [PeranController::class, 'store']);
-Route::get('Peran/{id}/edit', [PeranController::class, 'edit']);
-Route::put('Peran/{id}', [PeranController::class, 'update']);
+
 Route::get('search_obrik', [ObrikController::class, 'SearchObrik']);
 
 // // Route::get('/jenisPengawasan_cari', [JenisPengawasanController::class, 'cari']);
@@ -165,9 +160,9 @@ Route::get('users/export/', [UserController::class, 'export']);
 
 Route::get('pegawai/export/', [PegawaiController::class, 'export']);
 
-Route::get('k_penugasan', [KelompokPenugasan::class, 'index']);
-Route::get('k_penugasan_baru', [KelompokPenugasan::class, 'create']);
-Route::post('k_penugasan', [KelompokPenugasan::class, 'store']);
-Route::get('k_penugasan/{id}/edit', [KelompokPenugasan::class, 'edit']);
-Route::put('k_penugasan/{id}', [KelompokPenugasan::class, 'update']);
-Route::delete('k_penugasan/{id}/hapus', [KelompokPenugasan::class, 'destroy']);
+Route::get('k_penugasan', [KelompokPenugasanController::class, 'index']);
+Route::get('k_penugasan_baru', [KelompokPenugasanController::class, 'create']);
+Route::post('k_penugasan', [KelompokPenugasanController::class, 'store']);
+Route::get('k_penugasan/{id}/edit', [KelompokPenugasanController::class, 'edit']);
+Route::put('k_penugasan/{id}', [KelompokPenugasanController::class, 'update']);
+Route::delete('k_penugasan/{id}/hapus', [KelompokPenugasanController::class, 'destroy']);

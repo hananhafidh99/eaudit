@@ -17,7 +17,7 @@ class ObrikController extends Controller
 
             if (!$user) {
                 abort(response()->json([
-                    'messsage' => 'Token Not Valid',
+                    'message' => 'Token Not Valid',
                 ], 401));
             }
 
@@ -134,16 +134,15 @@ class ObrikController extends Controller
         }
     }
 
-    public function search(Request $request)
+    public function search(Request $request, $nama_obrik)
     {
-        $nama_obrik = $request->nama_obrik;
         $obrik = Obrik::where("nama_obrik", 'LIKE', '%' . $nama_obrik . '%')->get();
         return response()->json($obrik);
     }
 
     public function search2(Request $request)
     {
-        $nama_obrik = $request->nama_obrik;
+        $nama_obrik = $request->input('nama_obrik');
         $obrik = Obrik::where("nama_obrik", 'LIKE', '%' . $nama_obrik . '%')->get();
         return response()->json($obrik);
     }

@@ -6,7 +6,7 @@ use App\Models\SKPD;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Skpd as ModelsSkpd;
+
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +21,7 @@ class SKPDController extends Controller
 
             if (!$user) {
                 abort(response()->json([
-                    'messsage' => 'Token Not Valid', // Typo preserved from original code
+                    'message' => 'Token Not Valid',
                 ], 401));
             }
 
@@ -105,19 +105,17 @@ class SKPDController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         try {
             // Debug: Log incoming request
             Log::info('API SKPD Update received:', [
-                'id' => $request->id,
+                'id' => $id,
                 'all_data' => $request->all(),
                 'token' => $request->token
             ]);
 
-            $id = $request->id;
-
-            $dataSkpd = Skpd::where('id', $id)->first();
+            $dataSkpd = SKPD::where('id', $id)->first();
             if (empty($dataSkpd)) {
                 return response()->json([
                     'status' => false,
@@ -144,8 +142,8 @@ class SKPDController extends Controller
                 $rules['nomorsurat'] = 'nullable';
             if ($request->filled('kodepos'))
                 $rules['kodepos'] = 'required';
-            if ($request->filled('id_pemimpin'))
-                $rules['id_pemimpin'] = 'required';
+            if ($request->filled('id_pimpinan'))
+                $rules['id_pimpinan'] = 'required';
             if ($request->filled('id_bendahara'))
                 $rules['id_bendahara'] = 'required';
 
@@ -160,10 +158,10 @@ class SKPDController extends Controller
 
             if ($request->hasFile('logo')) {
                 $logo = $request->file('logo');
-                $logo->storeAs('public/logo', $logo->hashName());
+                $logo->storeAs('logo', $logo->hashName(), 'public');
 
                 if ($dataSkpd->logo) {
-                    Storage::delete('public/logo/' . basename($dataSkpd->logo));
+                    Storage::disk('public')->delete('logo/' . basename($dataSkpd->logo));
                 }
 
                 $dataSkpd->logo = $logo->hashName();
@@ -186,8 +184,8 @@ class SKPDController extends Controller
                 $dataSkpd->kodepos = $request->kodepos;
             if ($request->has('nomorsurat'))
                 $dataSkpd->nomorsurat = $request->nomorsurat;
-            if ($request->has('id_pemimpin'))
-                $dataSkpd->id_pemimpin = $request->id_pemimpin;
+            if ($request->has('id_pimpinan'))
+                $dataSkpd->id_pimpinan = $request->id_pimpinan;
             if ($request->has('id_bendahara'))
                 $dataSkpd->id_bendahara = $request->id_bendahara;
             $dataSkpd->save();
@@ -243,7 +241,7 @@ class SKPDController extends Controller
             'kodepos' => $value->kodepos,
             'logo' => $value->logo,
             'bendahara' => $value->id_bendahara,
-            'pemimpin' => $value->id_pemimpin,
+            'pemimpin' => $value->id_pimpinan,
         ];
 
         return response()->json([

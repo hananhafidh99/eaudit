@@ -35,23 +35,23 @@ Route::apiResource('k_penugasan', KelompokPenugasanController::class);
 Route::apiResource('/penugasan', SuratController::class);
 Route::apiResource('/eselon', EselonController::class);
 Route::apiResource('/jabatan', JabatanController::class);
-Route::apiResource('/eselon', EselonController::class);
-Route::apiResource('/jenisPengawasan', JenisPengawasanController ::class);
-Route::apiResource('/pangkat', PangkatController ::class);
-Route::apiResource('/pegawai', PegawaiController ::class);
-Route::apiResource('/peran', PeranController ::class);
-Route::apiResource('/obrik', ObrikController ::class);
 
-Route::apiResource('/user', UserController ::class);
+Route::apiResource('/jenisPengawasan', JenisPengawasanController::class);
+Route::apiResource('/pangkat', PangkatController::class);
+Route::apiResource('/pegawai', PegawaiController::class);
+Route::apiResource('/peran', PeranController::class);
+Route::apiResource('/obrik', ObrikController::class);
+
+Route::apiResource('/user', UserController::class);
 
 Route::post('login', [UserController::class, 'login']);
-Route::apiResource('/kegiatan', KegiatanController ::class);
+Route::apiResource('/kegiatan', KegiatanController::class);
 
 Route::post('penugasan/store', [SuratController::class, 'storePenugasan']);
-Route::PUT('penugasan_update', [SuratController::class, 'update']);
+Route::put('penugasan_update', [SuratController::class, 'update']);
 
 // update data SKPD
-Route::POST('/skpd/{id}', [SKPDController::class,'update'])->name('skpd.update');
+Route::post('/skpd/{id}', [SKPDController::class, 'update'])->name('skpd.update');
 
 Route::get('/pegawai-edit/{id}', [PegawaiController::class, 'editPegawai']);
 Route::get('/kegiatan-edit/{id}', [KegiatanController::class, 'editKegiatan']);
@@ -75,6 +75,6 @@ Route::get('/dataobrik/search', [ObrikController::class, 'search2']);
 Route::get('/datajenisPengawasan/search/{nama_jenispengawasan}', [JenisPengawasanController::class, 'search']);
 Route::get('/datajenisPengawasan/search', [JenisPengawasanController::class, 'search2']);
 
-Route::POST('/dataobrikarsip/search', [SuratController::class, 'arsipobrik']);
+Route::post('/dataobrikarsip/search', [SuratController::class, 'arsipobrik']);
 
 Route::get('/penugasan-st/{id}', [SuratController::class, 'surattugas']);
