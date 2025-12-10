@@ -14,16 +14,19 @@ use Illuminate\Support\Facades\Log;
 class SKPDController extends Controller
 {
 
-    public function __construct(Request $request)
+    public function __construct()
     {
-        $user = DB::table('users')->where('remember_token', $request->token)->first();
+        $this->middleware(function ($request, $next) {
+            $user = DB::table('users')->where('remember_token', $request->token)->first();
 
-        if (!$user) {
-            abort(response()->json([
-                'messsage' => 'Token Not Valid',
-            ], 401));
-        }
+            if (!$user) {
+                abort(response()->json([
+                    'messsage' => 'Token Not Valid', // Typo preserved from original code
+                ], 401));
+            }
 
+            return $next($request);
+        });
     }
     public function index()
     {
@@ -102,7 +105,7 @@ class SKPDController extends Controller
         ]);
     }
 
-   public function update(Request $request)
+    public function update(Request $request)
     {
         try {
             // Debug: Log incoming request

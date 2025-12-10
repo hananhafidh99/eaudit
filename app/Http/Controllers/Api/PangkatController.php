@@ -10,27 +10,29 @@ use Illuminate\Support\Facades\Validator;
 
 class PangkatController extends Controller
 {
-    public function __construct(Request $request)
+    public function __construct()
     {
-    $user = DB::table('users')->where('remember_token', $request->token)->first();
+        $this->middleware(function ($request, $next) {
+            $user = DB::table('users')->where('remember_token', $request->token)->first();
 
-    if (!$user)
-    {
-        abort(response()->json([
-            'messsage' => 'Token Not Valid',
-        ],401));
-    }
+            if (!$user) {
+                abort(response()->json([
+                    'messsage' => 'Token Not Valid',
+                ], 401));
+            }
 
+            return $next($request);
+        });
     }
     public function index()
     {
         //get all posts
         $pangkat = Pangkat::orderBy('id', 'asc')->get();
         return response()->json([
-            'status'     => true,
-            'message'    => 'data di temukan',
-            'data'       => $pangkat
-        ],200);
+            'status' => true,
+            'message' => 'data di temukan',
+            'data' => $pangkat
+        ], 200);
     }
 
     public function store(Request $request)
@@ -38,16 +40,16 @@ class PangkatController extends Controller
         $dataPangkat = new Pangkat;
 
         $rules = [
-            'nama_pangkat'   => 'required',
+            'nama_pangkat' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Memasukkan data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
@@ -56,42 +58,42 @@ class PangkatController extends Controller
         $pangkat = $dataPangkat->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Memasukkan data'
         ]);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $dataPangkat = Pangkat::find($id);
         if (empty($dataPangkat)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $rules = [
-            'nama_pangkat'   => 'required'
+            'nama_pangkat' => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Melakukan Update data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
-            $dataPangkat->nama_pangkat = $request->nama_pangkat;
+        $dataPangkat->nama_pangkat = $request->nama_pangkat;
 
-            $pangkat = $dataPangkat->save();
+        $pangkat = $dataPangkat->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Update data'
         ]);
     }
@@ -102,15 +104,15 @@ class PangkatController extends Controller
         if (empty($dataPangkat)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $pangkat = $dataPangkat->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Hapus data'
         ]);
     }
@@ -124,10 +126,8 @@ class PangkatController extends Controller
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $pangkat
-            ],200);
-        }
-        else
-        {
+            ], 200);
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Data tidak ditemukan'

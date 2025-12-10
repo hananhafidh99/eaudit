@@ -10,17 +10,19 @@ use Illuminate\Support\Facades\Validator;
 
 class EselonController extends Controller
 {
-     public function __construct(Request $request)
+    public function __construct()
     {
-    $user = DB::table('users')->where('remember_token', $request->token)->first();
+        $this->middleware(function ($request, $next) {
+            $user = DB::table('users')->where('remember_token', $request->token)->first();
 
-    if (!$user)
-    {
-        abort(response()->json([
-            'messsage' => 'Token Not Valid',
-        ],401));
-    }
+            if (!$user) {
+                abort(response()->json([
+                    'messsage' => 'Token Not Valid',
+                ], 401));
+            }
 
+            return $next($request);
+        });
     }
 
     public function index()
@@ -28,10 +30,10 @@ class EselonController extends Controller
         //get all posts
         $eselon = Eselon::orderBy('id', 'asc')->get();
         return response()->json([
-            'status'     => true,
-            'message'    => 'data di temukan',
-            'data'       => $eselon
-        ],200);
+            'status' => true,
+            'message' => 'data di temukan',
+            'data' => $eselon
+        ], 200);
     }
 
     public function store(Request $request)
@@ -39,16 +41,16 @@ class EselonController extends Controller
         $dataEselon = new Eselon;
 
         $rules = [
-            'nama_eselon'   => 'required',
+            'nama_eselon' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Memasukkan data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
@@ -57,42 +59,42 @@ class EselonController extends Controller
         $eselon = $dataEselon->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Memasukkan data'
         ]);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $dataEselon = Eselon::find($id);
         if (empty($dataEselon)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $rules = [
-            'nama_eselon'   => 'required'
+            'nama_eselon' => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Melakukan Update data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
-            $dataEselon->nama_eselon = $request->nama_eselon;
+        $dataEselon->nama_eselon = $request->nama_eselon;
 
-            $eselon = $dataEselon->save();
+        $eselon = $dataEselon->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Update data'
         ]);
     }
@@ -103,15 +105,15 @@ class EselonController extends Controller
         if (empty($dataEselon)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $eselon = $dataEselon->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Hapus data'
         ]);
     }
@@ -125,10 +127,8 @@ class EselonController extends Controller
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $eselon
-            ],200);
-        }
-        else
-        {
+            ], 200);
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Data tidak ditemukan'

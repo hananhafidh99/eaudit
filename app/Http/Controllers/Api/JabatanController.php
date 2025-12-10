@@ -10,17 +10,19 @@ use App\Http\Controllers\Controller;
 
 class JabatanController extends Controller
 {
-     public function __construct(Request $request)
+    public function __construct()
     {
-    $user = DB::table('users')->where('remember_token', $request->token)->first();
+        $this->middleware(function ($request, $next) {
+            $user = DB::table('users')->where('remember_token', $request->token)->first();
 
-    if (!$user)
-    {
-        abort(response()->json([
-            'messsage' => 'Token Not Valid',
-        ],401));
-    }
+            if (!$user) {
+                abort(response()->json([
+                    'messsage' => 'Token Not Valid',
+                ], 401));
+            }
 
+            return $next($request);
+        });
     }
 
     public function index()
@@ -28,10 +30,10 @@ class JabatanController extends Controller
         //get all posts
         $jabatan = Jabatan::orderBy('id', 'asc')->get();
         return response()->json([
-            'status'     => true,
-            'message'    => 'data di temukan',
-            'data'       => $jabatan
-        ],200);
+            'status' => true,
+            'message' => 'data di temukan',
+            'data' => $jabatan
+        ], 200);
     }
 
     public function store(Request $request)
@@ -39,16 +41,16 @@ class JabatanController extends Controller
         $dataJabatan = new Jabatan;
 
         $rules = [
-            'nama_jabatan'   => 'required',
+            'nama_jabatan' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Memasukkan data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
@@ -57,42 +59,42 @@ class JabatanController extends Controller
         $jabatan = $dataJabatan->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Memasukkan data'
         ]);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $dataJabatan = Jabatan::find($id);
         if (empty($dataJabatan)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $rules = [
-            'nama_jabatan'   => 'required'
+            'nama_jabatan' => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Melakukan Update data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
-            $dataJabatan->nama_jabatan = $request->nama_jabatan;
+        $dataJabatan->nama_jabatan = $request->nama_jabatan;
 
-            $jabatan = $dataJabatan->save();
+        $jabatan = $dataJabatan->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Update data'
         ]);
     }
@@ -103,15 +105,15 @@ class JabatanController extends Controller
         if (empty($dataJabatan)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $jabatan = $dataJabatan->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Hapus data'
         ]);
     }
@@ -125,10 +127,8 @@ class JabatanController extends Controller
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $jabatan
-            ],200);
-        }
-        else
-        {
+            ], 200);
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Data tidak ditemukan'

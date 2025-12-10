@@ -11,27 +11,29 @@ use Illuminate\Support\Facades\Validator;
 
 class JenisPengawasanController extends Controller
 {
-    public function __construct(Request $request)
+    public function __construct()
     {
-    $user = DB::table('users')->where('remember_token', $request->token)->first();
+        $this->middleware(function ($request, $next) {
+            $user = DB::table('users')->where('remember_token', $request->token)->first();
 
-    if (!$user)
-    {
-        abort(response()->json([
-            'messsage' => 'Token Not Valid',
-        ],401));
-    }
+            if (!$user) {
+                abort(response()->json([
+                    'messsage' => 'Token Not Valid',
+                ], 401));
+            }
 
+            return $next($request);
+        });
     }
     public function index()
     {
         //get all posts
         $jp = Jenis_Pengawasan::latest()->get();
         return response()->json([
-            'status'     => true,
-            'message'    => 'data di temukan',
-            'data'       => $jp
-        ],200);
+            'status' => true,
+            'message' => 'data di temukan',
+            'data' => $jp
+        ], 200);
     }
 
     public function store(Request $request)
@@ -39,16 +41,16 @@ class JenisPengawasanController extends Controller
         $dataJP = new Jenis_Pengawasan;
 
         $rules = [
-            'nama_jenispengawasan'   => 'required',
+            'nama_jenispengawasan' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Memasukkan data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
@@ -57,42 +59,42 @@ class JenisPengawasanController extends Controller
         $jp = $dataJP->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Memasukkan data'
         ]);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $dataJP = Jenis_Pengawasan::find($id);
         if (empty($dataJP)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $rules = [
-            'nama_jenispengawasan'   => 'required'
+            'nama_jenispengawasan' => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Melakukan Update data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
-            $dataJP->nama_jenispengawasan = $request->nama_jenispengawasan;
+        $dataJP->nama_jenispengawasan = $request->nama_jenispengawasan;
 
-            $jp = $dataJP->save();
+        $jp = $dataJP->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Update data'
         ]);
     }
@@ -103,15 +105,15 @@ class JenisPengawasanController extends Controller
         if (empty($dataJP)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $jp = $dataJP->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Hapus data'
         ]);
     }
@@ -124,10 +126,8 @@ class JenisPengawasanController extends Controller
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $jp
-            ],200);
-        }
-        else
-        {
+            ], 200);
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Data tidak ditemukan'
@@ -135,17 +135,17 @@ class JenisPengawasanController extends Controller
         }
     }
 
-        public function search(Request $request)
+    public function search(Request $request)
     {
         $nama_jenisPengawasan = $request->nama_jenisPengawasan;
-        $jenisPengawasan = Jenis_Pengawasan::where("nama_jenispengawasan",'LIKE','%'.$nama_jenisPengawasan.'%')->get();
+        $jenisPengawasan = Jenis_Pengawasan::where("nama_jenispengawasan", 'LIKE', '%' . $nama_jenisPengawasan . '%')->get();
         return response()->json($jenisPengawasan);
     }
 
-       public function search2(Request $request)
+    public function search2(Request $request)
     {
         $nama_jenisPengawasan = $request->nama_jenisPengawasan;
-        $jenisPengawasan = Jenis_Pengawasan::where("nama_jenispengawasan",'LIKE','%'.$nama_jenisPengawasan.'%')->get();
+        $jenisPengawasan = Jenis_Pengawasan::where("nama_jenispengawasan", 'LIKE', '%' . $nama_jenisPengawasan . '%')->get();
         return response()->json($jenisPengawasan);
     }
 

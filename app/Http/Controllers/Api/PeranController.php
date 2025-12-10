@@ -10,27 +10,29 @@ use Illuminate\Support\Facades\Validator;
 
 class PeranController extends Controller
 {
-     public function __construct(Request $request)
+    public function __construct()
     {
-    $user = DB::table('users')->where('remember_token', $request->token)->first();
+        $this->middleware(function ($request, $next) {
+            $user = DB::table('users')->where('remember_token', $request->token)->first();
 
-    if (!$user)
-    {
-        abort(response()->json([
-            'messsage' => 'Token Not Valid',
-        ],401));
-    }
+            if (!$user) {
+                abort(response()->json([
+                    'messsage' => 'Token Not Valid',
+                ], 401));
+            }
 
+            return $next($request);
+        });
     }
     public function index()
     {
         //get all posts
         $peran = Peran::orderBy('id', 'asc')->get();
         return response()->json([
-            'status'     => true,
-            'message'    => 'data di temukan',
-            'data'       => $peran
-        ],200);
+            'status' => true,
+            'message' => 'data di temukan',
+            'data' => $peran
+        ], 200);
     }
 
     public function store(Request $request)
@@ -38,16 +40,16 @@ class PeranController extends Controller
         $dataPeran = new Peran();
 
         $rules = [
-            'nama_peran'   => 'required',
+            'nama_peran' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Memasukkan data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
@@ -58,44 +60,44 @@ class PeranController extends Controller
         $peran = $dataPeran->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Memasukkan data'
         ]);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $dataPeran = Peran::find($id);
         if (empty($dataPeran)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $rules = [
-            'nama_peran'   => 'required'
+            'nama_peran' => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Gagal Melakukan Update data',
-                'data'    => $validator->errors()
+                'data' => $validator->errors()
             ]);
         }
 
-            $dataPeran->nama_peran = $request->nama_peran;
-            $dataPeran->tarif = $request->tarif;
-            $dataPeran->sort_order = $request->sort_order;
+        $dataPeran->nama_peran = $request->nama_peran;
+        $dataPeran->tarif = $request->tarif;
+        $dataPeran->sort_order = $request->sort_order;
 
-            $peran = $dataPeran->save();
+        $peran = $dataPeran->save();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Update data'
         ]);
     }
@@ -106,15 +108,15 @@ class PeranController extends Controller
         if (empty($dataPeran)) {
             # code...
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
         $peran = $dataPeran->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Sukses Melakukan Hapus data'
         ]);
     }
@@ -128,10 +130,8 @@ class PeranController extends Controller
                 'status' => true,
                 'message' => 'Data ditemukan',
                 'data' => $peran
-            ],200);
-        }
-        else
-        {
+            ], 200);
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Data tidak ditemukan'
