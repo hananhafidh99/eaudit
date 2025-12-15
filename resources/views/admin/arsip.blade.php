@@ -48,10 +48,10 @@
                             <th>No Surat</th>
                             <th>Tanggal</th>
                             <th>Pegawai</th>
-                            <th>Unduh Dokumen</th>
-                            <th>Bukti</th>
                             <th>Jenis Pengawasan</th>
                             <th>Obrik</th>
+                            <th>Unduh Dokumen</th>
+                            <th>Bukti</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -75,6 +75,8 @@
                                         @endforeach
                                     </ul>
                                 </td>
+                                <td>{{ $v['nama_jenispengawasan'] }}</td>
+                                <td>{{ $v['nama_obrik'] }}</td>
                                 <td>
                                     <div class="d-flex gap-2">
                                         <a href="{{ url('surat_dalamKota/ST/' . $v['id']) }}"
@@ -97,8 +99,6 @@
                                         <i class="bx bx-receipt"></i> Bukti
                                     </a>
                                 </td>
-                                <td>{{ $v['nama_jenispengawasan'] }}</td>
-                                <td>{{ $v['nama_obrik'] }}</td>
                             </tr>
                         @empty
                             <tr>

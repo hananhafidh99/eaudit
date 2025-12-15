@@ -86,8 +86,8 @@
                         <a href="{{ url('surat_dalamKota/SD/'.$v['id']) }}"  target="_blank"><i class="far fa-file-pdf fa-2x ms-2"></i></a>
                     </td>
                     <td scope="row">
-                        <a href="{{ url('surat_dalamKota/'.$v['id'].'/edit') }}"  class="btn btn-warning"> Edit</a>
-                        <a href="{{ url('perjalananDalam/suratDinas/'.$v['id']) }}" class="btn btn-danger">Hapus</a>
+                        <a href="{{ url('surat_dalamKota/'.$v['id'].'/edit') }}"  class="btn btn-warning"> <i class="fas fa-eye"></i></a>
+                        <a href="{{ url('perjalananDalam/suratDinas/'.$v['id']) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
                     </td>
                     </tr>
                 <?php $i++; ?>

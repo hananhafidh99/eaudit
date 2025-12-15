@@ -56,16 +56,16 @@
                 <td>{{ $v['rekening_pegawai']}}</td>
                 <td>
                     <div class="row">
-                        <div class="col-xl-2 col-md-3 mb-2">
+                        <div class="col-sm-4">
                             <a href="{{ url('pegawai/' . $v["id"] . '/edit') }}"
-                                class="btn btn-outline-primary btn-sm ">Edit</a>
+                                class="btn btn-outline-primary btn-sm "><i class="fas fa-eye"></i></a>
                         </div>
-                        <div class="col-xl-2 col-md-3 ">
+                        <div class="col-sm-3">
                             <form action="{{ url('pegawai/' . $v["id"] . '/hapus') }}" method="POST"
                                 class="d-inline ">
                                 @method('delete')
                                 @csrf
-                                <button class="btn btn-danger btn-sm">Hapus</button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                             </form>
                         </div>
                     </div>

@@ -197,7 +197,7 @@
             </li>
 
             <li class="menu-item ">
-              <a href="{{ url('Peran') }}" class="menu-link text-white">
+              <a href="{{ url('peran') }}" class="menu-link text-white">
                 <i class="menu-icon fas fa-users"></i>
                 <div data-i18n="Analytics">Daftar Peran</div>
               </a>
@@ -239,6 +239,20 @@
               </a>
             </li>
 
+            <li class="menu-item ">
+              <a href="{{ url('arsip') }}" class="menu-link text-white">
+                 <i class="menu-icon fas fa-book"></i>
+                <div data-i18n="Analytics">Rekap</div>
+              </a>
+            </li>
+
+             <li class="menu-item ">
+              <a href="{{ url('arsip') }}" class="menu-link text-white">
+                 <i class="menu-icon fas fa-book"></i>
+                <div data-i18n="Analytics">Tabel Kendali</div>
+              </a>
+            </li>
+
               <li class="menu-header small text-uppercase">
               <span class="menu-header-text">DATA LAPORAN</span>
             </li>
@@ -249,16 +263,28 @@
             <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link text-white menu-toggle">
                 <i class="menu-icon fas fa-book"></i>
-                <div data-i18n="Layouts">Laporan Surat Tugas PDF </div>
+                <div data-i18n="Layouts">Laporan Penugasan PDF </div>
               </a>
 
               <ul class="menu-sub">
 
                 <li class="menu-item">
                   <a href="{{ url('laporanKegiatanPDF') }}" class="menu-link text-white">
-                    <div data-i18n="Without menu">Rekap PDF</div>
+                    <div data-i18n="Without menu">Berdasarkan Jenis Kegiatan</div>
                   </a>
                 </li>
+
+
+              </ul>
+            </li>
+
+             <li class="menu-item">
+              <a href="javascript:void(0);" class="menu-link text-white menu-toggle">
+                <i class="menu-icon fas fa-book"></i>
+                <div data-i18n="Layouts">Laporan Penugasan Excel </div>
+              </a>
+
+              <ul class="menu-sub">
 
                 <li class="menu-item">
                   <a href="{{ url('laporanKegiatanPDF') }}" class="menu-link text-white">
@@ -271,6 +297,7 @@
             </li>
 
           </ul>
+
         </aside>
         <!-- / Menu -->
 

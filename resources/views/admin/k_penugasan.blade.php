@@ -28,14 +28,14 @@
                             <div class="row">
                                 <div class="col-sm-2">
                                     <a href="{{ url('k_penugasan/' . $v['id'] . '/edit') }}"
-                                        class="btn btn-outline-primary btn-sm">Edit</a>
+                                        class="btn btn-outline-primary btn-sm"><i class="fas fa-eye"></i></a>
                                 </div>
                                 <div class="col-sm-2 ">
                                     <form action="{{ url('k_penugasan/' . $v['id']. '/hapus') }}" onsubmit="return confirm('apakah anda akan menghapus data ini ?')" method="POST"
                                         class="d-inline mb-3">
                                         @method('delete')
                                         @csrf
-                                        <button type="submit" name="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                        <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </div>

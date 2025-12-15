@@ -54,7 +54,7 @@
                         <label for="">Logo</label>
                         <input type="file" class="form-control" name="logo" id="basic-default-fullname" />
                         @if (!empty($data['logo']))
-                            <img src="{{ 'http://127.0.0.1:8000/storage/logo/' . $data['logo'] }}" class="mt-3" alt="Logo"
+                            <img src="{{ 'http://127.0.0.1:8000/storage/public/logo/' . $data['logo'] }}" class="mt-3" alt="Logo"
                                 style="width: 50px">
                         @else
                             <p class="mt-3">Logo belum tersedia</p>
@@ -113,32 +113,6 @@
 
                 <button type="submit" class="btn btn-primary">Ubah Data</button>
             </form>
-        </div>
-    </div>
-
-    <div class="col-xl">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Nomor Surat</h5>
-            </div>
-            <div class="card-body">
-                <form action="{{ url("skpd_edit") }}" method="post">
-                    @csrf
-                    <input type="hidden" name="id" value="{{ $data['id'] }}">
-                    <div class="row mb-3">
-                        <div class="col-md-6 mt-3">
-                            <label class="form-label" for="basic-default-fullname">Nomor Surat Dalam Daerah</label>
-                        </div>
-                        <div class="col-md-6 mt-3">
-                            <input type="text" class="form-control" name="nomorsurat" id="basic-default-fullname"
-                                value="{{ $data['nomorsurat'] }}" />
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Ubah Data</button>
-
-                </form>
-            </div>
         </div>
     </div>
 

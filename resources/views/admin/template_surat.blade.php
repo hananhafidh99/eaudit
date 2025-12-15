@@ -318,7 +318,7 @@
                 <u>
                     <p class="judul">SURAT PERINTAH TUGAS</p>
                 </u>
-                <p class="nomor">No. {{ $data['nomorsurat'].'/'.$penugasan['noSurat'] . '/03' . '/'. Carbon\Carbon::parse($penugasan['tanggalAwalPenugasan'])->translatedFormat('Y') }} </p>
+                <p class="nomor">No. {{ $data['nomorsurat'].$penugasan['noSurat'] . '/03' . '/'. Carbon\Carbon::parse($penugasan['tanggalAwalPenugasan'])->translatedFormat('Y') }} </p>
             </center>
 
             <p style="text-indent: 3cm";>Inspektur Daerah Kabupaten Sragen memberikan tugas kepada :
@@ -327,9 +327,9 @@
                         <thead>
                             <tr>
                                 <th style="width: 10%" class="text-center">NO</th>
-                                <th class="text-center" style="width: 40%">NAMA</th>
-                                <th class="text-center" style="width: 25%">NIP</th>
-                                <th class="text-center" style="width: 40%" >PERAN</th>
+                                <th class="text-center" style="width: 45%">NAMA</th>
+                                <th class="text-center" style="width: 26%">NIP</th>
+                                <th class="text-center" style="width: 50%" >PERAN</th>
                             </tr>
                         </thead>
                         <tbody>

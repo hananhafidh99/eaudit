@@ -26,16 +26,16 @@
                         <td>{{ number_format($v['tarif']) }}</td>
                         <td>
                             <div class="row">
-                                <div class="col-sm-4 mb-2">
+                                <div class="col-sm-3 mb-2">
                                     <a href="{{ url('peran/' . $v['id'] . '/edit') }}"
-                                        class="btn btn-outline-primary btn-sm">Edit</a>
+                                        class="btn btn-outline-primary btn-sm"><i class="fas fa-eye"></i></a>
                                 </div>
-                                <div class="col-sm-4 ">
+                                <div class="col-sm-3 ">
                                     <form action="{{ url('peran/' . $v['id'] . '/hapus') }}" method="POST"
                                         class="d-inline mb-3">
                                         @method('delete')
                                         @csrf
-                                        <button class="btn btn-danger btn-sm">Hapus</button>
+                                        <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </div>
