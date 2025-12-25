@@ -27,7 +27,7 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
 
-    <title>SIMPTL</title>
+    <title>E-Penugasan</title>
 
     <meta name="description" content="" />
 
@@ -77,7 +77,7 @@
 
   {{-- <body style="background-image: url('{{ asset('logo/k5.jpg') }}'); background-repeat: no-repeat;  background-size: cover;"> --}}
 
-    <body style="background-image: url('{{ asset('logo/kantor.jpg') }}'); background-repeat: no-repeat;  background-size: cover;">
+    <body style="background-color:lightblue">
 
     <!-- Content -->
 

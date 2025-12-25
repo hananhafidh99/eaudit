@@ -34,6 +34,7 @@
                 Baru</a></div>
 
     </h5>
+
     <table id="mytable"  style="width: 100%">
         <thead>
             <tr>
@@ -84,6 +85,7 @@
             </ul>
         </nav>
         @endif
+
         {{-- <div class="d-flex mt-3 justify-content-end">
     @php
         $next = ($data['current_page'] != $data['last_page']) ? ($data['current_page']+1): $data['last_page'];

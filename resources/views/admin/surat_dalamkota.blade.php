@@ -43,11 +43,10 @@
          .pagination>.disabled>a,.pagination>.disabled>a:focus,.pagination>.disabled>a:hover,.pagination>.disabled>span,.pagination>.disabled>span:focus,.pagination>.disabled>span:hover{color:#777;cursor:not-allowed;background-color:#fff;border-color:#ddd}
         </style>
 
-        <div class="table-responsive">
-            <table class="table" style="max-width: 100%;">
-                <thead>
-                  <tr>
-                    <th width="5%">No</th>
+        <table id="mytable"  style="width: 100%">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
                     <th width="10%" style="margin-left: 10%">No Surat</th>
                     <th width="10%">Tanggal</th>
                     <th width="10%">Petugas</th>
@@ -56,12 +55,13 @@
                     <th width="10%">Unduh ST dan SPPD</th>
                     <th width="10%">Unduh Surat Dinas</th>
                     <th width="10%">Aksi</th>
-                  </tr>
-                </thead>
-                 <tbody>
-                    @foreach ($data['data'] as $i => $v)
-                    <tr>
-                    <td>{{ $i+1 }}</td>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $i = $data['from']; ?>
+            @foreach ($data['data'] as $index => $v)
+            <tr>
+                <td>{{ $i }}</td>
                     <td>{{ $v['noSurat'] }}</td>
                     <td>{{ $v['tanggal'] }}</td>
                     <td>
@@ -92,17 +92,18 @@
                     </tr>
                 <?php $i++; ?>
                 @endforeach
-                </tbody>
-                </table>
-                @if ($data['links'])
-                <nav aria-label="Page navigation example">
-                <ul class="pagination justify-content-end" style="margin-top: 20px">
-                        @foreach ($data['links'] as $item)
-                        <li class="page-item {{ $item['active']?'active':'' }}"><a class="page-link" href="{{ $item['url2'] }}">{!! $item['label'] !!}</a></li>
-                        @endforeach
-                </ul>
-            </nav>
-            @endif
+            </tbody>
+            </table>
+            @if ($data['links'])
+            <nav aria-label="Page navigation example">
+              <ul class="pagination justify-content-end" style="margin-top: 20px">
+                    @foreach ($data['links'] as $item)
+                    <li class="page-item {{ $item['active']?'active':'' }}"><a class="page-link" href="{{ $item['url2'] }}">{!! $item['label'] !!}</a></li>
+                    @endforeach
+            </ul>
+        </nav>
+        @endif
+
 
 
 

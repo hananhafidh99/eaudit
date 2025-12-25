@@ -54,7 +54,7 @@
                         <label for="">Logo</label>
                         <input type="file" class="form-control" name="logo" id="basic-default-fullname" />
                         @if (!empty($data['logo']))
-                            <img src="{{ 'http://127.0.0.1:8000/storage/public/logo/' . $data['logo'] }}" class="mt-3" alt="Logo"
+                            <img src="{{ asset('storage/logo/' . $data['logo']) }}" class="mt-3" alt="Logo"
                                 style="width: 50px">
                         @else
                             <p class="mt-3">Logo belum tersedia</p>
