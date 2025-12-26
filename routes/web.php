@@ -148,6 +148,8 @@ Route::get('surat_dalamKota/{id}/edit', [SuratController::class, 'edit'])->name(
 Route::post('surat_dalamKota/{id}', [SuratController::class, 'update'])->name('perjalanan/edit');
 // Route::delete('perjalananDalam/{id}/hapus', [SuratController::class, 'hapus']);
 
+Route::post('/check-overlap', [SuratController::class, 'checkOverlap']);
+
 Route::get('surat_dalamKota/ST/{id}', [SuratController::class, 'suratTugas']);
 Route::get('surat_dalamKota/suratDinas/{id}', [SuratController::class, 'suratDinas']);
 Route::get('surat_dalamKota/sppd/{id}', [SuratController::class, 'sppd']);

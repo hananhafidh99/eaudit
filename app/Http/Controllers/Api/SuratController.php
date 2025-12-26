@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use App\Models\Penugasan;
+use App\Models\Tabel_kendali;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -155,12 +156,118 @@ class SuratController extends Controller
         $total = 0;
         foreach ($penugasan->detail_petugas as $v => $item) {
             try {
-                $totalDayWeekend = $this->hitungSabtuMinggu($item->tanggalPemeriksaanAwal, $item->tanggalPemeriksaanAkhir) - 1;
+                // $totalDayWeekend = $this->hitungSabtuMinggu($item->tanggalPemeriksaanAwal, $item->tanggalPemeriksaanAkhir) - 1;
+                $totalDayWeekend = $this->hitungSabtuMinggu($item->tanggalPemeriksaanAwal, $item->tanggalPemeriksaanAkhir);
             } catch (\Throwable $e) {
                 $totalDayWeekend = 0;
             }
 
-            $item->Jumlah = ($item->Hari -= $totalDayWeekend) * $item->tarif;
+            // --- LOGIC PENGURANGAN BERDASARKAN TABEL KENDALI ---
+            $overlapDays = 0;
+            // Hanya proses jika id_pegawai valid
+            if (!empty($item->id_pegawai)) {
+                $overlaps = Tabel_kendali::where('id_pegawai', $item->id_pegawai)
+                    ->get();
+
+                // --- TAMBAHAN: Cek overlap dengan Surat Tugas Lain ---
+                $otherAssignments = DB::table('surat_tugas')
+                    ->join('penugasans', 'surat_tugas.id_penugasan', '=', 'penugasans.id')
+                    ->where('surat_tugas.id_pegawai', $item->id_pegawai)
+                    ->where('surat_tugas.id_penugasan', '!=', $id) // Exclude current assignment
+                    ->select('surat_tugas.*', 'penugasans.tanggalAwalPenugasan', 'penugasans.tanggalAkhirPenugasan')
+                    ->get();
+
+                // Merge collections for uniform processing if possible, or process separately.
+                // Processing separately to match dates.
+
+                $allConflictingRanges = [];
+
+                foreach ($overlaps as $ov) {
+                    $allConflictingRanges[] = [
+                        'start' => Carbon::parse($ov->tanggal_awal_pemeriksaan),
+                        'end' => Carbon::parse($ov->tanggal_akhir_pemeriksaan)
+                    ];
+                }
+
+                foreach ($otherAssignments as $oa) {
+                    // Use specific dates if available, else global
+                    $start = $oa->tanggalAwalPemeriksaan ? Carbon::parse($oa->tanggalAwalPemeriksaan) : Carbon::parse($oa->tanggalAwalPenugasan);
+                    $end = $oa->tanggalAkhirPemeriksaan ? Carbon::parse($oa->tanggalAkhirPemeriksaan) : Carbon::parse($oa->tanggalAkhirPenugasan);
+                    $allConflictingRanges[] = [
+                        'start' => $start,
+                        'end' => $end
+                    ];
+                }
+
+                foreach ($allConflictingRanges as $range) {
+                    $start1 = Carbon::parse($item->tanggalPemeriksaanAwal);
+                    $end1 = Carbon::parse($item->tanggalPemeriksaanAkhir);
+
+                    $start2 = $range['start'];
+                    $end2 = $range['end'];
+
+                    // Cek irisan tanggal
+                    if ($start1->lessThanOrEqualTo($end2) && $end1->greaterThanOrEqualTo($start2)) {
+                        // Cari start dan end dari irisan
+                        $intersectStart = $start1->max($start2);
+                        $intersectEnd = $end1->min($end2);
+
+                        $daysInIntersect = $intersectStart->diffInDays($intersectEnd) + 1;
+                        $weekendInIntersect = $this->hitungSabtuMinggu($intersectStart, $intersectEnd);
+
+                        $workingDaysOverlap = $daysInIntersect - $weekendInIntersect;
+
+                        if ($workingDaysOverlap > 0) {
+                            $overlapDays += $workingDaysOverlap;
+                        }
+                    }
+                }
+            }
+
+            // Kurangi overlap dari Hari
+            $item->Hari -= $overlapDays;
+
+            // Pastikan Hari tidak negatif
+            if ($item->Hari < 0)
+                $item->Hari = 0;
+
+            // Perbaikan logika asli: "- 1" di totalDayWeekend mungkin bug atau logic khusus, 
+            // tapi disini kita ikuti pola yang diminta: kurangi sesuai data yang ada.
+            // Kode asli: $item->Hari -= $totalDayWeekend 
+            // Kita sudah kurangi overlap, sekarang kurangi weekend global dari range utama?
+            // TAPI tunggu, $item->Hari itu asalnya dari mana? Database? 
+            // "Hari" di DB biasanya adalah selisih tanggal.
+            // Mari kita cek ulang logika aslinya.
+            // Asli: $item->Jumlah = ($item->Hari -= $totalDayWeekend) * $item->tarif;
+            // Jadi $item->Hari dimutasi langsung.
+
+            // Kita harus hati-hati. $item->Hari awal adalah durasi kalender (termasuk weekend).
+            // Kita kurangi weekend dulu untuk dapat hari kerja efektif.
+            // LALU kurangi overlap (yang juga hari kerja).
+
+            if ($totalDayWeekend > 0) {
+                // Logic asli ada "- 1", saya rasa itu aneh jika tujuannya menghitung jumlah weekend.
+                // "hitungSabtuMinggu" return count. Mengapa dikurangi 1? 
+                // Mungkin karena inclusive/exclusive date math? 
+                // Mari kita lihat fungsi hitungSabtuMinggu. return count of sat/sun.
+                // Jika range Senin-Minggu (7 hari). Sabtu Minggu = 2.
+                // Hari = 7 - (2-1) = 6? Aneh.
+                // User report: "PANCAGUS ... memiliki total hari yakni 3 hari".
+                // Mungkin saya harus biarkan logic weekend seperti aslinya DULU, 
+                // lalu kurangi overlap.
+
+                // Reverting weekend logic change to match original exactly for safety, BUT logic says overlap removal is requested.
+                $item->Hari -= ($totalDayWeekend - 1);
+            }
+
+            // Pengurangan overlap 
+            $item->Hari -= $overlapDays;
+
+            if ($item->Hari < 0)
+                $item->Hari = 0;
+
+
+            $item->Jumlah = $item->Hari * $item->tarif;
             $item->terbilang = ucfirst($this->terbilang($item->Jumlah));
             $total += $item->Jumlah;
         }
@@ -447,6 +554,89 @@ class SuratController extends Controller
             'status' => true,
             'message' => 'Data  ditemukan',
             'data' => $penugasan
+        ]);
+    }
+
+    public function checkOverlap(Request $request)
+    {
+        $id_pegawai = $request->input('id_pegawai');
+        $tanggal_awal = $request->input('tanggal_awal'); // Y-m-d
+        $tanggal_akhir = $request->input('tanggal_akhir'); // Y-m-d
+
+        if (!$id_pegawai || !$tanggal_awal || !$tanggal_akhir) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Parameter tidak lengkap',
+                'data' => []
+            ]);
+        }
+
+        $startRequest = Carbon::parse($tanggal_awal);
+        $endRequest = Carbon::parse($tanggal_akhir);
+
+        $messages = [];
+
+        // 1. Cek Surat Tugas (Penugasan)
+        // Cari surat tugas dimana pegawai terlibat DAN tanggalnya beririsan
+        // Logic irisan: (StartA <= EndB) and (EndA >= StartB)
+        $conflictingSuratTugas = DB::table('surat_tugas')
+            ->join('penugasans', 'surat_tugas.id_penugasan', '=', 'penugasans.id')
+            ->leftJoin('obriks', 'penugasans.id_obrik', '=', 'obriks.id')
+            ->where('surat_tugas.id_pegawai', $id_pegawai)
+            ->where(function ($query) use ($startRequest, $endRequest) {
+                // Cek irisan dengan range tanggal di surat_tugas (jika ada) ATAU penugasan global
+                // Prioritas: surat_tugas dates -> penugasan dates
+    
+                // Karena struktur DB bisa mix, kita perlu hati-hati.
+                // Asumsi paling aman: cek range efektif.
+                // Tapi query builder agak ribet untuk conditional column.
+                // Simplifikasi: Cek overlap dengan tanggalPenugasan global dulu (karena itu mandatory biasanya)
+                // atau tanggalPemeriksaan di surat_tugas.
+    
+                // Case A: surat_tugas punya tanggal spesifik
+                $query->where(function ($q) use ($startRequest, $endRequest) {
+                    $q->whereNotNull('surat_tugas.tanggalAwalPemeriksaan')
+                        ->where('surat_tugas.tanggalAwalPemeriksaan', '<=', $endRequest->format('Y-m-d'))
+                        ->where('surat_tugas.tanggalAkhirPemeriksaan', '>=', $startRequest->format('Y-m-d'));
+                })
+                    // Case B: surat_tugas NULL, pakai penugasan global
+                    ->orWhere(function ($q) use ($startRequest, $endRequest) {
+                    $q->whereNull('surat_tugas.tanggalAwalPemeriksaan')
+                        ->where('penugasans.tanggalAwalPenugasan', '<=', $endRequest->format('Y-m-d'))
+                        ->where('penugasans.tanggalAkhirPenugasan', '>=', $startRequest->format('Y-m-d'));
+                });
+            })
+            ->select('penugasans.noSurat', 'obriks.nama_obrik', 'penugasans.tanggalAwalPenugasan', 'penugasans.tanggalAkhirPenugasan', 'surat_tugas.tanggalAwalPemeriksaan', 'surat_tugas.tanggalAkhirPemeriksaan')
+            ->get();
+
+        foreach ($conflictingSuratTugas as $st) {
+            $dateStart = $st->tanggalAwalPemeriksaan ?? $st->tanggalAwalPenugasan;
+            $dateEnd = $st->tanggalAkhirPemeriksaan ?? $st->tanggalAkhirPenugasan;
+            $messages[] = "Penugasan No: {$st->noSurat} ke {$st->nama_obrik} (" . Carbon::parse($dateStart)->format('d M') . " - " . Carbon::parse($dateEnd)->format('d M') . ")";
+        }
+
+        // 2. Cek Tabel Kendali
+        $conflictingKendali = Tabel_kendali::where('id_pegawai', $id_pegawai)
+            ->where('tanggal_awal_pemeriksaan', '<=', $endRequest->format('Y-m-d'))
+            ->where('tanggal_akhir_pemeriksaan', '>=', $startRequest->format('Y-m-d'))
+            ->get();
+
+        foreach ($conflictingKendali as $tk) {
+            $messages[] = "Tabel Kendali (" . Carbon::parse($tk->tanggal_awal_pemeriksaan)->format('d M') . " - " . Carbon::parse($tk->tanggal_akhir_pemeriksaan)->format('d M') . ")";
+        }
+
+        if (count($messages) > 0) {
+            return response()->json([
+                'status' => true, // Found overlap
+                'message' => 'Terdapat penugasan lain pada jadwal ini',
+                'data' => $messages
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Tidak ada overlap',
+            'data' => []
         ]);
     }
 

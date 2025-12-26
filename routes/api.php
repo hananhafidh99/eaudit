@@ -57,6 +57,8 @@ Route::put('penugasan_update', [SuratController::class, 'update']);
 // update data SKPD
 Route::post('/skpd/{id}', [SKPDController::class, 'update'])->name('skpd.update');
 
+Route::post('penugasan/check-overlap', [SuratController::class, 'checkOverlap']);
+
 Route::get('/pegawai-edit/{id}', [PegawaiController::class, 'editPegawai']);
 Route::get('/kegiatan-edit/{id}', [KegiatanController::class, 'editKegiatan']);
 
