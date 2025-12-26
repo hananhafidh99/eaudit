@@ -247,7 +247,7 @@
             </li>
 
              <li class="menu-item ">
-              <a href="{{ url('arsip') }}" class="menu-link text-white">
+              <a href="{{ url('tabel_kendali') }}" class="menu-link text-white">
                  <i class="menu-icon fas fa-book"></i>
                 <div data-i18n="Analytics">Tabel Kendali</div>
               </a>

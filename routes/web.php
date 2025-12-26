@@ -14,6 +14,7 @@ use App\Http\Controllers\Fe\PegawaiController;
 use App\Http\Controllers\Fe\KegiatanController;
 use App\Http\Controllers\Fe\JenisPengawasanController;
 use App\Http\Controllers\Fe\KelompokPenugasanController;
+use App\Http\Controllers\Fe\TabelKendaliController;
 
 /*
 |--------------------------------------------------------------------------
@@ -166,3 +167,8 @@ Route::post('k_penugasan', [KelompokPenugasanController::class, 'store']);
 Route::get('k_penugasan/{id}/edit', [KelompokPenugasanController::class, 'edit']);
 Route::put('k_penugasan/{id}', [KelompokPenugasanController::class, 'update']);
 Route::delete('k_penugasan/{id}/hapus', [KelompokPenugasanController::class, 'destroy']);
+
+Route::get('tabel_kendali', [TabelKendaliController::class, 'index']);
+Route::get('/tabelkendali_baru', [TabelKendaliController::class, 'create']);
+Route::post('/tabelkendali_baru', [TabelKendaliController::class, 'store']);
+Route::delete('tabel_kendali/{id}/hapus', [TabelKendaliController::class, 'destroy']);

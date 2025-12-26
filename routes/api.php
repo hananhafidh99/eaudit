@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SKPDController;
 use App\Http\Controllers\Api\SuratController;
+use App\Http\Controllers\Api\TabelKendaliController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\KelompokPenugasan;
 
@@ -46,6 +47,9 @@ Route::apiResource('/user', UserController::class);
 
 Route::post('login', [UserController::class, 'login']);
 Route::apiResource('/kegiatan', KegiatanController::class);
+
+Route::apiResource('/tabelkendali', TabelKendaliController::class);
+
 
 Route::post('penugasan/store', [SuratController::class, 'storePenugasan']);
 Route::put('penugasan_update', [SuratController::class, 'update']);
