@@ -26,10 +26,18 @@ class TabelKendaliController extends Controller
         });
     }
 
-    public function index()
+    public function index(Request $request)
     {
         //get all posts
-        $dataTabelKendali = DB::table('v_tabelKendali')->get();
+        $tahun = $request->input('tahun');
+        $query = DB::table('v_tabelKendali');
+
+        if ($tahun) {
+            $query->where('tanggal_awal_pemeriksaan', 'like', '%' . $tahun . '%');
+        }
+
+        $dataTabelKendali = $query->get();
+
         return response()->json([
             'status' => true,
             'message' => 'data di temukan',
@@ -42,7 +50,7 @@ class TabelKendaliController extends Controller
         $dataTabelKendali = new Tabel_kendali;
 
         $rules = [
-            'id_pegawai'               => 'required',
+            'id_pegawai' => 'required',
             'tanggal_awal_pemeriksaan' => 'required',
             'tanggal_akhir_pemeriksaan' => 'required',
         ];
@@ -57,7 +65,7 @@ class TabelKendaliController extends Controller
             ]);
         }
 
-        $dataTabelKendali->id_pegawai               = $request->id_pegawai;
+        $dataTabelKendali->id_pegawai = $request->id_pegawai;
         $dataTabelKendali->tanggal_awal_pemeriksaan = $request->tanggal_awal_pemeriksaan;
         $dataTabelKendali->tanggal_akhir_pemeriksaan = $request->tanggal_akhir_pemeriksaan;
 
@@ -69,7 +77,7 @@ class TabelKendaliController extends Controller
         ]);
     }
 
-        public function destroy($id)
+    public function destroy($id)
     {
         $dataTabelKendali = Tabel_kendali::find($id);
         if (empty($dataTabelKendali)) {

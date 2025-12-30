@@ -201,7 +201,8 @@ class SuratController extends Controller
     {
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/penugasanArsip?token=" . $token;
+        $tahun = session('sdata');
+        $url = "http://127.0.0.1:8000/api/penugasanArsip?token=" . $token . "&tahun=" . $tahun;
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);

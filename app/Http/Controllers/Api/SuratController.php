@@ -411,9 +411,16 @@ class SuratController extends Controller
         return $result;
     }
 
-    public function arsip()
+    public function arsip(Request $request)
     {
-        $penugasan = DB::table('v_demo3')->where('tanggalTerbitPenugasan', 'like', '%' . session('tahun') . '%')->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC')->get();
+        $tahun = $request->input('tahun');
+        $query = DB::table('v_demo3');
+
+        if ($tahun) {
+            $query->where('tanggalTerbitPenugasan', 'like', '%' . $tahun . '%');
+        }
+
+        $penugasan = $query->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC')->get();
         return response()->json([
             'status' => true,
             'message' => 'data di temukan',
