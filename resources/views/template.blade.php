@@ -81,7 +81,7 @@
         <!-- Menu -->
 
       @php
-          $f = session('brand_logo');
+        $f = session('brand_logo');
       @endphp
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-dark">
@@ -91,7 +91,7 @@
                 <a href="{{ url('index') }}" class="app-brand-link">
                   <span class="app-brand-logo demo">
                     @if (isset($f))
-                    <img src="{{ asset('storage/logo/' . $f) }}"  alt="" style="width: 65px;height:65px; align-items:center" class="ms-2 mt-3 ">
+                      <img src="{{ asset('storage/logo/' . $f) }}"  alt="" style="width: 65px;height:65px; align-items:center" class="ms-2 mt-3 ">
                     @endif
 
                   </span>
@@ -246,12 +246,21 @@
               </a>
             </li>
 
+
              <li class="menu-item ">
               <a href="{{ url('tabel_kendali') }}" class="menu-link text-white">
                  <i class="menu-icon fas fa-book"></i>
                 <div data-i18n="Analytics">Tabel Kendali</div>
               </a>
             </li>
+
+            <li class="menu-item ">
+              <a href="{{ url('rekap_export') }}" class="menu-link text-white">
+                 <i class="menu-icon fas fa-file-excel"></i>
+                <div data-i18n="Analytics">Export Rekap</div>
+              </a>
+            </li>
+
 
               <li class="menu-header small text-uppercase">
               <span class="menu-header-text">DATA LAPORAN</span>
@@ -350,8 +359,8 @@
                      <select name="tahun" id="tahun" class="form-control" onchange="submit()">
                      <option value="">PILIH TAHUN</option>
                      @for ($i = 2023; $i <= date('Y'); $i++)
-<option value="{{ $i }}" @if ($i == session('sdata')) selected @endif>{{ $i }}</option>
-@endfor
+                      <option value="{{ $i }}" @if ($i == session('sdata')) selected @endif>{{ $i }}</option>
+                    @endfor
                   </select>
                   </form>
 
@@ -441,7 +450,7 @@
                 <div class="mb-2 mb-md-0 as">
                    Inspektorat Daerah Kab. Sragen ©
                   <script>
-                      document.write(new Date().getFullYear());
+                    document.write(new Date().getFullYear());
                   </script>
                 </div>
                 <div>

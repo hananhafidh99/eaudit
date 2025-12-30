@@ -15,6 +15,8 @@ use App\Http\Controllers\Fe\KegiatanController;
 use App\Http\Controllers\Fe\JenisPengawasanController;
 use App\Http\Controllers\Fe\KelompokPenugasanController;
 use App\Http\Controllers\Fe\TabelKendaliController;
+use App\Http\Controllers\RekapExportController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -173,6 +175,10 @@ Route::delete('k_penugasan/{id}/hapus', [KelompokPenugasanController::class, 'de
 Route::get('tabel_kendali', [TabelKendaliController::class, 'index']);
 Route::get('/tabelkendali_baru', [TabelKendaliController::class, 'create']);
 Route::post('/tabelkendali_baru', [TabelKendaliController::class, 'store']);
+
+Route::get('/rekap_export', [RekapExportController::class, 'index']);
+Route::post('/rekap_export/download', [RekapExportController::class, 'export']);
+
 
 
 
