@@ -18,9 +18,17 @@ class SuratController extends Controller
     //
     public function index(Request $request)
     {
-        $tahun = session('tahun');
-        $sdata = session('sdata');
-        $penugasan = Penugasan::with('jenisPengawasan')->where('tanggalTerbitPenugasan', 'like', '%' . session('tahun') . '%')->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC');
+        $tahun = $request->input('tahun');
+        $sdata = $request->input('tahun');
+
+        $query = Penugasan::with('jenisPengawasan');
+
+        if ($tahun) {
+            $query->where('tanggalTerbitPenugasan', 'like', '%' . $tahun . '%');
+        }
+
+        $penugasan = $query->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC');
+
         if ($request->N) {
             # code...
             $penugasan = $penugasan->get();
@@ -33,7 +41,13 @@ class SuratController extends Controller
 
         } else {
             // $penugasan = $penugasan->paginate(10);
-            $penugasan = DB::table('v_demo3')->where('tanggalTerbitPenugasan', 'like', '%' . session('tahun') . '%')->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC')->paginate(10);
+            $queryDb = DB::table('v_demo3');
+
+            if ($tahun) {
+                $queryDb->where('tanggalTerbitPenugasan', 'like', '%' . $tahun . '%');
+            }
+
+            $penugasan = $queryDb->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC')->paginate(10);
             //     $dataTransformed = $penugasan->getCollection()->map(function ($item) {
             //     return [
             //         'id' => $item->id,

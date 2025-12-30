@@ -18,12 +18,18 @@ class SuratController extends Controller
         $client = new Client();
         $url = static::API_URL;
         $token = session('ctoken');
+        $tahun = session('sdata');
+
+        $params = [
+            'token' => $token,
+            'tahun' => $tahun,
+        ];
+
         if ($request->input('page') != '') {
-            # code...
-            $url .= "?page=" . $request->input('page') . '&token=' . $token;
-        } else {
-            $url .= '?token=' . $token;
+            $params['page'] = $request->input('page');
         }
+
+        $url .= '?' . http_build_query($params);
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);

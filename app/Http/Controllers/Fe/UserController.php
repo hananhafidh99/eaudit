@@ -62,7 +62,7 @@ class UserController extends Controller
     {
         $request->session()->put("sdata", $request->input('tahun'));
 
-        return redirect('skpd');
+        return redirect()->back();
 
     }
 
