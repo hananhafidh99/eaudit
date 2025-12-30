@@ -21,15 +21,17 @@ class RekapPenugasanExport implements FromView
     public function view(): View
     {
         $data = DB::table('penugasans')
-            ->leftJoin('jenis_pengawasans', 'penugasans.id_jenisPengawasan', '=', 'jenis_pengawasans.id')
+            ->leftJoin('jenis__pengawasans', 'penugasans.id_jenisPengawasan', '=', 'jenis__pengawasans.id')
             ->leftJoin('obriks', 'penugasans.id_obrik', '=', 'obriks.id')
             ->leftJoin('kegiatans', 'penugasans.id_anggaran', '=', 'kegiatans.id')
+
             ->select(
                 'penugasans.*',
-                'jenis_pengawasans.nama_jenispengawasan',
+                'jenis__pengawasans.nama_jenispengawasan',
                 'obriks.nama_obrik',
                 'kegiatans.kegiatan'
             )
+
             ->whereYear('penugasans.tanggalAwalPenugasan', $this->tahun)
             ->whereMonth('penugasans.tanggalAwalPenugasan', $this->bulan)
             ->orderBy('penugasans.tanggalAwalPenugasan', 'ASC')
