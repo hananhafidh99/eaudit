@@ -360,3 +360,85 @@
     </script>
 
 @endsection
+
+    <script>
+        $(document).ready(function () {
+            // Function to check overlap
+            function checkOverlap(element) {
+                var id_pegawai = $(element).val();
+                if (!id_pegawai) return;
+
+                // Find dates in the same row
+                var row = $(element).closest('.row');
+                var tanggal_awal = row.find('input[name*="tanggalAwalPemeriksaan"]').val();
+                var tanggal_akhir = row.find('input[name*="tanggalAkhirPemeriksaan"]').val();
+
+                // If not found in row, use global dates
+                // EDIT PAGE SPECIFIC: Inputs are named Tanggalsurat and TanggalAkhir
+                if (!tanggal_awal) {
+                    tanggal_awal = $("input[name=Tanggalsurat]").val();
+                }
+                if (!tanggal_akhir) {
+                    tanggal_akhir = $("input[name=TanggalAkhir]").val();
+                }
+
+                if (tanggal_awal && tanggal_akhir) {
+                    $.ajax({
+                        url: '{{ url("/check-overlap") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id_pegawai: id_pegawai,
+                            tanggal_awal: tanggal_awal,
+                            tanggal_akhir: tanggal_akhir
+                        },
+                        success: function (response) {
+                            if (response.status && response.data.length > 0) {
+                                var message = "Pegawai ini memiliki penugasan lain pada tanggal tersebut:<br><ul style='text-align:left'>";
+                                response.data.forEach(function (msg) {
+                                    message += "<li>" + msg + "</li>";
+                                });
+                                message += "</ul>";
+
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Peringatan Double Penugasan',
+                                    html: message,
+                                    confirmButtonText: 'OK, Lanjutkan'
+                                });
+                            }
+                        },
+                        error: function (xhr) {
+                            console.error("Error checking overlap", xhr);
+                        }
+                    });
+                }
+            }
+
+            // Event listener for changes
+            // Use 'change' for select2
+            $('.namaPeran, .namaAnggota').on('change', function () {
+                checkOverlap(this);
+            });
+
+            // Trigger when specific row dates change
+            $(document).on('change', '.datepicker2', function() {
+                 var row = $(this).closest('.row');
+                 var select = row.find('select.namaPeran, select.namaAnggota');
+                 if (select.length > 0 && select.val()) {
+                     checkOverlap(select);
+                 }
+            });
+
+            // Trigger when global dates change
+            // EDIT PAGE SPECIFIC selectors
+            $('input[name=Tanggalsurat], input[name=TanggalAkhir]').on('change', function() {
+                // Check ALL selects that have a value
+                $('.namaPeran, .namaAnggota').each(function() {
+                    if ($(this).val()) {
+                        checkOverlap(this);
+                    }
+                });
+            });
+        });
+    </script>
