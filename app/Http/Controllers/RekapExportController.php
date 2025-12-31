@@ -17,15 +17,22 @@ class RekapExportController extends Controller
     {
         $request->validate([
             'tahun' => 'required',
-            'bulan' => 'required',
+            'type' => 'required|in:yearly,monthly',
+            'bulan' => 'required_if:type,monthly',
         ]);
 
         $tahun = $request->tahun;
-        $bulan = $request->bulan;
-        $nama_bulan = \Carbon\Carbon::createFromDate(null, $bulan)->translatedFormat('F');
+        $type = $request->type;
+        $bulan = $type === 'monthly' ? $request->bulan : null;
 
-        $filename = 'Rekap_Perjalanan_Dinas_' . $nama_bulan . '_' . $tahun . '.xlsx';
+        if ($type === 'monthly') {
+            $nama_bulan = \Carbon\Carbon::createFromDate(null, $bulan)->translatedFormat('F');
+            $filename = 'Rekap_Perjalanan_Dinas_' . $nama_bulan . '_' . $tahun . '.xlsx';
+        } else {
+            $filename = 'Rekap_Perjalanan_Dinas_Tahun_' . $tahun . '.xlsx';
+        }
 
-        return Excel::download(new RekapPenugasanExport($tahun, $bulan), $filename);
+        return Excel::download(new RekapPenugasanExport($tahun, $bulan, $type), $filename);
     }
+
 }

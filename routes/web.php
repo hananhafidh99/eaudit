@@ -178,11 +178,3 @@ Route::post('/tabelkendali_baru', [TabelKendaliController::class, 'store']);
 
 Route::get('/rekap_export', [RekapExportController::class, 'index']);
 Route::post('/rekap_export/download', [RekapExportController::class, 'export']);
-
-
-
-
-
-
-
-

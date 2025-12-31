@@ -11,42 +11,58 @@ class RekapPenugasanExport implements FromView
 {
     protected $tahun;
     protected $bulan;
+    protected $type;
 
-    public function __construct($tahun, $bulan)
+    public function __construct($tahun, $bulan, $type)
     {
         $this->tahun = $tahun;
         $this->bulan = $bulan;
+        $this->type = $type;
     }
 
     public function view(): View
     {
-        $data = DB::table('penugasans')
-            ->leftJoin('jenis__pengawasans', 'penugasans.id_jenisPengawasan', '=', 'jenis__pengawasans.id')
-            ->leftJoin('obriks', 'penugasans.id_obrik', '=', 'obriks.id')
+        $query = DB::table('penugasans')
+            ->join('jenis__pengawasans', 'penugasans.id_jenisPengawasan', '=', 'jenis__pengawasans.id')
+            ->join('obriks', 'penugasans.id_obrik', '=', 'obriks.id')
             ->leftJoin('kegiatans', 'penugasans.id_anggaran', '=', 'kegiatans.id')
-
             ->select(
                 'penugasans.*',
-                'jenis__pengawasans.nama_jenispengawasan',
-                'obriks.nama_obrik',
+                'jenis__pengawasans.nama_jenispengawasan as jenis_nama',
+                'obriks.nama_obrik as obrik_nama',
                 'kegiatans.kegiatan'
             )
-
             ->whereYear('penugasans.tanggalAwalPenugasan', $this->tahun)
-            ->whereMonth('penugasans.tanggalAwalPenugasan', $this->bulan)
-            ->orderBy('penugasans.tanggalAwalPenugasan', 'ASC')
-            ->get();
+            ->orderBy('penugasans.tanggalAwalPenugasan', 'ASC');
 
-        // Transform data mostly for date formatting
+        if ($this->type === 'monthly' && $this->bulan) {
+            $query->whereMonth('penugasans.tanggalAwalPenugasan', $this->bulan);
+        }
+
+        $data = $query->get();
+
+        // Transform data
         $mappedData = $data->map(function ($item) {
-            $start = Carbon::parse($item->tanggalAwalPenugasan)->translatedFormat('d');
-            $end = Carbon::parse($item->tanggalAkhirPenugasan)->translatedFormat('d F Y');
-            // If same month/year, maybe shorthand? 
-            // User example: "02 s/d 15 Januari 2025"
-            // If full strings: "02 Januari 2025 s/d 15 Januari 2025" -> maybe too long.
-            // Logic: if same month/year, just dd - dd Month YYYY.
+            // Calculate Budget (Anggaran)
+            $suratTugas = DB::table('surat_tugas')
+                ->join('perans', 'surat_tugas.id_peran', '=', 'perans.id')
+                ->where('surat_tugas.id_penugasan', $item->id)
+                ->select('surat_tugas.*', 'perans.tarif')
+                ->get();
 
-            // Replicating example format: "02 s/d 15 Januari 2025"
+            $totalAnggaran = 0;
+            foreach ($suratTugas as $st) {
+                // Determine dates (use row dates or fallback to penugasan dates)
+                $start = $st->tanggalAwalPemeriksaan ? Carbon::parse($st->tanggalAwalPemeriksaan) : Carbon::parse($item->tanggalAwalPenugasan);
+                $end = $st->tanggalAkhirPemeriksaan ? Carbon::parse($st->tanggalAkhirPemeriksaan) : Carbon::parse($item->tanggalAkhirPenugasan);
+
+                // Calculate days (inclusive)
+                $days = $end->diffInDays($start) + 1;
+                $cost = $days * $st->tarif;
+                $totalAnggaran += $cost;
+            }
+
+            // Format Date Range
             $sDate = Carbon::parse($item->tanggalAwalPenugasan);
             $eDate = Carbon::parse($item->tanggalAkhirPenugasan);
 
@@ -56,25 +72,17 @@ class RekapPenugasanExport implements FromView
                 $tanggal = $sDate->translatedFormat('d F Y') . ' s/d ' . $eDate->translatedFormat('d F Y');
             }
 
-            // No Surat format: 094/003/03/2025 (Example)
-            // Existing logic in index: "700.1.1/{$item->noSurat}/03/" . year
-            // User Example in Excel: "094/003/03/2025"
-            // I'll stick to what is in DB or standard Format. 
-            // Let's use the field `noSurat` from DB and append/prepend if necessary. 
-            // The `index` view did this: "700.1.1/".$item->noSurat."/03/".session('sdata')
-            // I'll assume standard format is required.
-
             return (object) [
                 'noSurat' => "700.1.1/" . $item->noSurat . "/03/" . $this->tahun,
-                'jenisPemeriksaan' => $item->nama_jenispengawasan,
+                'jenisPemeriksaan' => $item->jenis_nama,
                 'kegiatan' => $item->kegiatan,
-                'obrik' => $item->nama_obrik,
-                'anggaran' => 'Rp0', // Placeholder as per request
+                'obrik' => $item->obrik_nama,
+                'anggaran' => 'Rp' . number_format($totalAnggaran, 0, ',', '.'),
                 'tanggal' => $tanggal
             ];
         });
 
-        $nama_bulan = Carbon::createFromDate(null, $this->bulan)->translatedFormat('F');
+        $nama_bulan = $this->bulan ? Carbon::createFromDate(null, $this->bulan)->translatedFormat('F') : 'Semua Bulan';
 
         return view('exports.rekap_penugasan', [
             'data' => $mappedData,
