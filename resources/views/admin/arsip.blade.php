@@ -59,7 +59,9 @@
                         @forelse ($data['data'] as $index => $v)
                             <tr>
                                 <td>{{ $no++ }}</td>
-                                <td>{{ '700.1.1/' . $v['noSurat'] . '/03' . '/' . session('tahun') }}</td>
+                                <td>{{ '700.1.1/' . $v['noSurat'] . '/03/' . \Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->format('Y') }}
+                                </td>
+
                                 <td>
                                     {{ Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->translatedFormat('d M Y') }} <br>
                                     <small class="text-muted">s/d</small> <br>
