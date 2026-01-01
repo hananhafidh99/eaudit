@@ -44,7 +44,8 @@ class UserController extends Controller
         $redirectUrl = $json['data'] ?? '/';
 
         if (!$token) {
-            return back()->withErrors(['login' => 'Login gagal, token tidak ditemukan.']);
+            $message = $json['message'] ?? 'Username atau Password salah.';
+            return back()->withErrors(['login' => $message]);
         }
 
         session(['ctoken' => $token, 'sdata' => date('Y')]);

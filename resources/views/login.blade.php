@@ -143,9 +143,9 @@
                   <label for="username" class="form-label">USERNAME</label>
                   <input id="username" type="text" class="form-control" name="username"   autocomplete="username" autofocus>
                     @if ($errors->has('username'))
-                    <span class="text-danger">
-                        <strong>{{ $errors->first('username') }}</strong>
-                    </span>
+                      <span class="text-danger">
+                          <strong>{{ $errors->first('username') }}</strong>
+                      </span>
 
                     @endif
                 </div>
@@ -158,9 +158,9 @@
                   </div>
 
                   @if ($errors->has('password'))
-                  <span class="text-danger">
-                      <strong>{{ $errors->first('password') }}</strong>
-                  </span>
+                    <span class="text-danger">
+                        <strong>{{ $errors->first('password') }}</strong>
+                    </span>
 
                   @endif
                 </div>
@@ -233,16 +233,96 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 
+    <div class="modal fade" id="announcementModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="announcementTitle">Pengumuman</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="announcementBody">
+                   {{-- Content will be injected here via JS if multiple, or direct blade loop if simple --}}
+                   <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+                      <div class="carousel-inner">
+                        @if(isset($announcements) && count($announcements) > 0)
+                          @foreach($announcements as $key => $announcement)
+                            <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
+                                <h5 class="text-center">{{ $announcement->title }}</h5>
+                                <p class="text-center">{{ $announcement->content }}</p>
+                                <small class="text-muted d-block text-center">{{ \Carbon\Carbon::parse($announcement->created_at)->format('d M Y') }}</small>
+                            </div>
+                          @endforeach
+                        @else
+                          <p class="text-center">Tidak ada pengumuman saat ini.</p>
+                        @endif
+                      </div>
+                      @if(isset($announcements) && count($announcements) > 1)
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                          <span class="carousel-control-prev-icon bg-primary rounded-circle" aria-hidden="true"></span>
+                          <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                          <span class="carousel-control-next-icon bg-primary rounded-circle" aria-hidden="true"></span>
+                          <span class="visually-hidden">Next</span>
+                        </button>
+                      @endif
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Mengerti</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script type="text/javascript">
-        $('#reload').click(function () {
-            $.ajax({
-                type: 'GET',
-                url: 'reload-captcha',
-                success: function (data) {
-                    $(".captcha span").html(data.captcha);
-                }
+      $(document).ready(function () {
+        // Check for login errors
+        @if ($errors->has('login') || $errors->has('username') || $errors->has('password'))
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Gagal',
+            text: '{!! $errors->first("login") ?: ($errors->first("username") ?: $errors->first("password")) !!}',
+          });
+        @endif
+
+        // Check for session success/error messages
+        @if(session('success'))
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '{{ session('success') }}',
+          });
+        @endif
+        @if(session('error'))
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}',
+          });
+        @endif
+
+          // Show Announcement Modal if data exists
+          @if(isset($announcements) && count($announcements) > 0)
+            var myModal = new bootstrap.Modal(document.getElementById('announcementModal'), {
+              keyboard: false
             });
+            myModal.show();
+          @endif
+
+        $('#reload').click(function () {
+          $.ajax({
+            type: 'GET',
+            url: 'reload-captcha',
+            success: function (data) {
+              $(".captcha span").html(data.captcha);
+            }
+          });
         });
+      });
     </script>
   </body>
 </html>

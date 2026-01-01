@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\SuratController;
 use App\Http\Controllers\Api\TabelKendaliController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\KelompokPenugasan;
+use App\Http\Controllers\Api\AnnouncementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,7 @@ Route::apiResource('/peran', PeranController::class);
 Route::apiResource('/obrik', ObrikController::class);
 
 Route::apiResource('/user', UserController::class);
+Route::get('/announcement', [AnnouncementController::class, 'index']);
 
 Route::post('login', [UserController::class, 'login']);
 Route::apiResource('/kegiatan', KegiatanController::class);

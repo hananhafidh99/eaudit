@@ -13,66 +13,72 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-     public function index()
+    public function index()
     {
         //get all posts
         $user = User::latest()->get();
         return response()->json([
-            'status'     => true,
-            'message'    => 'data di temukan',
-            'data'       => $user
-        ],200);
+            'status' => true,
+            'message' => 'data di temukan',
+            'data' => $user
+        ], 200);
     }
 
-public function login(Request $request)
-{
+    public function login(Request $request)
+    {
 
-    $username = $request->username;
-    $password = $request->password;
+        $username = $request->username;
+        $password = $request->password;
 
-    $path = '';
-    $token = null;
+        $path = '';
+        $token = null;
 
 
-    $cekuser = User::where("username", $username)->first();
-    if (!$cekuser) {
+        $cekuser = User::where("username", $username)->first();
+        if (!$cekuser) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'User tidak ditemukan',
+                'data' => null
+            ], 404);
+        }
+        // Cek password
+        if (!Hash::check($password, $cekuser->password)) {
+            // Password salah
+            return response()->json([
+                'code' => 401,
+                'message' => 'Password salah',
+                'data' => null
+            ], 401);
+        }
+
+        // Generate token
+        $token = Hash::make(Carbon::now()->toDayDateTimeString() . $cekuser->username);
+        $cekuser->remember_token = $token;
+        $cekuser->save();
+
+        // Tentukan path berdasarkan level user
+        // Tentukan path berdasarkan level user
+        $levelPaths = [
+            'admineaudit' => 'skpd',
+            'admin' => 'skpd', // Added support for 'admin' role
+            'adminTL' => 'adminTL',
+            'pemeriksa' => 'PemeriksaTL',
+            'OpdTL' => 'skpd', // Added based on screenshot
+            'obrik' => 'divisionHead',
+        ];
+
+        // Use 'level' if available, otherwise fallback to 'role'
+        $userLevel = $cekuser->level ?? $cekuser->role ?? 'obrik';
+
+        $path = $levelPaths[$userLevel] ?? '/';
+
+        // Response sukses
         return response()->json([
-            'code' => 404,
-            'message' => 'User tidak ditemukan',
-            'data' => null
-        ], 404);
+            'code' => 200,
+            'token' => $token,
+            'data' => $path
+        ]);
     }
-    // Cek password
-    if (!Hash::check($password, $cekuser->password)) {
-        // Password salah
-        return response()->json([
-            'code' => 401,
-            'message' => 'Password salah',
-            'data' => null
-        ], 401);
-    }
-
-    // Generate token
-    $token = Hash::make(Carbon::now()->toDayDateTimeString() . $cekuser->username);
-    $cekuser->remember_token = $token;
-    $cekuser->save();
-
-    // Tentukan path berdasarkan level user
-    $levelPaths = [
-        'admineaudit' => 'skpd',
-        'adminTL'     => 'adminTL',
-        'pemeriksa'   => 'PemeriksaTL',
-        'obrik'       => 'divisionHead',
-    ];
-
-    $path = $levelPaths[$cekuser->level] ?? '/';
-
-    // Response sukses
-    return response()->json([
-        'code'  => 200,
-        'token' => $token,
-        'data'  => $path
-    ]);
-}
 
 }

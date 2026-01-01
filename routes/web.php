@@ -34,8 +34,11 @@ Route::get('/ps', function () {
     return Hash::make("admin");
 });
 
+use App\Models\Announcement;
+
 Route::get('/', function () {
-    return view('login');
+    $announcements = Announcement::where('is_active', true)->orderBy('created_at', 'desc')->get();
+    return view('login', compact('announcements'));
 });
 Route::resource('skpd', SKPDController::class);
 

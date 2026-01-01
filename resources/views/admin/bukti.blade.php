@@ -34,7 +34,8 @@
     <div id="colres">
         <div class="disp">
             <h2 class='judul mt-5'>DAFTAR BUKTI PENERIMAAN UANG PERJALANAN DINAS DALAM DAERAH<br>
-                TAHUN ANGGARAN 2023<br>Kode Rekening {{ $penugasan['norek'] }}</h2>
+                TAHUN ANGGARAN {{ \Carbon\Carbon::parse($penugasan['tanggalAwalPenugasan'])->format('Y') }}<br>Kode
+                Rekening {{ $penugasan['norek'] }}</h2>
         </div><br>
         <div>
             <table border='0'>
@@ -120,7 +121,8 @@
         <div class='lt'> Terbilang {{ $penugasan['terbilang'] }}</div>
         <div id="lead" class="e">
             <p class="tgh">Sragen,
-                {{ Carbon\Carbon::parse($penugasan['tanggalAkhirPenugasan'])->translatedFormat('d F Y') }}</p>
+                {{ Carbon\Carbon::parse($penugasan['tanggalAkhirPenugasan'])->translatedFormat('d F Y') }}
+            </p>
         </div>
         <table>
             <tr>
