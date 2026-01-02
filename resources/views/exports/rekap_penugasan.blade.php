@@ -1,30 +1,28 @@
 <table>
-    <thead>
-        <tr>
-            <th colspan="7" style="text-align: center; font-weight: bold; font-size: 14px;">
-                REKAPITULASI PENILAIAN PERJALANAN DINAS {{ $tahun }}
-            </th>
-        </tr>
-        <tr>
-            <th colspan="7" style="text-align: center; font-weight: bold; font-size: 14px;">
-                @if($isYearly)
-                    {{ strtoupper($bulan) }}
-                @else
+    @if(!$isYearly)
+        <thead>
+            <tr>
+                <th colspan="7" style="text-align: center; font-weight: bold; font-size: 14px;">
+                    REKAPITULASI PENILAIAN PERJALANAN DINAS {{ $tahun }}
+                </th>
+            </tr>
+            <tr>
+                <th colspan="7" style="text-align: center; font-weight: bold; font-size: 14px;">
                     BULAN {{ $bulan }}
-                @endif
-            </th>
+                </th>
 
-        </tr>
-        <tr>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO</th>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO SURAT</th>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Jenis Pemeriksaan</th>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Kegiatan</th>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Obrik</th>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Anggaran</th>
-            <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Tanggal</th>
-        </tr>
-    </thead>
+            </tr>
+            <tr>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO</th>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO SURAT</th>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Jenis Pemeriksaan</th>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Kegiatan</th>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Obrik</th>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Anggaran</th>
+                <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Tanggal</th>
+            </tr>
+        </thead>
+    @endif
     <tbody>
         @php
             $no = 1;
@@ -52,16 +50,30 @@
         @if($isYearly)
             @foreach($months as $monthIndex => $monthName)
                 <tr>
+                    <th colspan="7" style="text-align: center; font-weight: bold; font-size: 14px;">
+                        REKAPITULASI PENILAIAN PERJALANAN DINAS {{ $tahun }}
+                    </th>
+                </tr>
+                <tr>
                     <td colspan="7"
-                        style="font-weight: bold; background-color: #f0f0f0; border: 1px solid #000000; text-align: left; padding-left: 10px;">
-                        BULAN {{ $monthName }} {{ $tahun }}
+                        style="font-weight: bold; background-color: #f0f0f0; border: 1px solid #000000; text-align: center;">
+                        BULAN {{ $monthName }}
                     </td>
+                </tr>
+                <tr>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO</th>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO SURAT</th>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Jenis Pemeriksaan</th>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Kegiatan</th>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Obrik</th>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Anggaran</th>
+                    <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">Tanggal</th>
                 </tr>
 
                 @if(isset($groupedData[$monthIndex]))
                     @foreach($groupedData[$monthIndex] as $item)
                         <tr>
-                            <td style="border: 1px solid #000000; text-align: center;">{{ $no++ }}</td>
+                            <td style="border: 1px solid #000000; text-align: center;">{{ $item->noSurat ? $no++ : '' }}</td>
                             <td style="border: 1px solid #000000; text-align: left;">{{ $item->noSurat }}</td>
                             <td style="border: 1px solid #000000; text-align: left;">{{ $item->jenisPemeriksaan }}</td>
                             <td style="border: 1px solid #000000; text-align: left;">{{ $item->kegiatan }}</td>
@@ -77,6 +89,11 @@
                         </td>
                     </tr>
                 @endif
+
+                <!-- Spacer Row -->
+                <tr>
+                    <td colspan="7"></td>
+                </tr>
             @endforeach
 
         @else
