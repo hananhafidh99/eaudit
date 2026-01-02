@@ -7,8 +7,13 @@
         </tr>
         <tr>
             <th colspan="7" style="text-align: center; font-weight: bold; font-size: 14px;">
-                BULAN {{ $bulan }}
+                @if($isYearly)
+                    {{ strtoupper($bulan) }}
+                @else
+                    BULAN {{ $bulan }}
+                @endif
             </th>
+
         </tr>
         <tr>
             <th style="font-weight: bold; border: 1px solid #000000; text-align: center;">NO</th>
@@ -21,16 +26,29 @@
         </tr>
     </thead>
     <tbody>
-        @foreach($data as $key => $item)
-            <tr>
-                <td style="border: 1px solid #000000; text-align: center;">{{ $loop->iteration }}</td>
-                <td style="border: 1px solid #000000; text-align: left;">{{ $item->noSurat }}</td>
-                <td style="border: 1px solid #000000; text-align: left;">{{ $item->jenisPemeriksaan }}</td>
-                <td style="border: 1px solid #000000; text-align: left;">{{ $item->kegiatan }}</td>
-                <td style="border: 1px solid #000000; text-align: left;">{{ $item->obrik }}</td>
-                <td style="border: 1px solid #000000; text-align: left;">{{ $item->anggaran }}</td>
-                <td style="border: 1px solid #000000; text-align: center;">{{ $item->tanggal }}</td>
-            </tr>
+        @php $no = 1; @endphp
+        @foreach($groupedData as $month => $items)
+            @if($isYearly)
+                <tr>
+                    <td colspan="7"
+                        style="font-weight: bold; background-color: #f0f0f0; border: 1px solid #000000; text-align: left; padding-left: 10px;">
+                        BULAN {{ strtoupper($month) }}
+                    </td>
+                </tr>
+            @endif
+
+            @foreach($items as $item)
+                <tr>
+                    <td style="border: 1px solid #000000; text-align: center;">{{ $no++ }}</td>
+                    <td style="border: 1px solid #000000; text-align: left;">{{ $item->noSurat }}</td>
+                    <td style="border: 1px solid #000000; text-align: left;">{{ $item->jenisPemeriksaan }}</td>
+                    <td style="border: 1px solid #000000; text-align: left;">{{ $item->kegiatan }}</td>
+                    <td style="border: 1px solid #000000; text-align: left;">{{ $item->obrik }}</td>
+                    <td style="border: 1px solid #000000; text-align: left;">{{ $item->anggaran }}</td>
+                    <td style="border: 1px solid #000000; text-align: center;">{{ $item->tanggal }}</td>
+                </tr>
+            @endforeach
         @endforeach
     </tbody>
+
 </table>

@@ -78,16 +78,34 @@ class RekapPenugasanExport implements FromView
                 'kegiatan' => $item->kegiatan,
                 'obrik' => $item->obrik_nama,
                 'anggaran' => 'Rp' . number_format($totalAnggaran, 0, ',', '.'),
-                'tanggal' => $tanggal
+                'tanggal' => $tanggal,
+                'tanggalOriginal' => $item->tanggalAwalPenugasan // Helper for sorting/grouping
             ];
+
         });
 
-        $nama_bulan = $this->bulan ? Carbon::createFromDate(null, $this->bulan)->translatedFormat('F') : 'Semua Bulan';
+        // Group by Month Name for all types (Unified structure)
+        $groupedData = $mappedData->groupBy(function ($item) {
+            return Carbon::parse($item->tanggalOriginal)->translatedFormat('F');
+        });
+
+        // Sort groups by Month order (since groupBy sorts by key string, which might be alphabetical)
+        // We need chronological order. 
+        // Better strategy: Sort mappedData by date first (already done by SQL orderBy), 
+        // so groupBy should preserve order if using a stable sort, 
+        // but groupBy results are keyed by the string.
+        // Actually, $mappedData is already sorted by date.
+        // The keys of grouped collection will appear in order of appearance.
+        // So January comes first, etc.
+
+        $nama_bulan = $this->bulan ? Carbon::createFromDate(null, $this->bulan)->translatedFormat('F') : 'Tahun ' . $this->tahun;
 
         return view('exports.rekap_penugasan', [
-            'data' => $mappedData,
+            'groupedData' => $groupedData,
             'tahun' => $this->tahun,
-            'bulan' => strtoupper($nama_bulan)
+            'bulan' => strtoupper($nama_bulan),
+            'isYearly' => $this->type === 'yearly'
         ]);
+
     }
 }
