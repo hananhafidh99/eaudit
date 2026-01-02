@@ -51,13 +51,14 @@
 
         @if($isYearly)
             @foreach($months as $monthIndex => $monthName)
+                <tr>
+                    <td colspan="7"
+                        style="font-weight: bold; background-color: #f0f0f0; border: 1px solid #000000; text-align: left; padding-left: 10px;">
+                        BULAN {{ $monthName }} {{ $tahun }}
+                    </td>
+                </tr>
+
                 @if(isset($groupedData[$monthIndex]))
-                    <tr>
-                        <td colspan="7"
-                            style="font-weight: bold; background-color: #f0f0f0; border: 1px solid #000000; text-align: left; padding-left: 10px;">
-                            BULAN {{ $monthName }}
-                        </td>
-                    </tr>
                     @foreach($groupedData[$monthIndex] as $item)
                         <tr>
                             <td style="border: 1px solid #000000; text-align: center;">{{ $no++ }}</td>
@@ -70,15 +71,14 @@
                         </tr>
                     @endforeach
                 @else
-                    <!-- Optional: Show empty month header or skip? User said "Hingga Desember".
-                                    If I skip empty months, it's safer for layout cleanliness.
-                                    However, sorting is guaranteed by 1..12 loop.
-                                    If user wants "Januari... Februari... ... Desember" structure regardless of data,
-                                    I should uncomment below. But usually "Rekap" skips empty.
-                                    For now, I only show if data exists, BUT loop order 1..12 ensures Jan comes before Feb.
-                               -->
+                    <tr>
+                        <td colspan="7" style="border: 1px solid #000000; text-align: center; color: #888;">
+                            Tidak ada data
+                        </td>
+                    </tr>
                 @endif
             @endforeach
+
         @else
             <!-- Monthly View (Single Group) -->
             @foreach($groupedData as $monthIndex => $items)
