@@ -20,14 +20,14 @@ class ReaderFactory
     use MapsCsvSettings;
 
     /**
-     * @param  object  $import
-     * @param  TemporaryFile  $file
-     * @param  string  $readerType
-     * @return IReader
+     * @param object        $import
+     * @param TemporaryFile $file
+     * @param string        $readerType
      *
      * @throws Exception
+     * @return IReader
      */
-    public static function make($import, TemporaryFile $file, ?string $readerType = null): IReader
+    public static function make($import, TemporaryFile $file, string $readerType = null): IReader
     {
         $reader = IOFactory::createReader(
             $readerType ?: static::identify($file)
@@ -53,9 +53,6 @@ class ReaderFactory
             $reader->setEscapeCharacter(static::$escapeCharacter);
             $reader->setContiguous(static::$contiguous);
             $reader->setInputEncoding(static::$inputEncoding);
-            if (method_exists($reader, 'setTestAutoDetect')) {
-                $reader->setTestAutoDetect(static::$testAutoDetect);
-            }
         }
 
         if ($import instanceof WithReadFilter) {
@@ -71,17 +68,17 @@ class ReaderFactory
     }
 
     /**
-     * @param  TemporaryFile  $temporaryFile
-     * @return string
+     * @param TemporaryFile $temporaryFile
      *
      * @throws NoTypeDetectedException
+     * @return string
      */
     private static function identify(TemporaryFile $temporaryFile): string
     {
         try {
             return IOFactory::identify($temporaryFile->getLocalPath());
         } catch (Exception $e) {
-            throw new NoTypeDetectedException('', 0, $e);
+            throw new NoTypeDetectedException(null, null, $e);
         }
     }
 }

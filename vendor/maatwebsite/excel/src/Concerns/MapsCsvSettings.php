@@ -52,17 +52,7 @@ trait MapsCsvSettings
     protected static $inputEncoding = 'UTF-8';
 
     /**
-     * @var string
-     */
-    protected static $outputEncoding = '';
-
-    /**
-     * @var bool
-     */
-    protected static $testAutoDetect = true;
-
-    /**
-     * @param  array  $config
+     * @param array $config
      */
     public static function applyCsvSettings(array $config)
     {
@@ -75,7 +65,5 @@ trait MapsCsvSettings
         static::$escapeCharacter      = Arr::get($config, 'escape_character', static::$escapeCharacter);
         static::$contiguous           = Arr::get($config, 'contiguous', static::$contiguous);
         static::$inputEncoding        = Arr::get($config, 'input_encoding', static::$inputEncoding);
-        static::$outputEncoding       = Arr::get($config, 'output_encoding', static::$outputEncoding);
-        static::$testAutoDetect       = Arr::get($config, 'test_auto_detect', static::$testAutoDetect);
     }
 }

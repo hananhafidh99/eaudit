@@ -12,7 +12,7 @@ class DbTransactionHandler implements TransactionHandler
     private $connection;
 
     /**
-     * @param  ConnectionInterface  $connection
+     * @param ConnectionInterface $connection
      */
     public function __construct(ConnectionInterface $connection)
     {
@@ -20,10 +20,10 @@ class DbTransactionHandler implements TransactionHandler
     }
 
     /**
-     * @param  callable  $callback
-     * @return mixed
+     * @param callable $callback
      *
      * @throws \Throwable
+     * @return mixed
      */
     public function __invoke(callable $callback)
     {

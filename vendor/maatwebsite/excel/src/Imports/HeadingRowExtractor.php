@@ -3,7 +3,6 @@
 namespace Maatwebsite\Excel\Imports;
 
 use Maatwebsite\Excel\Concerns\WithColumnLimit;
-use Maatwebsite\Excel\Concerns\WithGroupedHeadingRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Row;
@@ -17,7 +16,8 @@ class HeadingRowExtractor
     const DEFAULT_HEADING_ROW = 1;
 
     /**
-     * @param  WithHeadingRow|mixed  $importable
+     * @param WithHeadingRow|mixed $importable
+     *
      * @return int
      */
     public static function headingRow($importable): int
@@ -28,7 +28,8 @@ class HeadingRowExtractor
     }
 
     /**
-     * @param  WithHeadingRow|mixed  $importable
+     * @param WithHeadingRow|mixed $importable
+     *
      * @return int
      */
     public static function determineStartRow($importable): int
@@ -44,8 +45,9 @@ class HeadingRowExtractor
     }
 
     /**
-     * @param  Worksheet  $worksheet
-     * @param  WithHeadingRow|mixed  $importable
+     * @param Worksheet            $worksheet
+     * @param WithHeadingRow|mixed $importable
+     *
      * @return array
      */
     public static function extract(Worksheet $worksheet, $importable): array
@@ -60,27 +62,5 @@ class HeadingRowExtractor
         $endColumn        = $importable instanceof WithColumnLimit ? $importable->endColumn() : null;
 
         return HeadingRowFormatter::format((new Row($headingRow))->toArray(null, false, false, $endColumn));
-    }
-
-    /**
-     * @param  array  $headingRow
-     * @param  WithGroupedHeadingRow|mixed  $importable
-     * @return array
-     */
-    public static function extractGrouping($headingRow, $importable)
-    {
-        $headerIsGrouped = array_fill(0, count($headingRow), false);
-
-        if (!$importable instanceof WithGroupedHeadingRow) {
-            return $headerIsGrouped;
-        }
-
-        array_walk($headerIsGrouped, function (&$value, $key) use ($headingRow) {
-            if (array_count_values($headingRow)[$headingRow[$key]] > 1) {
-                $value = true;
-            }
-        });
-
-        return $headerIsGrouped;
     }
 }

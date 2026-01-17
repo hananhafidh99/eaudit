@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the league/commonmark package.
  *
@@ -23,63 +21,46 @@ use League\CommonMark\Normalizer\TextNormalizer;
  */
 final class ReferenceMap implements ReferenceMapInterface
 {
-    /** @psalm-readonly */
-    private TextNormalizer $normalizer;
+    /** @var TextNormalizer */
+    private $normalizer;
 
     /**
-     * @var array<string, ReferenceInterface>
-     *
-     * @psalm-readonly-allow-private-mutation
+     * @var ReferenceInterface[]
      */
-    private array $references = [];
+    private $references = [];
 
     public function __construct()
     {
         $this->normalizer = new TextNormalizer();
     }
 
-    public function add(ReferenceInterface $reference): void
+    public function addReference(ReferenceInterface $reference): void
     {
-        // Normalize the key
         $key = $this->normalizer->normalize($reference->getLabel());
-        // Store the reference
+
         $this->references[$key] = $reference;
     }
 
     public function contains(string $label): bool
     {
-        if ($this->references === []) {
-            return false;
-        }
-
         $label = $this->normalizer->normalize($label);
 
         return isset($this->references[$label]);
     }
 
-    public function get(string $label): ?ReferenceInterface
+    public function getReference(string $label): ?ReferenceInterface
     {
-        if ($this->references === []) {
+        $label = $this->normalizer->normalize($label);
+
+        if (!isset($this->references[$label])) {
             return null;
         }
 
-        $label = $this->normalizer->normalize($label);
-
-        return $this->references[$label] ?? null;
+        return $this->references[$label];
     }
 
-    /**
-     * @return \Traversable<string, ReferenceInterface>
-     */
-    public function getIterator(): \Traversable
+    public function listReferences(): iterable
     {
-        foreach ($this->references as $normalizedLabel => $reference) {
-            yield $normalizedLabel => $reference;
-        }
-    }
-
-    public function count(): int
-    {
-        return \count($this->references);
+        return \array_values($this->references);
     }
 }
