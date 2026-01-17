@@ -14,7 +14,7 @@ class PegawaiController extends Controller
 {
     //
 
-    const API_URL = "http://127.0.0.1:8000/api/pegawai";
+    const API_URL = "http://127.0.0.1:9000/api/pegawai";
     public function index(Request $request)
     {
 
@@ -22,7 +22,7 @@ class PegawaiController extends Controller
         $client       = new Client();
         $url          = static::API_URL;
         $token        = session('ctoken');
-        // $url          = "http://127.0.0.1:8000/api/pegawai?token=".$token;
+        // $url          = "http://127.0.0.1:9000/api/pegawai?token=".$token;
         if ($request->input('page') != '') {
             # code...
             $url .= "?page=".$request->input('page').'&token='.$token;
@@ -42,9 +42,9 @@ class PegawaiController extends Controller
     public function create()
     {
         $token    = session('ctoken');
-        $data     = Http::get("http://127.0.0.1:8000/api/pangkat", ['token' => $token])['data'];
-        $jabatan  = Http::get("http://127.0.0.1:8000/api/jabatan", ['token' => $token])['data'];
-        $eselon   = Http::get("http://127.0.0.1:8000/api/eselon", ['token' => $token])['data'];
+        $data     = Http::get("http://127.0.0.1:9000/api/pangkat", ['token' => $token])['data'];
+        $jabatan  = Http::get("http://127.0.0.1:9000/api/jabatan", ['token' => $token])['data'];
+        $eselon   = Http::get("http://127.0.0.1:9000/api/eselon", ['token' => $token])['data'];
         return view('admin.pegawai_create', ['data'=>$data,'jabatan'=>$jabatan,'eselon'=>$eselon]);
     }
 
@@ -70,7 +70,7 @@ class PegawaiController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pegawai?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pegawai?token=".$token;
         $response     = $client->request('POST',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)
@@ -90,10 +90,10 @@ class PegawaiController extends Controller
     {
 
         $token   = session('ctoken');
-        $pegawai    = Http::get("http://127.0.0.1:8000/api/pegawai-edit/$id", ['token' => $token])['data'];
-        $pangkat = Http::get("http://127.0.0.1:8000/api/pangkat", ['token' => $token])['data'];
-        $jabatan = Http::get("http://127.0.0.1:8000/api/jabatan", ['token' => $token])['data'];
-        $eselon = Http::get("http://127.0.0.1:8000/api/eselon", ['token' => $token])['data'];
+        $pegawai    = Http::get("http://127.0.0.1:9000/api/pegawai-edit/$id", ['token' => $token])['data'];
+        $pangkat = Http::get("http://127.0.0.1:9000/api/pangkat", ['token' => $token])['data'];
+        $jabatan = Http::get("http://127.0.0.1:9000/api/jabatan", ['token' => $token])['data'];
+        $eselon = Http::get("http://127.0.0.1:9000/api/eselon", ['token' => $token])['data'];
         return view('admin.pegawai_edit', ['pegawai'=>$pegawai,'pangkat'=>$pangkat,'jabatan'=>$jabatan,'eselon'=>$eselon]);
 
     }
@@ -120,7 +120,7 @@ class PegawaiController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pegawai/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pegawai/$id?token=".$token;
         $response     = $client->request('PUT',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)

@@ -16,8 +16,8 @@ class SKPDController extends Controller
     public function index()
     {
         $token = session('ctoken');
-        $data = Http::get("http://127.0.0.1:8000/api/skpd", ['token' => $token])['data'][0];
-        $pegawai = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => true])['data'];
+        $data = Http::get("http://127.0.0.1:9000/api/skpd", ['token' => $token])['data'][0];
+        $pegawai = Http::get("http://127.0.0.1:9000/api/pegawai", ['token' => $token, 'N' => true])['data'];
         // $pegawai = Pegawai::all();
         session(['brand_logo' => $data['logo'], 'id_pimpinan' => $data['id_pimpinan'] ?? null, 'id_bendahara' => $data['id_bendahara']]);
 
@@ -52,7 +52,7 @@ class SKPDController extends Controller
 
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/skpd?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/skpd?token=" . $token;
         $response = $client->request('POST', $url, [
             'headers' => ['Content-type' => 'application/json'],
             'body' => json_encode($parameter)
@@ -72,7 +72,7 @@ class SKPDController extends Controller
     {
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/skpd/$id?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/skpd/$id?token=" . $token;
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);
@@ -152,7 +152,7 @@ class SKPDController extends Controller
 
             $client = new Client();
             $token = session('ctoken');
-            $url = "http://127.0.0.1:8000/api/skpd/$id?token=" . $token;
+            $url = "http://127.0.0.1:9000/api/skpd/$id?token=" . $token;
             $response = $client->request('POST', $url, [
                 'multipart' => $parameter
             ]);
@@ -183,7 +183,7 @@ class SKPDController extends Controller
     {
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/skpd/$id?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/skpd/$id?token=" . $token;
         $response = $client->request('DELETE', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);

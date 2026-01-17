@@ -15,7 +15,7 @@ class KegiatanController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/kegiatan?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/kegiatan?token=".$token;
         $response     = $client->request('GET',$url);
         $content      = $response->getBody()->getContents();
         $contentArray = json_decode($content,true);
@@ -25,7 +25,7 @@ class KegiatanController extends Controller
         public function create()
     {
         $token    = session('ctoken');
-        $pegawai     = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
+        $pegawai     = Http::get("http://127.0.0.1:9000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
         return view('admin.kegiatan_create',['pegawai'=>$pegawai]);
     }
 
@@ -43,7 +43,7 @@ class KegiatanController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/kegiatan?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/kegiatan?token=".$token;
         $response     = $client->request('POST',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)
@@ -63,8 +63,8 @@ class KegiatanController extends Controller
     {
 
         $token    = session('ctoken');
-        $kegiatan = Http::get("http://127.0.0.1:8000/api/kegiatan-edit/$id", ['token' => $token])['data'];
-        $pegawai  = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
+        $kegiatan = Http::get("http://127.0.0.1:9000/api/kegiatan-edit/$id", ['token' => $token])['data'];
+        $pegawai  = Http::get("http://127.0.0.1:9000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
         return view('admin.kegiatan_edit', ['pegawai'=>$pegawai,'kegiatan'=>$kegiatan]);
 
     }
@@ -83,7 +83,7 @@ class KegiatanController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/kegiatan/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/kegiatan/$id?token=".$token;
         $response     = $client->request('PUT',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)

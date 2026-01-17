@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 
 class SuratController extends Controller
 {
-    const API_URL = "http://127.0.0.1:8000/api/penugasan";
+    const API_URL = "http://127.0.0.1:9000/api/penugasan";
 
     public function index(Request $request)
     {
@@ -44,12 +44,12 @@ class SuratController extends Controller
     public function create()
     {
         $token = session('ctoken');
-        $data = Http::get("http://127.0.0.1:8000/api/kegiatan", ['token' => $token])['data'];
-        $pegawai = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
-        $peran = Http::get("http://127.0.0.1:8000/api/peran", ['token' => $token])['data'];
-        $jenisPengawasan = Http::get("http://127.0.0.1:8000/api/jenisPengawasan", ['token' => $token])['data'];
-        $obrik = Http::get("http://127.0.0.1:8000/api/obrik", ['token' => $token])['data'];
-        $kelompokPenugasan = Http::get("http://127.0.0.1:8000/api/k_penugasan", ['token' => $token])['data'];
+        $data = Http::get("http://127.0.0.1:9000/api/kegiatan", ['token' => $token])['data'];
+        $pegawai = Http::get("http://127.0.0.1:9000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
+        $peran = Http::get("http://127.0.0.1:9000/api/peran", ['token' => $token])['data'];
+        $jenisPengawasan = Http::get("http://127.0.0.1:9000/api/jenisPengawasan", ['token' => $token])['data'];
+        $obrik = Http::get("http://127.0.0.1:9000/api/obrik", ['token' => $token])['data'];
+        $kelompokPenugasan = Http::get("http://127.0.0.1:9000/api/k_penugasan", ['token' => $token])['data'];
         return view('admin.surat_dalamkota_create', ['data' => $data, 'kelompokPenugasan' => $kelompokPenugasan, 'jenisPengawasan' => $jenisPengawasan, 'obrik' => $obrik, 'peran' => $peran, 'pegawai' => $pegawai]);
     }
 
@@ -102,7 +102,7 @@ class SuratController extends Controller
         ];
 
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/penugasan/store?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/penugasan/store?token=" . $token;
         $response = Http::withHeaders([
             'Content-Type' => 'application/json'
         ])->post($url, $parameter);
@@ -153,12 +153,12 @@ class SuratController extends Controller
 
         $datatersimpan = $this->getPenugasanDetail($id);
         $token = session('ctoken');
-        $penugasanedit = Http::get("http://127.0.0.1:8000/api/penugasan-editbaru/$id", ['token' => $token])['data'];
-        $jenisPengawasan = Http::get("http://127.0.0.1:8000/api/jenisPengawasan", ['token' => $token])['data'];
-        $obrik = Http::get("http://127.0.0.1:8000/api/obrik", ['token' => $token])['data'];
-        $kegiatan = Http::get("http://127.0.0.1:8000/api/kegiatan", ['token' => $token])['data'];
-        $peran = Http::get("http://127.0.0.1:8000/api/peran", ['token' => $token])['data'];
-        $pegawai = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
+        $penugasanedit = Http::get("http://127.0.0.1:9000/api/penugasan-editbaru/$id", ['token' => $token])['data'];
+        $jenisPengawasan = Http::get("http://127.0.0.1:9000/api/jenisPengawasan", ['token' => $token])['data'];
+        $obrik = Http::get("http://127.0.0.1:9000/api/obrik", ['token' => $token])['data'];
+        $kegiatan = Http::get("http://127.0.0.1:9000/api/kegiatan", ['token' => $token])['data'];
+        $peran = Http::get("http://127.0.0.1:9000/api/peran", ['token' => $token])['data'];
+        $pegawai = Http::get("http://127.0.0.1:9000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
         // dump(['penugasanedit'=>$penugasanedit,'jenisPengawasan'=>$jenisPengawasan,'obrik'=>$obrik,'kegiatan'=>$kegiatan, 'peran'=>$peran,'pegawai'=>$pegawai,'suratTugas'=>$datatersimpan['surattugas']]);
         // dd($datatersimpan);
         return view('admin.surat_dalamkota_edit', ['penugasanedit' => $penugasanedit, 'jenisPengawasan' => $jenisPengawasan, 'obrik' => $obrik, 'kegiatan' => $kegiatan, 'peran' => $peran, 'pegawai' => $pegawai, 'suratTugas' => $datatersimpan['surattugas']]);
@@ -167,8 +167,8 @@ class SuratController extends Controller
     public function suratTugas($id)
     {
         $token = session('ctoken');
-        $penugasan = Http::get("http://127.0.0.1:8000/api/penugasan-edit/$id", ['token' => $token])['data'];
-        $data = Http::get("http://127.0.0.1:8000/api/skpd", ['token' => $token])['data'][0];
+        $penugasan = Http::get("http://127.0.0.1:9000/api/penugasan-edit/$id", ['token' => $token])['data'];
+        $data = Http::get("http://127.0.0.1:9000/api/skpd", ['token' => $token])['data'][0];
         // dd(session('nama_pemimpin'));
         return view('admin.template_surat', ['penugasan' => $penugasan, 'data' => $data]);
     }
@@ -176,15 +176,15 @@ class SuratController extends Controller
     public function buktipenerimaan($id)
     {
         $token = session('ctoken');
-        $penugasan = Http::get("http://127.0.0.1:8000/api/penugasan-bukti/$id", ['token' => $token])['data'];
+        $penugasan = Http::get("http://127.0.0.1:9000/api/penugasan-bukti/$id", ['token' => $token])['data'];
         return view('admin.bukti', ['penugasan' => $penugasan]);
     }
 
     public function suratDinas($id)
     {
         $token = session('ctoken');
-        $penugasan = Http::get("http://127.0.0.1:8000/api/penugasan-suratdinas/$id", ['token' => $token])['data'];
-        $data = Http::get("http://127.0.0.1:8000/api/skpd", ['token' => $token])['data'][0];
+        $penugasan = Http::get("http://127.0.0.1:9000/api/penugasan-suratdinas/$id", ['token' => $token])['data'];
+        $data = Http::get("http://127.0.0.1:9000/api/skpd", ['token' => $token])['data'][0];
         return view('admin.suratDinas', ['penugasan' => $penugasan, 'data' => $data]);
 
     }
@@ -192,7 +192,7 @@ class SuratController extends Controller
     public function sppd($id)
     {
         $token = session('ctoken');
-        $penugasan = Http::get("http://127.0.0.1:8000/api/penugasan-edit/$id", ['token' => $token])['data'];
+        $penugasan = Http::get("http://127.0.0.1:9000/api/penugasan-edit/$id", ['token' => $token])['data'];
         return view('admin.sppd', ['penugasan' => $penugasan]);
 
     }
@@ -202,7 +202,7 @@ class SuratController extends Controller
         $client = new Client();
         $token = session('ctoken');
         $tahun = session('sdata');
-        $url = "http://127.0.0.1:8000/api/penugasanArsip?token=" . $token . "&tahun=" . $tahun;
+        $url = "http://127.0.0.1:9000/api/penugasanArsip?token=" . $token . "&tahun=" . $tahun;
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);
@@ -255,7 +255,7 @@ class SuratController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $apiUrl = "http://127.0.0.1:8000/api/penugasan_update";
+            $apiUrl = "http://127.0.0.1:9000/api/penugasan_update";
             $payload = $request->all();
             $payload['id'] = $id;
 
@@ -284,7 +284,7 @@ class SuratController extends Controller
     {
         // Proxy ke API
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/penugasan/check-overlap?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/penugasan/check-overlap?token=" . $token;
 
         $response = Http::post($url, $request->all());
 

@@ -14,7 +14,7 @@ class TabelKendaliController extends Controller
         $client = new Client();
         $token = session('ctoken');
         $tahun = session('sdata');
-        $url = "http://127.0.0.1:8000/api/tabelkendali?token=" . $token . "&tahun=" . $tahun;
+        $url = "http://127.0.0.1:9000/api/tabelkendali?token=" . $token . "&tahun=" . $tahun;
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);
@@ -25,7 +25,7 @@ class TabelKendaliController extends Controller
     public function create()
     {
         $token = session('ctoken');
-        $tabelkendali = Http::get("http://127.0.0.1:8000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
+        $tabelkendali = Http::get("http://127.0.0.1:9000/api/pegawai", ['token' => $token, 'N' => 'alldata'])['data'];
         return view('admin.tabel_kendaliCreate', ['tabelkendali' => $tabelkendali]);
     }
 
@@ -43,7 +43,7 @@ class TabelKendaliController extends Controller
 
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/tabelkendali?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/tabelkendali?token=" . $token;
         $response = $client->request('POST', $url, [
             'headers' => ['Content-type' => 'application/json'],
             'body' => json_encode($parameter)
@@ -63,7 +63,7 @@ class TabelKendaliController extends Controller
     {
         $client = new Client();
         $token = session('ctoken');
-        $url = "http://127.0.0.1:8000/api/tabelkendali/$id?token=" . $token;
+        $url = "http://127.0.0.1:9000/api/tabelkendali/$id?token=" . $token;
         $response = $client->request('DELETE', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);

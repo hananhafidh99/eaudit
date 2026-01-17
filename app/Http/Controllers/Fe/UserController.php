@@ -12,7 +12,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $client = new Client();
-        $url = "http://127.0.0.1:8000/api/obrik?token=";
+        $url = "http://127.0.0.1:9000/api/obrik?token=";
         $response = $client->request('GET', $url);
         $content = $response->getBody()->getContents();
         $contentArray = json_decode($content, true);
@@ -34,7 +34,7 @@ class UserController extends Controller
             'password' => $password
         ];
 
-        $response = Http::post("http://127.0.0.1:8000" . ('/api/login'), $params);
+        $response = Http::post("http://127.0.0.1:9000" . ('/api/login'), $params);
         $json = $response->json();
 
         // Debug: uncomment line below to see API response
