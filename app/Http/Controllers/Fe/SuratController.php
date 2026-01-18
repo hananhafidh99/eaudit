@@ -130,8 +130,12 @@ class SuratController extends Controller
             )
             ->get();
 
-        $tugas = $suratTugas->filter(fn($item) => $item->nama_peran != 'Anggota')->values();
-        $anggota = $suratTugas->filter(fn($item) => $item->nama_peran == 'Anggota')->values();
+        $tugas = $suratTugas->filter(function($item) {
+            return $item->nama_peran != 'Anggota';
+        })->values();
+        $anggota = $suratTugas->filter(function($item) {
+            return $item->nama_peran == 'Anggota';
+        })->values();
 
         $resetindex = [];
         foreach ($tugas as $key => $value) {
