@@ -4,7 +4,7 @@
         integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <h5>Daftar Peran
-        <div class="d-flex justify-content-end"><a href="{{ url('Peran_baru') }}" class="btn btn-success">Tambah Peran</a>
+        <div class="d-flex justify-content-end"><a href="{{ url('peran_baru') }}" class="btn btn-success">Tambah Peran</a>
         </div>
     </h5>
     <div class="table-responsive">
