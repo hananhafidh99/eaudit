@@ -6,7 +6,7 @@
 <div class="card mb-4">
     <div class="card-header"></div>
     <div class="card-body">
-      <form action="{{ url('Peran/'.$data['id']) }}" method="post" enctype="multipart/form-data">
+      <form action="{{ url('peran/'.$data['id']) }}" method="post" enctype="multipart/form-data">
             @method('put')
             @csrf
             <div class="row">

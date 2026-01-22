@@ -14,31 +14,19 @@ declare(strict_types=1);
 
 namespace League\CommonMark\Extension\Attributes;
 
-use League\CommonMark\Environment\EnvironmentBuilderInterface;
+use League\CommonMark\ConfigurableEnvironmentInterface;
 use League\CommonMark\Event\DocumentParsedEvent;
 use League\CommonMark\Extension\Attributes\Event\AttributesListener;
-use League\CommonMark\Extension\Attributes\Parser\AttributesBlockStartParser;
+use League\CommonMark\Extension\Attributes\Parser\AttributesBlockParser;
 use League\CommonMark\Extension\Attributes\Parser\AttributesInlineParser;
-use League\CommonMark\Extension\ConfigurableExtensionInterface;
-use League\Config\ConfigurationBuilderInterface;
-use Nette\Schema\Expect;
+use League\CommonMark\Extension\ExtensionInterface;
 
-final class AttributesExtension implements ConfigurableExtensionInterface
+final class AttributesExtension implements ExtensionInterface
 {
-    public function configureSchema(ConfigurationBuilderInterface $builder): void
+    public function register(ConfigurableEnvironmentInterface $environment)
     {
-        $builder->addSchema('attributes', Expect::structure([
-            'allow' => Expect::arrayOf('string')->default([]),
-        ]));
-    }
-
-    public function register(EnvironmentBuilderInterface $environment): void
-    {
-        $allowList        = $environment->getConfiguration()->get('attributes.allow');
-        $allowUnsafeLinks = $environment->getConfiguration()->get('allow_unsafe_links');
-
-        $environment->addBlockStartParser(new AttributesBlockStartParser());
+        $environment->addBlockParser(new AttributesBlockParser());
         $environment->addInlineParser(new AttributesInlineParser());
-        $environment->addEventListener(DocumentParsedEvent::class, [new AttributesListener($allowList, $allowUnsafeLinks), 'processDocument']);
+        $environment->addEventListener(DocumentParsedEvent::class, [new AttributesListener(), 'processDocument']);
     }
 }

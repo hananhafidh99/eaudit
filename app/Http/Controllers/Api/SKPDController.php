@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\SKPD;
+use App\Models\Skpd;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -31,7 +31,7 @@ class SKPDController extends Controller
     public function index()
     {
         //get all posts
-        $skpd = SKPD::latest()->get();
+        $skpd = Skpd::latest()->get();
         return response()->json([
             'status' => true,
             'message' => 'data di temukan',
@@ -41,7 +41,7 @@ class SKPDController extends Controller
 
     public function show($id)
     {
-        $skpd = SKPD::find($id);
+        $skpd = Skpd::find($id);
 
         if (!$skpd) {
             return response()->json([
@@ -59,7 +59,7 @@ class SKPDController extends Controller
 
     public function store(Request $request)
     {
-        $dataSkpd = new SKPD;
+        $dataSkpd = new Skpd;
 
         $rules = [
             'instansi' => 'required',
@@ -115,7 +115,7 @@ class SKPDController extends Controller
                 'token' => $request->token
             ]);
 
-            $dataSkpd = SKPD::where('id', $id)->first();
+            $dataSkpd = Skpd::where('id', $id)->first();
             if (empty($dataSkpd)) {
                 return response()->json([
                     'status' => false,
@@ -206,7 +206,7 @@ class SKPDController extends Controller
 
     public function destroy($id)
     {
-        $dataSkpd = SKPD::find($id);
+        $dataSkpd = Skpd::find($id);
         if (empty($dataSkpd)) {
             # code...
             return response()->json([
@@ -227,7 +227,7 @@ class SKPDController extends Controller
 
     public function showDataSKPD()
     {
-        $dataSkpd = SKPD::first();
+        $dataSkpd = Skpd::first();
 
         $value = $dataSkpd;
 

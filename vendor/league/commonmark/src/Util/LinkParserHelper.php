@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the league/commonmark package.
  *
@@ -16,22 +14,28 @@ declare(strict_types=1);
 
 namespace League\CommonMark\Util;
 
-use League\CommonMark\Parser\Cursor;
+use League\CommonMark\Cursor;
 
-/**
- * @psalm-immutable
- */
 final class LinkParserHelper
 {
     /**
      * Attempt to parse link destination
      *
-     * @return string|null The string, or null if no match
+     * @param Cursor $cursor
+     *
+     * @return null|string The string, or null if no match
      */
     public static function parseLinkDestination(Cursor $cursor): ?string
     {
-        if ($cursor->getCurrentCharacter() === '<') {
-            return self::parseDestinationBraces($cursor);
+        if ($res = $cursor->match(RegexHelper::REGEX_LINK_DESTINATION_BRACES)) {
+            // Chop off surrounding <..>:
+            return UrlEncoder::unescapeAndEncode(
+                RegexHelper::unescape(\substr($res, 1, -1))
+            );
+        }
+
+        if ($cursor->getCharacter() === '<') {
+            return null;
         }
 
         $destination = self::manuallyParseLinkDestination($cursor);
@@ -51,7 +55,7 @@ final class LinkParserHelper
             return 0;
         }
 
-        $length = \mb_strlen($match, 'UTF-8');
+        $length = \mb_strlen($match, 'utf-8');
 
         if ($length > 1001) {
             return 0;
@@ -60,15 +64,12 @@ final class LinkParserHelper
         return $length;
     }
 
-    public static function parsePartialLinkLabel(Cursor $cursor): ?string
-    {
-        return $cursor->match('/^(?:[^\\\\\[\]]++|\\\\.?)*+/');
-    }
-
     /**
      * Attempt to parse link title (sans quotes)
      *
-     * @return string|null The string, or null if no match
+     * @param Cursor $cursor
+     *
+     * @return null|string The string, or null if no match
      */
     public static function parseLinkTitle(Cursor $cursor): ?string
     {
@@ -80,40 +81,29 @@ final class LinkParserHelper
         return null;
     }
 
-    public static function parsePartialLinkTitle(Cursor $cursor, string $endDelimiter): ?string
-    {
-        $endDelimiter = \preg_quote($endDelimiter, '/');
-        $regex        = \sprintf('/(%s|[^%s\x00])*(?:%s)?/', RegexHelper::PARTIAL_ESCAPED_CHAR, $endDelimiter, $endDelimiter);
-        if (($partialTitle = $cursor->match($regex)) === null) {
-            return null;
-        }
-
-        return RegexHelper::unescape($partialTitle);
-    }
-
     private static function manuallyParseLinkDestination(Cursor $cursor): ?string
     {
-        $remainder  = $cursor->getRemainder();
+        $oldPosition = $cursor->getPosition();
+        $oldState = $cursor->saveState();
+
         $openParens = 0;
-        $len        = \strlen($remainder);
-        for ($i = 0; $i < $len; $i++) {
-            $c = $remainder[$i];
-            if ($c === '\\' && $i + 1 < $len && RegexHelper::isEscapable($remainder[$i + 1])) {
-                $i++;
+        while (($c = $cursor->getCharacter()) !== null) {
+            if ($c === '\\' && $cursor->peek() !== null && RegexHelper::isEscapable($cursor->peek())) {
+                $cursor->advanceBy(2);
             } elseif ($c === '(') {
+                $cursor->advanceBy(1);
                 $openParens++;
-                // Limit to 32 nested parens for pathological cases
-                if ($openParens > 32) {
-                    return null;
-                }
             } elseif ($c === ')') {
                 if ($openParens < 1) {
                     break;
                 }
 
+                $cursor->advanceBy(1);
                 $openParens--;
-            } elseif (\ord($c) <= 32 && RegexHelper::isWhitespace($c)) {
+            } elseif (\preg_match(RegexHelper::REGEX_WHITESPACE_CHAR, $c)) {
                 break;
+            } else {
+                $cursor->advanceBy(1);
             }
         }
 
@@ -121,45 +111,15 @@ final class LinkParserHelper
             return null;
         }
 
-        if ($i === 0 && (! isset($c) || $c !== ')')) {
+        if ($cursor->getPosition() === $oldPosition && $c !== ')') {
             return null;
         }
 
-        $destination = \substr($remainder, 0, $i);
-        $cursor->advanceBy(\mb_strlen($destination, 'UTF-8'));
+        $newPos = $cursor->getPosition();
+        $cursor->restoreState($oldState);
 
-        return $destination;
-    }
+        $cursor->advanceBy($newPos - $cursor->getPosition());
 
-    /** @var \WeakReference<Cursor>|null */
-    private static ?\WeakReference $lastCursor       = null;
-    private static bool $lastCursorLacksClosingBrace = false;
-
-    private static function parseDestinationBraces(Cursor $cursor): ?string
-    {
-        // Optimization: If we've previously parsed this cursor and returned `null`, we know
-        // that no closing brace exists, so we can skip the regex entirely. This helps avoid
-        // certain pathological cases where the regex engine can take a very long time to
-        // determine that no match exists.
-        if (self::$lastCursor !== null && self::$lastCursor->get() === $cursor) {
-            if (self::$lastCursorLacksClosingBrace) {
-                return null;
-            }
-        } else {
-            self::$lastCursor = \WeakReference::create($cursor);
-        }
-
-        if ($res = $cursor->match(RegexHelper::REGEX_LINK_DESTINATION_BRACES)) {
-            self::$lastCursorLacksClosingBrace = false;
-
-            // Chop off surrounding <..>:
-            return UrlEncoder::unescapeAndEncode(
-                RegexHelper::unescape(\substr($res, 1, -1))
-            );
-        }
-
-        self::$lastCursorLacksClosingBrace = true;
-
-        return null;
+        return $cursor->getPreviousText();
     }
 }

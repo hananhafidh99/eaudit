@@ -14,7 +14,7 @@ class PangkatController extends Controller
     {
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pangkat?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pangkat?token=".$token;
         $response     = $client->request('GET',$url);
         $content      = $response->getBody()->getContents();
         $contentArray = json_decode($content,true);
@@ -37,7 +37,7 @@ class PangkatController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pangkat?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pangkat?token=".$token;
         $response     = $client->request('POST',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)
@@ -57,7 +57,7 @@ class PangkatController extends Controller
     {
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pangkat/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pangkat/$id?token=".$token;
         $response     = $client->request('GET',$url);
         $content      = $response->getBody()->getContents();
         $contentArray = json_decode($content,true);
@@ -67,7 +67,7 @@ class PangkatController extends Controller
             return redirect()->to('pangkat')->withErrors($error);
         }else{
             $data = $contentArray['data'];
-            $pangkat = Http::get("http://127.0.0.1:8000/api/pangkat", ['token' => $token])['data'];
+            $pangkat = Http::get("http://127.0.0.1:9000/api/pangkat", ['token' => $token])['data'];
         // $pegawai = Pegawai::all();
         return view('admin.pangkat_edit', ['data'=>$data,'pangkat'=>$pangkat]);
         }
@@ -83,7 +83,7 @@ class PangkatController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pangkat/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pangkat/$id?token=".$token;
         $response     = $client->request('PUT',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)
@@ -103,7 +103,7 @@ class PangkatController extends Controller
     {
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/pangkat/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/pangkat/$id?token=".$token;
         $response     = $client->request('DELETE',$url);
         $content      = $response->getBody()->getContents();
         $contentArray = json_decode($content,true);

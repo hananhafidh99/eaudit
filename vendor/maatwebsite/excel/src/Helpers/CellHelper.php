@@ -5,7 +5,8 @@ namespace Maatwebsite\Excel\Helpers;
 class CellHelper
 {
     /**
-     * @param  string  $coordinate
+     * @param string $coordinate
+     *
      * @return string
      */
     public static function getColumnFromCoordinate(string $coordinate): string

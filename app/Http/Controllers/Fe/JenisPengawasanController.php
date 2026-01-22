@@ -18,7 +18,7 @@ class JenisPengawasanController extends Controller
                 # code...
                 $client       = new Client();
                 $token        = session('ctoken');
-                $url          = "http://127.0.0.1:8000/api/datajenisPengawasan/search?token=".$token.'&nama_jenisPengawasan='.$request->nama_jenisPengawasan;
+                $url          = "http://127.0.0.1:9000/api/datajenisPengawasan/search?token=".$token.'&nama_jenisPengawasan='.$request->nama_jenisPengawasan;
                 $response     = $client->request('GET',$url);
                 $content      = $response->getBody()->getContents();
                 $contentArray = json_decode($content,true);
@@ -26,7 +26,7 @@ class JenisPengawasanController extends Controller
         }else{
                 $client       = new Client();
                 $token        = session('ctoken');
-                $url          = "http://127.0.0.1:8000/api/jenisPengawasan?token=".$token;
+                $url          = "http://127.0.0.1:9000/api/jenisPengawasan?token=".$token;
                 $response     = $client->request('GET',$url);
                 $content      = $response->getBody()->getContents();
                 $contentArray = json_decode($content,true);
@@ -49,7 +49,7 @@ class JenisPengawasanController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/jenisPengawasan?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/jenisPengawasan?token=".$token;
         $response     = $client->request('POST',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)
@@ -69,7 +69,7 @@ class JenisPengawasanController extends Controller
     {
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/jenisPengawasan/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/jenisPengawasan/$id?token=".$token;
         $response     = $client->request('GET',$url);
 
         $content      = $response->getBody()->getContents();
@@ -94,7 +94,7 @@ class JenisPengawasanController extends Controller
 
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/jenisPengawasan/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/jenisPengawasan/$id?token=".$token;
         $response     = $client->request('PUT',$url, [
             'headers' => ['Content-type' => 'application/json'],
             'body'    => json_encode($parameter)
@@ -116,7 +116,7 @@ class JenisPengawasanController extends Controller
     {
         $client       = new Client();
         $token        = session('ctoken');
-        $url          = "http://127.0.0.1:8000/api/jenisPengawasan/$id?token=".$token;
+        $url          = "http://127.0.0.1:9000/api/jenisPengawasan/$id?token=".$token;
         $response     = $client->request('DELETE',$url);
         $content      = $response->getBody()->getContents();
         $contentArray = json_decode($content,true);

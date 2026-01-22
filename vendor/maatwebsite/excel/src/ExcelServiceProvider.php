@@ -2,7 +2,6 @@
 
 namespace Maatwebsite\Excel;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
@@ -11,12 +10,8 @@ use Maatwebsite\Excel\Console\ExportMakeCommand;
 use Maatwebsite\Excel\Console\ImportMakeCommand;
 use Maatwebsite\Excel\Files\Filesystem;
 use Maatwebsite\Excel\Files\TemporaryFileFactory;
-use Maatwebsite\Excel\Mixins\DownloadCollectionMixin;
-use Maatwebsite\Excel\Mixins\DownloadQueryMacro;
-use Maatwebsite\Excel\Mixins\ImportAsMacro;
-use Maatwebsite\Excel\Mixins\ImportMacro;
-use Maatwebsite\Excel\Mixins\StoreCollectionMixin;
-use Maatwebsite\Excel\Mixins\StoreQueryMacro;
+use Maatwebsite\Excel\Mixins\DownloadCollection;
+use Maatwebsite\Excel\Mixins\StoreCollection;
 use Maatwebsite\Excel\Transactions\TransactionHandler;
 use Maatwebsite\Excel\Transactions\TransactionManager;
 
@@ -48,8 +43,8 @@ class ExcelServiceProvider extends ServiceProvider
 
         if ($this->app instanceof \Illuminate\Foundation\Application) {
             // Laravel
-            $this->app->booted(function ($app) {
-                $app->make(SettingsProvider::class)->provide();
+            $this->app->booted(function () {
+                $this->app->make(SettingsProvider::class)->provide();
             });
         } else {
             // Lumen
@@ -67,35 +62,36 @@ class ExcelServiceProvider extends ServiceProvider
             'excel'
         );
 
-        $this->app->bind(CacheManager::class, function ($app) {
-            return new CacheManager($app);
+        $this->app->bind(CacheManager::class, function () {
+            return new CacheManager($this->app);
         });
 
-        $this->app->singleton(TransactionManager::class, function ($app) {
-            return new TransactionManager($app);
+        $this->app->bind(TransactionManager::class, function () {
+            return new TransactionManager($this->app);
         });
 
-        $this->app->bind(TransactionHandler::class, function ($app) {
-            return $app->make(TransactionManager::class)->driver();
+        $this->app->bind(TransactionHandler::class, function () {
+            return $this->app->make(TransactionManager::class)->driver();
         });
 
         $this->app->bind(TemporaryFileFactory::class, function () {
             return new TemporaryFileFactory(
                 config('excel.temporary_files.local_path', config('excel.exports.temp_path', storage_path('framework/laravel-excel'))),
                 config('excel.temporary_files.remote_disk')
+
             );
         });
 
-        $this->app->bind(Filesystem::class, function ($app) {
-            return new Filesystem($app->make('filesystem'));
+        $this->app->bind(Filesystem::class, function () {
+            return new Filesystem($this->app->make('filesystem'));
         });
 
-        $this->app->bind('excel', function ($app) {
+        $this->app->bind('excel', function () {
             return new Excel(
-                $app->make(Writer::class),
-                $app->make(QueuedWriter::class),
-                $app->make(Reader::class),
-                $app->make(Filesystem::class)
+                $this->app->make(Writer::class),
+                $this->app->make(QueuedWriter::class),
+                $this->app->make(Reader::class),
+                $this->app->make(Filesystem::class)
             );
         });
 
@@ -103,12 +99,8 @@ class ExcelServiceProvider extends ServiceProvider
         $this->app->alias('excel', Exporter::class);
         $this->app->alias('excel', Importer::class);
 
-        Collection::mixin(new DownloadCollectionMixin);
-        Collection::mixin(new StoreCollectionMixin);
-        Builder::macro('downloadExcel', (new DownloadQueryMacro)());
-        Builder::macro('storeExcel', (new StoreQueryMacro())());
-        Builder::macro('import', (new ImportMacro())());
-        Builder::macro('importAs', (new ImportAsMacro())());
+        Collection::mixin(new DownloadCollection);
+        Collection::mixin(new StoreCollection);
 
         $this->commands([
             ExportMakeCommand::class,
