@@ -126,7 +126,7 @@ td .fix {
                                 <td></td><td>(Tempat Kedudukan)</td><td>: Sragen</td>
                             </tr>
                             <tr>
-                                <td></td><td>Pada tanggal</td><td>: {{ Carbon\Carbon::parse($penugasan['tanggalAwalPenugasan'])->translatedFormat('d F Y') }}</td>
+                                <td></td><td>Pada tanggal</td><td>: </td>
                             </tr>
                             <tr>
                                 <td></td><td>Ke</td><td style="text-align: justify">:{{ $penugasan['nama_obrik'] }}</td>
@@ -247,7 +247,7 @@ td .fix {
                                 <td>V.</td><td>Tiba kembali di</td><td>:Sragen</td>
                             </tr>
                             <tr>
-                                <td></td><td>Pada tanggal</td><td>: {{ Carbon\Carbon::parse($penugasan['tanggalAkhirPenugasan'])->translatedFormat('d F Y') }}</td>
+                                <td></td><td>Pada tanggal</td><td>: </td>
                             </tr>
                             <tr>
                               <td></td>
@@ -259,11 +259,13 @@ td .fix {
 
 
                         <div class="namainspektur" style="margin-right:110px;margin-top:10px">
-                            Inspektur Daerah <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Plt. Inspektur Daerah <br>
                             &nbsp;Kabupaten Sragen
                             <br><br><br><br><br>
                         </div>
-                            {{ session('nama_pemimpin') }} <br>
+                            <div class="nama" style="margin-left:-20px">
+                                {{ session('nama_pemimpin') }} <br>
+                            </div>
                             <div class="pangkat" style="margin-left: -80px">
                                 {{ explode('/',session('pangkat_pemimpin'))[0]}}<br>
                             </div>

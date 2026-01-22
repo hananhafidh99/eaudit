@@ -358,7 +358,7 @@
                     @csrf
                      <select name="tahun" id="tahun" class="form-control" onchange="submit()">
                      <option value="">PILIH TAHUN</option>
-                     @for ($i = 2023; $i <= date('Y'); $i++)
+                     @for ($i = 2017; $i <= date('Y'); $i++)
                       <option value="{{ $i }}" @if ($i == session('sdata')) selected @endif>{{ $i }}</option>
                     @endfor
                   </select>

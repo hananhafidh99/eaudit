@@ -323,27 +323,26 @@
 
             <p style="text-indent: 3cm";>Inspektur Daerah Kabupaten Sragen memberikan tugas kepada :
                 <div>
-                    <table class="table1">
+                   <table class="table1">
                         <thead>
                             <tr>
-                                <th style="width: 10%" class="text-center">NO</th>
-                                <th class="text-center" style="width: 45%">NAMA</th>
-                                <th class="text-center" style="width: 26%">NIP</th>
-                                <th class="text-center" style="width: 50%" >PERAN</th>
+                                <th>NO</th>
+                                <th class="text-center">NAMA</th>
+                                <th class="text-center">NIP</th>
+                                <th class="text-center">PERAN</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @php
+<tbody>
+                                @php
                                 // $namapegawai = explode('@@',$penugasan['daftar_pegawai']);
                                    $namapegawai = $penugasan['detail_petugas'];
-                            @endphp
-                            @foreach ($namapegawai as $k => $v)
-                                <tr>
+                                @endphp
+                                @foreach ($namapegawai as $k => $v)
+                                    <tr>
                                     <td style='text-align:center;'>{{ $k + 1 }}</td>
-                                    <td style='text-align:left;'>{{ $v['namapegawai'] }}</td>
-                                    <td style='text-align:left;'>{{ $v['nip'] }}</td>
-                                    <td style='text-align:left;'>{{ $v['peran'] }}</td>
-
+                                <td id="namapegawai" style="width: 300px " >{{ $v['namapegawai'] }}</td>
+                                    <td id="nipegawai" style="text-align:center">{{ $v['nip'] }}</td>
+                                    <td id="peran"> {{ $v['peran'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -385,14 +384,14 @@
                                     </td> --}}
                                     <div class="namainspektur" style="margin-left: 440px">
                                         Sragen,{{ Carbon\Carbon::parse($penugasan['tanggalTerbitPenugasan'])->translatedFormat('d F Y') }} <br>
-                                        Inspektur Daerah <br>
+                                        Plt. Inspektur Daerah <br>
                                         Kabupaten Sragen <br>
                                         <br><br><br>
                                     </div>
                                 </tr>
                                 <tr>
                                     <div class="tddinspektur" style="margin-left: 440px;">
-                                        {{ session('nama_pemimpin') }} <br></u>
+                                     <u>{{ session('nama_pemimpin') }} <br></u>
                                         {{ explode('/',session('pangkat_pemimpin'))[0]}}<br>
                                     NIP.{{ session('nip_pemimpin') }} <br>
                                     </div>
@@ -407,10 +406,6 @@
             </P>
 
             </div> --}}
-
-            <div style="height: 5px;"></div>
-			<p > TEMBUSAN : </P>
-			<p> Yth. Bupati Sragen (Sebagai laporan)</p>
 
                     </div>
                 </div>
