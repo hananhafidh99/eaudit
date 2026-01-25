@@ -69,7 +69,7 @@
                 <tr>
                     <th>No</th>
                     <th>No Surat</th>
-                    <th style="width: 150px">Tanggal</th>
+                    <th>Tanggal</th>
                     <th>Pegawai</th>
                     <th>Jenis Pengawasan</th>
                     <th>Obrik</th>
@@ -87,7 +87,7 @@
 
                         </td>
 
-                                <td style="width: 150px">
+                                <td>
                                     {{ Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->translatedFormat('d F Y') }} <br>
                                     <small class="text-muted">s/d</small> <br>
                                     {{ Carbon\Carbon::parse($v['tanggalAkhirPenugasan'])->translatedFormat('d F Y') }}
