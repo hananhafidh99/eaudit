@@ -24,6 +24,7 @@
   color: white;
 }
 </style>
+    <div class="card">
         <h5 class="card-header">Daftar Surat Tugas dan SPPD</h5>
         <div class="card-body">
             <form action="{{ url('arsip/cari') }}" method="post" class="mb-4">
@@ -68,7 +69,7 @@
                 <tr>
                     <th>No</th>
                     <th>No Surat</th>
-                    <th>Tanggal</th>
+                    <th style="width: 50px">Tanggal</th>
                     <th>Pegawai</th>
                     <th>Jenis Pengawasan</th>
                     <th>Obrik</th>
@@ -86,7 +87,7 @@
 
                         </td>
 
-                                <td>
+                                <td style="width: 50px">
                                     {{ Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->translatedFormat('d F Y') }} <br>
                                     <small class="text-muted">s/d</small> <br>
                                     {{ Carbon\Carbon::parse($v['tanggalAkhirPenugasan'])->translatedFormat('d F Y') }}
@@ -133,6 +134,8 @@
                 </table>
             </div>
         </div>
+    </div>
+
     <!-- JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
