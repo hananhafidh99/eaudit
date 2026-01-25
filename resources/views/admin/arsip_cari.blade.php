@@ -102,11 +102,11 @@
                                 <td>{{ $v->nama_obrik }}</td>
                                 <td>
                                         <a href="{{ url('surat_dalamKota/ST/' . $v->id) }}"
-                                            class="btn btn-sm btn-outline-danger" target="_blank" title="Surat Tugas">
+                                            class="btn btn-sm btn-outline-danger mb-2" target="_blank" title="Surat Tugas">
                                             <i class="bx bxs-file-pdf"></i> ST
                                         </a>
                                         <a href="{{ url('surat_dalamKota/SD/' . $v->id) }}"
-                                            class="btn btn-sm btn-outline-danger" target="_blank" title="Surat Dinas">
+                                            class="btn btn-sm btn-outline-danger mb-2" target="_blank" title="Surat Dinas">
                                             <i class="bx bxs-file-pdf"></i> SD
                                         </a>
                                         <a href="{{ url('surat_dalamKota/sppd/' . $v->id) }}"
