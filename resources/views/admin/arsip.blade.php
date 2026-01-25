@@ -88,9 +88,9 @@
                         </td>
 
                                 <td>
-                                    {{ Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->translatedFormat('d M Y') }} <br>
+                                    {{ Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->translatedFormat('d F Y') }} <br>
                                     <small class="text-muted">s/d</small> <br>
-                                    {{ Carbon\Carbon::parse($v['tanggalAkhirPenugasan'])->translatedFormat('d M Y') }}
+                                    {{ Carbon\Carbon::parse($v['tanggalAkhirPenugasan'])->translatedFormat('d F Y') }}
                                 </td>
                                 <td>
                                     @php

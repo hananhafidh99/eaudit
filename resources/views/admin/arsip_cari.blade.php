@@ -40,62 +40,59 @@
                 </div>
             </form>
 
-            <table id="mytable"  style="width: 100%">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>No Surat</th>
-                    <th>Tanggal</th>
-                    <th>Pegawai</th>
-                    <th>Jenis Pengawasan</th>
-                    <th>Obrik</th>
-                    <th>Unduh ST dan SPPD</th>
-                    <th>Unduh Bukti Penerimaan</th>
-                </tr>
-            </thead>
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover table-striped table-bordered" id="mytable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th>No Surat</th>
+                            <th>Tanggal</th>
+                            <th>Pegawai</th>
+                            <th>Jenis Pengawasan</th>
+                            <th>Obrik</th>
+                            <th>Unduh Dokumen</th>
+                            <th>Bukti</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <?php $no = 1; ?>
                         @forelse ($data['data'] as $index => $v)
                             <tr>
                                 <td>{{ $no++ }}</td>
-                                <td style="padding-top: -50px">{{ '700.1.1/' . $v['noSurat'] . '/03/' . \Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->format('Y') }}  <br><br> {{Carbon\Carbon::parse($v['tanggalTerbitPenugasan'])->translatedFormat('d F Y')}}
-                                </td>
-
-                        </td>
-
+                                <td>{{ '700.1.1/' . $v->noSurat . '/03' . '/' . date('Y') }} <br><br> {{ Carbon\Carbon::parse($v->tanggalTerbitPenugasan)->translatedFormat('d F Y') }} </td>
                                 <td>
-                                    {{ Carbon\Carbon::parse($v['tanggalAwalPenugasan'])->translatedFormat('d M Y') }} <br>
+                                    {{ Carbon\Carbon::parse($v->tanggalAwalPenugasan)->translatedFormat('d M Y') }} <br>
                                     <small class="text-muted">s/d</small> <br>
-                                    {{ Carbon\Carbon::parse($v['tanggalAkhirPenugasan'])->translatedFormat('d M Y') }}
+                                    {{ Carbon\Carbon::parse($v->tanggalAkhirPenugasan)->translatedFormat('d M Y') }}
                                 </td>
                                 <td>
                                     @php
-                                        $namapegawai_list = is_array($v['daftar_pegawai']) ? $v['daftar_pegawai'] : explode('@@', $v['daftar_pegawai']);
+                                        $namapegawai_list = is_array($v->daftar_pegawai) ? $v->daftar_pegawai : explode('@@', $v->daftar_pegawai);
                                     @endphp
                                     <ol>
                                         @foreach ($namapegawai_list as $item)
-                                            <li> {{ $item }}</li>
+                                            <li>{{ $item }}</li>
                                         @endforeach
                                     </ol>
                                 </td>
-                                <td>{{ $v['nama_jenispengawasan'] }}</td>
-                                <td>{{ $v['nama_obrik'] }}</td>
+                                <td>{{ $v->nama_jenispengawasan }}</td>
+                                <td>{{ $v->nama_obrik }}</td>
                                 <td>
-                                        <a href="{{ url('surat_dalamKota/ST/' . $v['id']) }}"
-                                            class="btn btn-sm btn-outline-danger mb-2" target="_blank" title="Surat Tugas">
+                                        <a href="{{ url('surat_dalamKota/ST/' . $v->id) }}"
+                                            class="btn btn-sm btn-outline-danger" target="_blank" title="Surat Tugas">
                                             <i class="bx bxs-file-pdf"></i> ST
                                         </a>
-                                        <a href="{{ url('surat_dalamKota/SD/' . $v['id']) }}"
-                                            class="btn btn-sm btn-outline-danger mb-2" target="_blank" title="Surat Dinas">
+                                        <a href="{{ url('surat_dalamKota/SD/' . $v->id) }}"
+                                            class="btn btn-sm btn-outline-danger" target="_blank" title="Surat Dinas">
                                             <i class="bx bxs-file-pdf"></i> SD
                                         </a>
-                                        <a href="{{ url('surat_dalamKota/sppd/' . $v['id']) }}"
+                                        <a href="{{ url('surat_dalamKota/sppd/' . $v->id) }}"
                                             class="btn btn-sm btn-outline-danger" target="_blank" title="SPPD">
                                             <i class="bx bxs-file-pdf"></i> SPPD
                                         </a>
                                 </td>
                                 <td>
-                                    <a href="{{ url('surat_dalamKota/buktipenerimaan/' . $v['id']) }}"
+                                    <a href="{{ url('surat_dalamKota/buktipenerimaan/' . $v->id) }}"
                                         class="btn btn-sm btn-outline-primary" target="_blank" title="Bukti Penerimaan">
                                         <i class="bx bx-receipt"></i> Bukti
                                     </a>
@@ -108,6 +105,7 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
         </div>
     </div>
 
