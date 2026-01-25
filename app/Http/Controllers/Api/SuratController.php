@@ -420,7 +420,7 @@ class SuratController extends Controller
             $query->where('tanggalTerbitPenugasan', 'like', '%' . $tahun . '%');
         }
 
-        $penugasan = $query->orderBy('tanggalAwalPenugasan', 'DESC')->orderBy('noSurat', 'DESC')->get();
+        $penugasan = $query->orderBy('tanggalAwalPenugasan', 'ASC')->orderBy('noSurat', 'ASC')->get();
         return response()->json([
             'status' => true,
             'message' => 'data di temukan',
@@ -437,8 +437,8 @@ class SuratController extends Controller
             }
         }
 
-        $penugasan = $query->orderBy('tanggalAwalPenugasan', 'DESC')
-            ->orderBy('noSurat', 'DESC')
+        $penugasan = $query->orderBy('tanggalAwalPenugasan', 'ASC')
+            ->orderBy('noSurat', 'ASC')
             ->get();
         return response()->json([
             'status' => true,
@@ -615,13 +615,13 @@ class SuratController extends Controller
             ->where(function ($query) use ($startRequest, $endRequest) {
                 // Cek irisan dengan range tanggal di surat_tugas (jika ada) ATAU penugasan global
                 // Prioritas: surat_tugas dates -> penugasan dates
-    
+
                 // Karena struktur DB bisa mix, kita perlu hati-hati.
                 // Asumsi paling aman: cek range efektif.
                 // Tapi query builder agak ribet untuk conditional column.
                 // Simplifikasi: Cek overlap dengan tanggalPenugasan global dulu (karena itu mandatory biasanya)
                 // atau tanggalPemeriksaan di surat_tugas.
-    
+
                 // Case A: surat_tugas punya tanggal spesifik
                 $query->where(function ($q) use ($startRequest, $endRequest) {
                     $q->whereNotNull('surat_tugas.tanggalAwalPemeriksaan')

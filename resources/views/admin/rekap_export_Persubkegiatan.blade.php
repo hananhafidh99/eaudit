@@ -1,7 +1,7 @@
 @extends('template')
 @section('content')
     <div class="alert alert-info" role="alert">
-        Export Rekapitulasi Penilaian Perjalanan Dinas
+        Export Rekapitulasi Per Sub Kegiatan
     </div>
     <div class="row">
         <!-- Form Tahunan -->
