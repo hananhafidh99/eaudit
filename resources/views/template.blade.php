@@ -253,37 +253,8 @@
               </a>
             </li>
 
-            <li class="menu-item ">
-              <a href="{{ url('rekap_export_PerSubkegiatan') }}" class="menu-link text-white">
-                 <i class="menu-icon fas fa-file-excel"></i>
-                <div data-i18n="Analytics">Export Per Sub Kegiatan</div>
-              </a>
-            </li>
-
-
               <li class="menu-header small text-uppercase">
               <span class="menu-header-text">DATA LAPORAN</span>
-            </li>
-
-
-
-            <!-- Layouts -->
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link text-white menu-toggle">
-                <i class="menu-icon fas fa-book"></i>
-                <div data-i18n="Layouts">Laporan Penugasan PDF </div>
-              </a>
-
-              <ul class="menu-sub">
-
-                <li class="menu-item">
-                  <a href="{{ url('laporanKegiatanPDF') }}" class="menu-link text-white">
-                    <div data-i18n="Without menu">Berdasarkan Jenis Kegiatan</div>
-                  </a>
-                </li>
-
-
-              </ul>
             </li>
 
              <li class="menu-item">
@@ -295,7 +266,7 @@
               <ul class="menu-sub">
 
                 <li class="menu-item">
-                  <a href="{{ url('laporanKegiatanPDF') }}" class="menu-link text-white">
+                  <a href="{{ url('rekap_export_PerSubkegiatan') }}" class="menu-link text-white">
                     <div data-i18n="Without menu">Berdasarkan Jenis Kegiatan</div>
                   </a>
                 </li>
