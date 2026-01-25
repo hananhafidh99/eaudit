@@ -30,6 +30,11 @@
 
     <h5>Daftar Pegawai
 
+    <form method="get" >
+        <div class="row">
+            <div class="col-8"><input type="search" class="form-control" name="nama_pegawai" id="search" value="{{ isset($_GET['nama_pegawai'])?$_GET['nama_pegawai']:'' }}"></div>
+    </form>
+
         <div class="col-4 mt-3"><a href="{{ url('pegawai_baru') }}" class="btn btn-success">Tambah Pegawai
                 Baru</a></div>
 
