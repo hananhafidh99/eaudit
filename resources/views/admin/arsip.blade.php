@@ -24,7 +24,6 @@
   color: white;
 }
 </style>
-    <div class="card">
         <h5 class="card-header">Daftar Surat Tugas dan SPPD</h5>
         <div class="card-body">
             <form action="{{ url('arsip/cari') }}" method="post" class="mb-4">
@@ -134,8 +133,6 @@
                 </table>
             </div>
         </div>
-    </div>
-
     <!-- JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
