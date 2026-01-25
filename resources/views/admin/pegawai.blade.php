@@ -37,7 +37,7 @@
     <div class="col-4"><a href="{{ url('pegawai_baru') }}" class="btn btn-success">Tambah Pegawai</a>
     </div>
 
-    <table id="mytable"  style="width: 100%">
+    <table id="mytable"  style="width: 100%; margin-top:10px">
         <thead>
             <tr>
                 <th>No</th>
