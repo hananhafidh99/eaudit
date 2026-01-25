@@ -35,4 +35,9 @@ class RekapExportController extends Controller
         return Excel::download(new RekapPenugasanExport($tahun, $bulan, $type), $filename);
     }
 
+    public function indexExportPerSubKegiatan()
+    {
+        return view('admin.rekap_export_Persubkegiatan');
+    }
+
 }

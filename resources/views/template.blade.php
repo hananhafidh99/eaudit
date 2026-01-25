@@ -239,14 +239,6 @@
               </a>
             </li>
 
-            <li class="menu-item ">
-              <a href="{{ url('arsip') }}" class="menu-link text-white">
-                 <i class="menu-icon fas fa-book"></i>
-                <div data-i18n="Analytics">Rekap</div>
-              </a>
-            </li>
-
-
              <li class="menu-item ">
               <a href="{{ url('tabel_kendali') }}" class="menu-link text-white">
                  <i class="menu-icon fas fa-book"></i>
@@ -258,6 +250,13 @@
               <a href="{{ url('rekap_export') }}" class="menu-link text-white">
                  <i class="menu-icon fas fa-file-excel"></i>
                 <div data-i18n="Analytics">Export Rekap</div>
+              </a>
+            </li>
+
+            <li class="menu-item ">
+              <a href="{{ url('rekap_export_PerSubkegiatan') }}" class="menu-link text-white">
+                 <i class="menu-icon fas fa-file-excel"></i>
+                <div data-i18n="Analytics">Export Per Sub Kegiatan</div>
               </a>
             </li>
 
