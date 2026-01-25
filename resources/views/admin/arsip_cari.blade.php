@@ -1,5 +1,29 @@
 @extends('template')
 @section('content')
+<style>
+#mytable {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#mytable td, #mytable th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#mytable tr:nth-child(even){background-color: #f2f2f2;}
+
+#mytable tr:hover {background-color: #ddd;}
+
+#mytable th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
+</style>
     <div class="card">
         <h5 class="card-header">Daftar Surat Tugas dan SPPD (Hasil Pencarian)</h5>
         <div class="card-body">
@@ -40,9 +64,8 @@
                 </div>
             </form>
 
-            <div class="table-responsive text-nowrap">
-                <table class="table table-hover table-striped table-bordered" id="mytable">
-                    <thead class="table-light">
+                <table id="mytable"  style="width: 100%">
+                    <thead>
                         <tr>
                             <th width="5%">No</th>
                             <th>No Surat</th>
@@ -105,7 +128,6 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
         </div>
     </div>
 
