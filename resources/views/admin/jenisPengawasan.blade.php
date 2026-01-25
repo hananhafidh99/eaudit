@@ -30,8 +30,6 @@
 
     <h5>Daftar Jenis Pengawasan </h5>
 
-
-
     <form method="get" >
         <div class="row">
             <div class="col-8"><input type="search" class="form-control" name="nama_jenisPengawasan" id="search" value="{{ isset($_GET['nama_jenisPengawasan'])?$_GET['nama_jenisPengawasan']:'' }}"></div>

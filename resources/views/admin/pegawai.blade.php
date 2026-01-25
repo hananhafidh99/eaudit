@@ -28,17 +28,14 @@
         integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <h5>Daftar Pegawai
+    <h5>Daftar Pegawai </h5>
 
-    <form method="get" >
+      <form method="get" >
         <div class="row">
             <div class="col-8"><input type="search" class="form-control" name="nama_pegawai" id="search" value="{{ isset($_GET['nama_pegawai'])?$_GET['nama_pegawai']:'' }}"></div>
     </form>
-
-        <div class="col-4 mt-3"><a href="{{ url('pegawai_baru') }}" class="btn btn-success">Tambah Pegawai
-                Baru</a></div>
-
-    </h5>
+    <div class="col-4"><a href="{{ url('pegawai_baru') }}" class="btn btn-success">Tambah Pegawai</a>
+    </div>
 
     <table id="mytable"  style="width: 100%">
         <thead>
