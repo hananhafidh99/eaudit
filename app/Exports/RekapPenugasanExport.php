@@ -43,22 +43,97 @@ class RekapPenugasanExport implements FromView
 
         // Transform data
         $mappedData = $data->map(function ($item) {
-            // Calculate Budget (Anggaran)
-            $suratTugas = DB::table('surat_tugas')
-                ->join('perans', 'surat_tugas.id_peran', '=', 'perans.id')
+            // 1. Fetch View Data to get filtered officers (matches 'Bukti Penerimaan')
+            $viewData = DB::table('v_demo7')->where('id', $item->id)->first();
+            $officers = $viewData ? json_decode($viewData->detail_petugas) : [];
+
+            // 2. Fetch IDs for Overlap Logic (Name -> ID Map)
+            $suratTugasDb = DB::table('surat_tugas')
+                ->join('pegawais', 'surat_tugas.id_pegawai', '=', 'pegawais.id')
                 ->where('surat_tugas.id_penugasan', $item->id)
-                ->select('surat_tugas.*', 'perans.tarif')
+                ->select('surat_tugas.id_pegawai', 'pegawais.nama_pegawai')
                 ->get();
 
-            $totalAnggaran = 0;
-            foreach ($suratTugas as $st) {
-                // Determine dates (use row dates or fallback to penugasan dates)
-                $start = $st->tanggalAwalPemeriksaan ? Carbon::parse($st->tanggalAwalPemeriksaan) : Carbon::parse($item->tanggalAwalPenugasan);
-                $end = $st->tanggalAkhirPemeriksaan ? Carbon::parse($st->tanggalAkhirPemeriksaan) : Carbon::parse($item->tanggalAkhirPenugasan);
+            $pegawaiMap = [];
+            foreach ($suratTugasDb as $st) {
+                $pegawaiMap[$st->nama_pegawai] = $st->id_pegawai;
+            }
 
-                // Calculate days (inclusive)
-                $days = $end->diffInDays($start) + 1;
-                $cost = $days * $st->tarif;
+            $totalAnggaran = 0;
+
+            foreach ($officers as $off) {
+                // Filter out 'Pengguna Anggaran' relative to User Feedback
+                if (isset($off->peran) && stripos($off->peran, 'Pengguna Anggaran') !== false) {
+                    continue;
+                }
+
+                // Resolve ID
+                $idPegawai = $pegawaiMap[$off->namapegawai] ?? null;
+
+                // Dates from JSON or Fallback
+                $start = isset($off->tanggalPemeriksaanAwal) ? Carbon::parse($off->tanggalPemeriksaanAwal) : Carbon::parse($item->tanggalAwalPenugasan);
+                $end = isset($off->tanggalPemeriksaanAkhir) ? Carbon::parse($off->tanggalPemeriksaanAkhir) : Carbon::parse($item->tanggalAkhirPenugasan);
+
+                // --- LOGIC PENENTUAN HARI EFEKTIF (Match SuratController) ---
+                $blockingRanges = [];
+
+                if ($idPegawai) {
+                    // 1. Get Overlaps from Tabel Kendali
+                    $overlaps = DB::table('tabel_kendalis')
+                        ->where('id_pegawai', $idPegawai)
+                        ->get();
+
+                    foreach ($overlaps as $ov) {
+                        $blockingRanges[] = [
+                            'start' => Carbon::parse($ov->tanggal_awal_pemeriksaan)->startOfDay(),
+                            'end' => Carbon::parse($ov->tanggal_akhir_pemeriksaan)->endOfDay()
+                        ];
+                    }
+
+                    // 2. Get Overlaps from Newer Assignments
+                    $otherAssignments = DB::table('surat_tugas')
+                        ->join('penugasans', 'surat_tugas.id_penugasan', '=', 'penugasans.id')
+                        ->where('surat_tugas.id_pegawai', $idPegawai)
+                        ->where('surat_tugas.id_penugasan', '>', $item->id)
+                        ->select('surat_tugas.*', 'penugasans.tanggalAwalPenugasan', 'penugasans.tanggalAkhirPenugasan')
+                        ->get();
+
+                    foreach ($otherAssignments as $oa) {
+                        $oaStart = $oa->tanggalAwalPemeriksaan ? Carbon::parse($oa->tanggalAwalPemeriksaan) : Carbon::parse($oa->tanggalAwalPenugasan);
+                        $oaEnd = $oa->tanggalAkhirPemeriksaan ? Carbon::parse($oa->tanggalAkhirPemeriksaan) : Carbon::parse($oa->tanggalAkhirPenugasan);
+
+                        $blockingRanges[] = [
+                            'start' => $oaStart->startOfDay(),
+                            'end' => $oaEnd->endOfDay()
+                        ];
+                    }
+                }
+
+                // Calculate Effective Days
+                $period = \Carbon\CarbonPeriod::create($start, $end);
+                $effectiveDays = 0;
+
+                foreach ($period as $date) {
+                    if ($date->isWeekend()) {
+                        continue;
+                    }
+
+                    $isBlocked = false;
+                    foreach ($blockingRanges as $range) {
+                        if ($date->betweenIncluded($range['start'], $range['end'])) {
+                            $isBlocked = true;
+                            break;
+                        }
+                    }
+
+                    if (!$isBlocked) {
+                        $effectiveDays++;
+                    }
+                }
+
+                // Use Tarif from JSON
+                $tarif = $off->tarif ?? 0;
+                $cost = $effectiveDays * $tarif;
                 $totalAnggaran += $cost;
             }
 
@@ -81,7 +156,6 @@ class RekapPenugasanExport implements FromView
                 'tanggal' => $tanggal,
                 'tanggalOriginal' => $item->tanggalAwalPenugasan // Helper for sorting/grouping
             ];
-
         });
 
         // Group by Month Index (1-12) for sorting
