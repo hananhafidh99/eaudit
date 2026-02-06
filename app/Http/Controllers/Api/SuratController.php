@@ -308,15 +308,107 @@ class SuratController extends Controller
     {
         $penugasan = DB::table('v_demo8')->where('id', $id)->first();
         $penugasan->detail_petugas = json_decode($penugasan->detail_petugas);
+
+        // --- PREPARE DATA PEGAWAI FOR MAPPING ---
+        $suratTugasDb = DB::table('surat_tugas')
+            ->join('pegawais', 'surat_tugas.id_pegawai', '=', 'pegawais.id')
+            ->where('surat_tugas.id_penugasan', $id)
+            ->select('surat_tugas.id_pegawai', 'pegawais.nama_pegawai')
+            ->get();
+
+        $pegawaiMap = [];
+        foreach ($suratTugasDb as $st) {
+            $pegawaiMap[$st->nama_pegawai] = $st->id_pegawai;
+        }
+
         $total = 0;
         foreach ($penugasan->detail_petugas as $v => $item) {
-            try {
-                $totalDayWeekend = $this->hitungSabtuMinggu($item->tanggalPemeriksaanAwal, $item->tanggalPemeriksaanAkhir) - 1;
-            } catch (\Throwable $e) {
-                $totalDayWeekend = 0;
+            // FIX: Inject id_pegawai based on name matching
+            if (isset($pegawaiMap[$item->namapegawai])) {
+                $item->id_pegawai = $pegawaiMap[$item->namapegawai];
             }
 
-            $item->Jumlah = ($item->Hari -= $totalDayWeekend) * $item->tarif;
+            // FIX: Recalculate Hari correctly (Inclusive)
+            if ($item->tanggalPemeriksaanAwal && $item->tanggalPemeriksaanAkhir) {
+                $startD = Carbon::parse($item->tanggalPemeriksaanAwal);
+                $endD = Carbon::parse($item->tanggalPemeriksaanAkhir);
+                // Reset Hari to correct inclusive duration
+                $item->Hari = $startD->diffInDays($endD) + 1;
+            }
+
+            // --- LOGIC PENENTUAN HARI EFEKTIF (DAY-BY-DAY) ---
+            $finalHari = 0;
+
+            if ($item->tanggalPemeriksaanAwal && $item->tanggalPemeriksaanAkhir && !empty($item->id_pegawai)) {
+                $overlaps = Tabel_kendali::where('id_pegawai', $item->id_pegawai)->get();
+
+                $otherAssignments = DB::table('surat_tugas')
+                    ->join('penugasans', 'surat_tugas.id_penugasan', '=', 'penugasans.id')
+                    ->where('surat_tugas.id_pegawai', $item->id_pegawai)
+                    ->where('surat_tugas.id_penugasan', '!=', $id)
+                    ->select('surat_tugas.*', 'penugasans.tanggalAwalPenugasan', 'penugasans.tanggalAkhirPenugasan')
+                    ->get();
+
+                $blockingRanges = [];
+
+                // 1. Block from Tabel Kendali
+                foreach ($overlaps as $ov) {
+                    $blockingRanges[] = [
+                        'start' => Carbon::parse($ov->tanggal_awal_pemeriksaan)->startOfDay(),
+                        'end' => Carbon::parse($ov->tanggal_akhir_pemeriksaan)->endOfDay()
+                    ];
+                }
+
+                // 2. Block from Newer Assignments
+                foreach ($otherAssignments as $oa) {
+                    $start = $oa->tanggalAwalPemeriksaan ? Carbon::parse($oa->tanggalAwalPemeriksaan) : Carbon::parse($oa->tanggalAwalPenugasan);
+                    $end = $oa->tanggalAkhirPemeriksaan ? Carbon::parse($oa->tanggalAkhirPemeriksaan) : Carbon::parse($oa->tanggalAkhirPenugasan);
+
+                    if ($oa->id_penugasan > $id) {
+                        $blockingRanges[] = [
+                            'start' => $start->startOfDay(),
+                            'end' => $end->endOfDay()
+                        ];
+                    }
+                }
+
+                // Iterate Current Range
+                $period = CarbonPeriod::create($item->tanggalPemeriksaanAwal, $item->tanggalPemeriksaanAkhir);
+                foreach ($period as $date) {
+                    if ($date->isSaturday() || $date->isSunday()) {
+                        continue; // Skip Weekend
+                    }
+
+                    $isBlocked = false;
+                    foreach ($blockingRanges as $range) {
+                        if ($date->betweenIncluded($range['start'], $range['end'])) {
+                            $isBlocked = true;
+                            break;
+                        }
+                    }
+
+                    if (!$isBlocked) {
+                        $finalHari++;
+                    }
+                }
+
+
+                // Override Hari with calculated value
+                $item->Hari = $finalHari;
+
+            } elseif ($item->tanggalPemeriksaanAwal && $item->tanggalPemeriksaanAkhir) {
+
+                // Fallback if no id_pegawai
+                $startD = Carbon::parse($item->tanggalPemeriksaanAwal);
+                $endD = Carbon::parse($item->tanggalPemeriksaanAkhir);
+                $days = $startD->diffInDays($endD) + 1;
+                $weekend = $this->hitungSabtuMinggu($startD, $endD);
+                $item->Hari = max(0, $days - $weekend);
+            } else {
+                $item->Hari = 0;
+            }
+
+            $item->Jumlah = $item->Hari * $item->tarif;
             $item->terbilang = ucfirst($this->terbilang($item->Jumlah));
             $total += $item->Jumlah;
         }
@@ -615,13 +707,13 @@ class SuratController extends Controller
             ->where(function ($query) use ($startRequest, $endRequest) {
                 // Cek irisan dengan range tanggal di surat_tugas (jika ada) ATAU penugasan global
                 // Prioritas: surat_tugas dates -> penugasan dates
-
+    
                 // Karena struktur DB bisa mix, kita perlu hati-hati.
                 // Asumsi paling aman: cek range efektif.
                 // Tapi query builder agak ribet untuk conditional column.
                 // Simplifikasi: Cek overlap dengan tanggalPenugasan global dulu (karena itu mandatory biasanya)
                 // atau tanggalPemeriksaan di surat_tugas.
-
+    
                 // Case A: surat_tugas punya tanggal spesifik
                 $query->where(function ($q) use ($startRequest, $endRequest) {
                     $q->whereNotNull('surat_tugas.tanggalAwalPemeriksaan')
